@@ -1,0 +1,7 @@
+{
+  "type": "sync:set_entity_aspects",
+  "aspects": {
+    "aspectslib:terra": 10,
+    "aspectslib:ignis": 5
+  }
+}
