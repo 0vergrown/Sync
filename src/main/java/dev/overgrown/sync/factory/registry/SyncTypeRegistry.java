@@ -2,6 +2,7 @@ package dev.overgrown.sync.factory.registry;
 
 import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.compatibility.aspectslib.SetEntityAspectsPower;
+import dev.overgrown.sync.compatibility.aspectslib.condition.HasAspectCondition;
 import dev.overgrown.sync.factory.action.bientity.AddToEntitySetAction;
 import dev.overgrown.sync.factory.action.bientity.RemoveFromEntitySetAction;
 import dev.overgrown.sync.factory.action.entity.ActionOnEntitySetAction;
@@ -40,6 +41,7 @@ public class SyncTypeRegistry {
 
         if (Sync.HAS_ASPECTSLIB) {
             ApoliRegistryHelper.registerPowerFactory(SetEntityAspectsPower.createFactory());
+            ApoliRegistryHelper.registerEntityCondition(HasAspectCondition.getFactory());
         }
     }
 }
