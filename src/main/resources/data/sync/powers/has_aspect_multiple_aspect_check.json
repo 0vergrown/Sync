@@ -1,0 +1,16 @@
+{
+  "type": "apoli:action_over_time",
+  "entity_action": {
+    "type": "apoli:execute_command",
+    "command": "tellraw @a {\"text\": \"You Have the Ignis and Terra Aspects!\", \"color\": \"red\"}"
+  },
+  "interval": 40,
+  "condition": {
+    "type": "sync:has_aspect",
+    "aspects": [
+      "aspectslib:terra",
+      "aspectslib:ignis"
+    ],
+    "min": 3
+  }
+}

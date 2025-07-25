@@ -1,0 +1,14 @@
+{
+  "type": "apoli:action_over_time",
+  "entity_action": {
+    "type": "apoli:execute_command",
+    "command": "tellraw @a {\"text\": \"You Have the Terra Aspect!\", \"color\": \"green\"}"
+  },
+  "interval": 40,
+  "condition": {
+    "type": "sync:has_aspect",
+    "aspect": "aspectslib:terra",
+    "min": 5,
+    "comparison": ">="
+  }
+}
