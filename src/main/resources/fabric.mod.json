@@ -3,13 +3,13 @@
 	"id": "sync",
 	"version": "${version}",
 	"name": "Sync",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Sync is an Apoli (Origins) addon that backports newer features to old versions of the game and more!",
 	"authors": [
 		"Overgrown"
 	],
 	"contact": {
 		"homepage": "",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/0vergrown/Sync"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/sync/icon.png",
