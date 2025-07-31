@@ -7,10 +7,7 @@ import dev.overgrown.sync.factory.action.bientity.AddToEntitySetAction;
 import dev.overgrown.sync.factory.action.bientity.RemoveFromEntitySetAction;
 import dev.overgrown.sync.factory.action.entity.ActionOnEntitySetAction;
 import dev.overgrown.sync.factory.action.entity.RandomTeleportAction;
-import dev.overgrown.sync.factory.condition.entity.EntityInRadiusCondition;
-import dev.overgrown.sync.factory.condition.entity.EntitySetSizeCondition;
-import dev.overgrown.sync.factory.condition.entity.InEntitySetCondition;
-import dev.overgrown.sync.factory.condition.entity.InPoseCondition;
+import dev.overgrown.sync.factory.condition.entity.*;
 import dev.overgrown.sync.factory.power.type.EntitySetPower;
 import dev.overgrown.sync.factory.power.type.ModelFlipPower;
 import dev.overgrown.sync.factory.power.type.PosePower;
@@ -33,6 +30,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityCondition(EntitySetSizeCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(InPoseCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(EntityInRadiusCondition.getFactory());
+        ApoliRegistryHelper.registerEntityCondition(KeyPressedCondition.getFactory());
 
         // ========== BIENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBientityAction(AddToEntitySetAction.getFactory());

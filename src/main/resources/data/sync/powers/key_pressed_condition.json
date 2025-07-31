@@ -1,0 +1,20 @@
+{
+  "type": "apoli:action_over_time",
+  "entity_action": {
+    "type": "apoli:if_else",
+    "condition": {
+      "type": "sync:key_pressed",
+      "key": "key.use",
+      "continuous": true
+    },
+    "if_action": {
+      "type": "apoli:execute_command",
+      "command": "tellraw @s {\"text\":\"You are holding right-click!\",\"color\":\"green\"}"
+    },
+    "else_action": {
+      "type": "apoli:execute_command",
+      "command": "tellraw @s {\"text\":\"You are NOT holding right-click!\",\"color\":\"red\"}"
+    }
+  },
+  "interval": 20
+}

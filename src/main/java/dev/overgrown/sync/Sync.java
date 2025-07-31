@@ -1,6 +1,10 @@
 package dev.overgrown.sync;
 
 import dev.overgrown.sync.factory.registry.SyncTypeRegistry;
+import dev.overgrown.sync.networking.ModPackets;
+import dev.overgrown.sync.utils.KeyPressManager;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import io.github.apace100.apoli.util.NamespaceAlias;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
@@ -28,5 +32,21 @@ public class Sync implements ModInitializer {
 		if (HAS_ASPECTSLIB) {
 			LOGGER.info("AspectsLib detected - compatibility enabled");
 		}
+
+		ServerPlayNetworking.registerGlobalReceiver(
+				ModPackets.KEY_PRESS_UPDATE,
+				(server, player, handler, buf, responseSender) -> {
+					String key = buf.readString();
+					boolean pressed = buf.readBoolean();
+					server.execute(() ->
+							KeyPressManager.updateKeyState(player.getUuid(), key, pressed)
+					);
+				}
+		);
+
+		ServerPlayConnectionEvents.DISCONNECT.register(
+				(handler, server) ->
+						KeyPressManager.removePlayer(handler.player.getUuid())
+		);
 	}
 }
