@@ -1,0 +1,20 @@
+{
+  "type": "apoli:multiple",
+  "resource": {
+    "type": "apoli:resource",
+    "min": 0,
+    "max": 1,
+    "hud_render": {
+      "should_render": false
+    }
+  },
+  "flip": {
+    "type":"sync:model_flip",
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:model_flip_power_resource",
+      "comparison":"==",
+      "compare_to":1
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "apoli:action_over_time",
+  "entity_action": {
+    "type": "apoli:if_else",
+    "condition": {
+      "type": "sync:in_pose",
+      "pose":"spin_attack"
+    },
+    "if_action": {
+      "type": "apoli:execute_command",
+      "command": "tellraw @s {\"text\":\"HELIKOPTER, HELIKOPTER!!\",\"color\":\"green\"}"
+    },
+    "else_action": {
+      "type": "apoli:execute_command",
+      "command": "tellraw @s {\"text\":\"You're just normal, bruh...\",\"color\":\"red\"}"
+    }
+  },
+  "interval": 20
+}

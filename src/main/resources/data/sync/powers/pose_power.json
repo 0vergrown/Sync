@@ -1,0 +1,176 @@
+{
+  "type": "apoli:multiple",
+  "resource": {
+    "type": "apoli:resource",
+    "min": 0,
+    "max": 15,
+    "hud_render": {
+      "should_render": false
+    }
+  },
+  "standing": {
+    "type":"sync:pose",
+    "pose":"standing",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":1
+    }
+  },
+  "fall_flying": {
+    "type":"sync:pose",
+    "pose":"fall_flying",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":2
+    }
+  },
+  "sleeping": {
+    "type":"sync:pose",
+    "pose":"sleeping",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":3
+    }
+  },
+  "swimming": {
+    "type":"sync:pose",
+    "pose":"swimming",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":4
+    }
+  },
+  "spin_attack": {
+    "type":"sync:pose",
+    "pose":"spin_attack",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":5
+    }
+  },
+  "crouching": {
+    "type":"sync:pose",
+    "pose":"crouching",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":6
+    }
+  },
+  "long_jumping": {
+    "type":"sync:pose",
+    "pose":"long_jumping",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":7
+    }
+  },
+  "dying": {
+    "type":"sync:pose",
+    "pose":"dying",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":8
+    }
+  },
+  "croaking": {
+    "type":"sync:pose",
+    "pose":"croaking",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":9
+    }
+  },
+  "using_tongue": {
+    "type":"sync:pose",
+    "pose":"using_tongue",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":10
+    }
+  },
+  "sitting": {
+    "type":"sync:pose",
+    "pose":"sitting",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":11
+    }
+  },
+  "roaring": {
+    "type":"sync:pose",
+    "pose":"roaring",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":12
+    }
+  },
+  "sniffing": {
+    "type":"sync:pose",
+    "pose":"sniffing",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":13
+    }
+  },
+  "emerging": {
+    "type":"sync:pose",
+    "pose":"emerging",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":14
+    }
+  },
+  "digging": {
+    "type":"sync:pose",
+    "pose":"digging",
+    "priority":0,
+    "condition":{
+      "type":"apoli:resource",
+      "resource":"sync:pose_power_resource",
+      "comparison":"==",
+      "compare_to":15
+    }
+  }
+}
