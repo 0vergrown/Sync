@@ -9,7 +9,8 @@
     }
   },
   "flip": {
-    "type":"sync:model_flip",
+    "type": "sync:flip_model",
+    "flip_view": true,
     "condition":{
       "type":"apoli:resource",
       "resource":"sync:model_flip_power_resource",

@@ -1,0 +1,17 @@
+{
+  "type": "sync:action_on_death",
+  "bientity_action": {
+    "type": "apoli:actor_action",
+    "action": {
+      "type": "apoli:set_on_fire",
+      "duration": 5
+    }
+  },
+  "damage_condition": {
+    "type": "apoli:attacker",
+    "entity_condition": {
+      "type": "apoli:entity_type",
+      "entity_type": "minecraft:zombie"
+    }
+  }
+}

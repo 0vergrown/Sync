@@ -8,8 +8,9 @@ import dev.overgrown.sync.factory.action.bientity.RemoveFromEntitySetAction;
 import dev.overgrown.sync.factory.action.entity.ActionOnEntitySetAction;
 import dev.overgrown.sync.factory.action.entity.RandomTeleportAction;
 import dev.overgrown.sync.factory.condition.entity.*;
+import dev.overgrown.sync.factory.power.type.ActionOnDeathPower;
 import dev.overgrown.sync.factory.power.type.EntitySetPower;
-import dev.overgrown.sync.factory.power.type.ModelFlipPower;
+import dev.overgrown.sync.factory.power.type.FlipModelPower;
 import dev.overgrown.sync.factory.power.type.PosePower;
 import dev.overgrown.sync.utils.ApoliRegistryHelper;
 
@@ -19,8 +20,9 @@ public class SyncTypeRegistry {
 
         // ========== POWER TYPE REGISTRATIONS ==========
         ApoliRegistryHelper.registerPowerFactory(EntitySetPower.getFactory());
-        ApoliRegistryHelper.registerPowerFactory(ModelFlipPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(FlipModelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PosePower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(ActionOnDeathPower.getFactory());
 
         // ========== ENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
