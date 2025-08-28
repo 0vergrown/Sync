@@ -31,7 +31,7 @@ public class EntitySetSizeCondition {
 
     public static ConditionFactory<Entity> getFactory() {
         return new ConditionFactory<>(
-                Sync.identifier("set_size"),
+                Sync.identifier("entity_set_size"),
                 new SerializableData()
                         .add("set", ApoliDataTypes.POWER_TYPE)
                         .add("comparison", ApoliDataTypes.COMPARISON)

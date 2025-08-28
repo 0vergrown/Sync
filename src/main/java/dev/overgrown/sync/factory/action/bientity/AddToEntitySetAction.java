@@ -40,7 +40,7 @@ public class AddToEntitySetAction {
 
     public static ActionFactory<Pair<Entity, Entity>> getFactory() {
         return new ActionFactory<>(
-                Sync.identifier("add_to_set"),
+                Sync.identifier("add_to_entity_set"),
                 new SerializableData()
                         .add("set", ApoliDataTypes.POWER_TYPE)
                         .add("time_limit", SerializableDataTypes.INT, null),

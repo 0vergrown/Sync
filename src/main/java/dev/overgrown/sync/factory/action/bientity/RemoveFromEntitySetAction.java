@@ -29,7 +29,7 @@ public class RemoveFromEntitySetAction {
 
     public static ActionFactory<Pair<Entity, Entity>> getFactory() {
         return new ActionFactory<>(
-                Sync.identifier("remove_from_set"),
+                Sync.identifier("remove_from_entity_set"),
                 new SerializableData()
                         .add("set", ApoliDataTypes.POWER_TYPE),
                 RemoveFromEntitySetAction::action

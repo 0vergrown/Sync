@@ -1,7 +1,7 @@
 {
   "type": "apoli:multiple",
   "set": {
-    "type": "apoli:entity_set"
+    "type": "sync:entity_set"
   },
   "give_apples": {
     "type": "apoli:action_on_entity_use",
@@ -11,14 +11,14 @@
         {
           "type": "apoli:actor_condition",
           "condition": {
-            "type": "apoli:set_size",
+            "type": "sync:entity_set_size",
             "set": "*:*_set",
             "comparison": "<",
             "compare_to": 3
           }
         },
         {
-          "type": "apoli:in_set",
+          "type": "sync:in_entity_set",
           "set": "*:*_set",
           "inverted": true
         },
@@ -32,7 +32,7 @@
       ]
     },
     "bientity_action": {
-      "type": "apoli:add_to_set",
+      "type": "sync:add_to_entity_set",
       "set": "*:*_set"
     },
     "item_condition": {
@@ -51,7 +51,7 @@
       "type": "apoli:and",
       "conditions": [
         {
-          "type": "apoli:in_set",
+          "type": "sync:in_entity_set",
           "set": "*:*_set"
         },
         {
@@ -64,7 +64,7 @@
       ]
     },
     "bientity_action": {
-      "type": "apoli:remove_from_set",
+      "type": "sync:remove_from_entity_set",
       "set": "*:*_set"
     },
     "item_condition": {
@@ -84,7 +84,7 @@
       "value": -1
     },
     "bientity_condition": {
-      "type": "apoli:in_set",
+      "type": "sync:in_entity_set",
       "set": "*:*_set"
     }
   },
@@ -97,7 +97,7 @@
     "bientity_condition": {
       "type": "apoli:invert",
       "condition": {
-        "type": "apoli:in_set",
+        "type": "sync:in_entity_set",
         "set": "*:*_set"
       }
     }

@@ -64,7 +64,7 @@ public class ActionOnEntitySetAction {
 
     public static ActionFactory<Entity> getFactory() {
         return new ActionFactory<>(
-                Sync.identifier("action_on_set"),
+                Sync.identifier("action_on_entity_set"),
                 new SerializableData()
                         .add("set", ApoliDataTypes.POWER_TYPE)
                         .add("bientity_action", ApoliDataTypes.BIENTITY_ACTION)

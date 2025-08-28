@@ -27,7 +27,7 @@ public class InEntitySetCondition {
 
     public static ConditionFactory<Pair<Entity, Entity>> getFactory() {
         return new ConditionFactory<>(
-                Sync.identifier("in_set"),
+                Sync.identifier("in_entity_set"),
                 new SerializableData()
                         .add("set", ApoliDataTypes.POWER_TYPE),
                 InEntitySetCondition::condition
