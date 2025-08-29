@@ -29,6 +29,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
 
         // ========== ENTITY CONDITION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerEntityCondition(HasCommandTagCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(EntitySetSizeCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(InPoseCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(EntityInRadiusCondition.getFactory());
