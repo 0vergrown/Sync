@@ -1,0 +1,18 @@
+{
+  "type": "apoli:action_over_time",
+  "entity_action": {
+    "type": "apoli:block_action_at",
+    "block_action": {
+      "type":"sync:spawn_entity",
+      "entity_type":"minecraft:pig",
+      "tag":"{Silent:1b,Invulnerable:1b,NoAI:1b,Tags:[\"test_pig\"]}",
+      "entity_action": {
+        "type": "apoli:play_sound",
+        "sound": "minecraft:entity.chicken.egg",
+        "volume": 1.00,
+        "pitch": 1.00
+      }
+    }
+  },
+  "interval": 20
+}

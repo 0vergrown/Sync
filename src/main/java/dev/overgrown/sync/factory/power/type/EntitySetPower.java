@@ -190,6 +190,9 @@ public class EntitySetPower extends Power {
     }
 
     public boolean contains(Entity entity) {
+        if (entity == null) {
+            return false;
+        }
         return entities.containsValue(entity) || entityUuids.contains(entity.getUuid());
     }
 

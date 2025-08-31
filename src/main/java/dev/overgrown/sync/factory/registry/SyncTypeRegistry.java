@@ -5,6 +5,7 @@ import dev.overgrown.sync.compatibility.aspectslib.SetEntityAspectsPower;
 import dev.overgrown.sync.compatibility.aspectslib.condition.HasAspectCondition;
 import dev.overgrown.sync.factory.action.bientity.AddToEntitySetAction;
 import dev.overgrown.sync.factory.action.bientity.RemoveFromEntitySetAction;
+import dev.overgrown.sync.factory.action.block.SpawnEntityBlockAction;
 import dev.overgrown.sync.factory.action.entity.ActionOnEntitySetAction;
 import dev.overgrown.sync.factory.action.entity.RandomTeleportAction;
 import dev.overgrown.sync.factory.condition.entity.*;
@@ -17,7 +18,6 @@ import dev.overgrown.sync.utils.ApoliRegistryHelper;
 public class SyncTypeRegistry {
 
     public static void register() {
-
         // ========== POWER TYPE REGISTRATIONS ==========
         ApoliRegistryHelper.registerPowerFactory(EntitySetPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(FlipModelPower.getFactory());
@@ -27,6 +27,9 @@ public class SyncTypeRegistry {
         // ========== ENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
+
+        // ========== BLOCK ACTION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerBlockAction(SpawnEntityBlockAction.getFactory());
 
         // ========== ENTITY CONDITION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityCondition(HasCommandTagCondition.getFactory());
