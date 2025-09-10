@@ -1,0 +1,61 @@
+{
+
+  "type": "apoli:multiple",
+  "resource": {
+    "type": "apoli:resource",
+    "min": 0,
+    "max": 2,
+    "hud_render": {
+      "should_render": false
+    }
+  },
+  "prints": {
+    "type": "apoli:action_over_time",
+    "entity_action": {
+      "type": "apoli:if_else_list",
+      "actions": [
+        {
+          "condition": {
+            "type": "apoli:resource",
+            "resource": "sync:print_action_resource",
+            "comparison": "==",
+            "compare_to": 0
+          },
+          "action": {
+            "type": "sync:print",
+            "message": "Oh, look! I'm in the console!!!",
+            "show_in_chat": false
+          }
+        },
+        {
+          "condition": {
+            "type": "apoli:resource",
+            "resource": "sync:print_action_resource",
+            "comparison": "==",
+            "compare_to": 1
+          },
+          "action": {
+            "type": "sync:print",
+            "message": "Oh, look! I'm both in-game AND the console!!!",
+            "show_in_chat": true
+          }
+        },
+        {
+          "condition": {
+            "type": "apoli:resource",
+            "resource": "sync:print_action_resource",
+            "comparison": "==",
+            "compare_to": 2
+          },
+          "action": {
+            "type": "sync:print",
+            "message": "Oh, look! A print message with a custom ID in the console",
+            "show_in_chat": true,
+            "logger_id": "MyCustomMod/MyPrintAction"
+          }
+        }
+      ]
+    },
+    "interval": 20
+  }
+}

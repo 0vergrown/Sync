@@ -12,14 +12,13 @@ import org.slf4j.LoggerFactory;
 
 public class PrintAction {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("Sync/PrintAction");
-
     public static ActionFactory<Entity> getFactory() {
         return new ActionFactory<>(
                 Sync.identifier("print"),
                 new SerializableData()
                         .add("message", SerializableDataTypes.STRING)
-                        .add("show_in_chat", SerializableDataTypes.BOOLEAN, false),
+                        .add("show_in_chat", SerializableDataTypes.BOOLEAN, false)
+                        .add("logger_id", SerializableDataTypes.STRING, "Sync/PrintAction"),
                 PrintAction::execute
         );
     }
@@ -27,9 +26,13 @@ public class PrintAction {
     private static void execute(SerializableData.Instance data, Entity entity) {
         String message = data.getString("message");
         boolean showInChat = data.getBoolean("show_in_chat");
+        String loggerId = data.getString("logger_id"); // Get the custom logger ID
+
+        // Create logger with custom ID or default
+        Logger logger = LoggerFactory.getLogger(loggerId);
 
         // Log to console
-        LOGGER.info(message);
+        logger.info(message);
 
         // Send to player chat if enabled and entity is a player
         if (showInChat && entity instanceof ServerPlayerEntity player) {
