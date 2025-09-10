@@ -1,0 +1,9 @@
+{
+  "type": "apoli:action_over_time",
+  "entity_action": {
+    "type": "sync:print",
+    "message": "Oh, look! I'm both in-game AND the console!!!",
+    "show_in_chat": true
+  },
+  "interval": 20
+}

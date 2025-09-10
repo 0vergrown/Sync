@@ -7,6 +7,7 @@ import dev.overgrown.sync.factory.action.bientity.AddToEntitySetAction;
 import dev.overgrown.sync.factory.action.bientity.RemoveFromEntitySetAction;
 import dev.overgrown.sync.factory.action.block.SpawnEntityBlockAction;
 import dev.overgrown.sync.factory.action.entity.ActionOnEntitySetAction;
+import dev.overgrown.sync.factory.action.entity.PrintAction;
 import dev.overgrown.sync.factory.action.entity.RandomTeleportAction;
 import dev.overgrown.sync.factory.condition.entity.*;
 import dev.overgrown.sync.factory.power.type.ActionOnDeathPower;
@@ -27,6 +28,7 @@ public class SyncTypeRegistry {
         // ========== ENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
 
         // ========== BLOCK ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBlockAction(SpawnEntityBlockAction.getFactory());
