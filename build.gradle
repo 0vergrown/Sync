@@ -89,7 +89,7 @@ dependencies {
 	include modApi("com.jamieswhiteshirt:reach-entity-attributes:${project.reach_version}")
 
 	// Add AspectsLib as an optional dependency
-	modCompileOnly "maven.modrinth:aspectslib:PVRUsPCK"
+	modCompileOnly "maven.modrinth:aspectslib:${project.aspectslib_version}"
 	
 }
 
