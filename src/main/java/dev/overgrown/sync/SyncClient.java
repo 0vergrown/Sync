@@ -1,6 +1,5 @@
 package dev.overgrown.sync;
 
-import dev.overgrown.sync.factory.registry.SyncTypeRegistry;
 import dev.overgrown.sync.networking.ModPackets;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
@@ -17,8 +16,6 @@ public class SyncClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        SyncTypeRegistry.register();
-
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
 
