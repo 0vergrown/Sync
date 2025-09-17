@@ -1,7 +1,6 @@
 package dev.overgrown.sync.utils;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Util;
 
 import java.util.HashMap;

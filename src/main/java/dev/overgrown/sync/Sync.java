@@ -1,7 +1,6 @@
 package dev.overgrown.sync;
 
 import dev.overgrown.sync.factory.power.type.ActionOnDeathPower;
-import dev.overgrown.sync.factory.registry.SyncTypeRegistry;
 import dev.overgrown.sync.networking.ModPackets;
 import dev.overgrown.sync.utils.KeyPressManager;
 import io.github.apace100.apoli.component.PowerHolderComponent;
@@ -34,7 +33,6 @@ public class Sync implements ModInitializer {
         }
 
 		NamespaceAlias.addAlias("apoli", MOD_ID);
-		SyncTypeRegistry.register();
 
         // Register death event handler
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {

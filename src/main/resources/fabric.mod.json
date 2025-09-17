@@ -22,7 +22,7 @@
       "dev.overgrown.sync.SyncClient"
     ],
     "server":[
-      "dev.overgrown.sync.SyncServerTick"
+      "dev.overgrown.sync.SyncServer"
     ],
     "fabric-datagen":[
       "dev.overgrown.sync.SyncDataGenerator"
