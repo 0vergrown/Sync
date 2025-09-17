@@ -15,17 +15,10 @@ import dev.overgrown.sync.factory.power.type.EntitySetPower;
 import dev.overgrown.sync.factory.power.type.FlipModelPower;
 import dev.overgrown.sync.factory.power.type.PosePower;
 import dev.overgrown.sync.utils.ApoliRegistryHelper;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.minecraft.server.MinecraftServer;
 
 public class SyncTypeRegistry {
 
-    private static MinecraftServer serverInstance;
-
     public static void register() {
-        // Register server instance reference for later use
-        ServerLifecycleEvents.SERVER_STARTING.register(server -> serverInstance = server);
-
         // ========== POWER TYPE REGISTRATIONS ==========
         ApoliRegistryHelper.registerPowerFactory(EntitySetPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(FlipModelPower.getFactory());
@@ -58,9 +51,5 @@ public class SyncTypeRegistry {
             ApoliRegistryHelper.registerPowerFactory(SetEntityAspectsPower.createFactory());
             ApoliRegistryHelper.registerEntityCondition(HasAspectCondition.getFactory());
         }
-    }
-
-    public static MinecraftServer getServer() {
-        return serverInstance;
     }
 }
