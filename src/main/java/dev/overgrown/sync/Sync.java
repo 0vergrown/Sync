@@ -36,31 +36,5 @@ public class Sync implements ModInitializer {
         }
 
         NamespaceAlias.addAlias("apoli", MOD_ID);
-
-        // Register death event handler
-        ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
-            if (entity instanceof ServerPlayerEntity) {
-                PowerHolderComponent component = PowerHolderComponent.KEY.get(entity);
-                component.getPowers(ActionOnDeathPower.class).forEach(power -> {
-                    power.onDeath(damageSource, entity.getMaxHealth()); // Use max health as damage amount
-                });
-            }
-        });
-
-        ServerPlayNetworking.registerGlobalReceiver(
-                ModPackets.KEY_PRESS_UPDATE,
-                (server, player, handler, buf, responseSender) -> {
-                    String key = buf.readString();
-                    boolean pressed = buf.readBoolean();
-                    server.execute(() ->
-                            KeyPressManager.updateKeyState(player.getUuid(), key, pressed)
-                    );
-                }
-        );
-
-        ServerPlayConnectionEvents.DISCONNECT.register(
-                (handler, server) ->
-                        KeyPressManager.removePlayer(handler.player.getUuid())
-        );
     }
 }
