@@ -1,40 +1,43 @@
 {
-	"schemaVersion": 1,
-	"id": "sync",
-	"version": "${version}",
-	"name": "Sync",
-	"description": "Sync is an Apoli (Origins) addon that backports newer features to old versions of the game and more!",
-	"authors": [
-		"Overgrown"
-	],
-	"contact": {
-		"homepage": "",
-		"sources": "https://github.com/0vergrown/Sync"
-	},
-	"license": "MIT",
-	"icon": "assets/sync/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"dev.overgrown.sync.Sync"
-		],
-		"client": [
-			"dev.overgrown.sync.SyncClient"
-		],
-		"fabric-datagen": [
-			"dev.overgrown.sync.SyncDataGenerator"
-		]
-	},
-	"mixins": [
-		"sync.mixins.json"
-	],
-	"depends": {
-		"fabricloader": ">=0.16.14",
-		"minecraft": "~1.20.1",
-		"java": ">=17",
-		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
-	}
+  "schemaVersion":1,
+  "id":"sync",
+  "version":"${version}",
+  "name":"Sync",
+  "description":"Sync is an Apoli (Origins) addon that backports newer features to old versions of the game and more!",
+  "authors":[
+    "Overgrown"
+  ],
+  "contact":{
+    "homepage":"https://modrinth.com/mod/sync",
+    "sources":"https://github.com/0vergrown/Sync"
+  },
+  "license":"MIT",
+  "icon":"assets/sync/icon.png",
+  "environment":"*",
+  "entrypoints":{
+    "main":[
+      "dev.overgrown.sync.Sync"
+    ],
+    "client":[
+      "dev.overgrown.sync.SyncClient"
+    ],
+    "server":[
+      "dev.overgrown.sync.SyncServerTick"
+    ],
+    "fabric-datagen":[
+      "dev.overgrown.sync.SyncDataGenerator"
+    ]
+  },
+  "mixins":[
+    "sync.mixins.json"
+  ],
+  "depends":{
+    "fabricloader":">=0.17.2",
+    "minecraft":"~1.20.1",
+    "java":">=17",
+    "fabric-api":"*"
+  },
+  "suggests":{
+    "another-mod":"*"
+  }
 }
