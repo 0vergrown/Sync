@@ -3,6 +3,7 @@ package dev.overgrown.sync;
 import dev.overgrown.sync.factory.registry.SyncTypeRegistry;
 import io.github.apace100.apoli.util.NamespaceAlias;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,11 @@ public class Sync implements ModInitializer {
     @Override
     public void onInitialize() {
         SyncTypeRegistry.register();
+
+        HAS_ASPECTSLIB = FabricLoader.getInstance().isModLoaded("aspectslib");
+        if (HAS_ASPECTSLIB) {
+            LOGGER.info("AspectsLib detected - compatibility enabled");
+        }
 
         NamespaceAlias.addAlias("apoli", MOD_ID);
     }
