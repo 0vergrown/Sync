@@ -9,6 +9,7 @@ import dev.overgrown.sync.factory.action.block.SpawnEntityBlockAction;
 import dev.overgrown.sync.factory.action.entity.ActionOnEntitySetAction;
 import dev.overgrown.sync.factory.action.entity.PrintAction;
 import dev.overgrown.sync.factory.action.entity.RandomTeleportAction;
+import dev.overgrown.sync.factory.action.entity.radial_menu.RadialMenuAction;
 import dev.overgrown.sync.factory.condition.entity.*;
 import dev.overgrown.sync.factory.power.type.ActionOnDeathPower;
 import dev.overgrown.sync.factory.power.type.EntitySetPower;
@@ -26,6 +27,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(ActionOnDeathPower.getFactory());
 
         // ========== ENTITY ACTION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());

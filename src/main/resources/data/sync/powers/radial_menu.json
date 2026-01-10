@@ -1,0 +1,53 @@
+{
+  "type":"apoli:resource",
+  "min":0,
+  "max":1,
+  "hud_render":{
+    "should_render":false
+  },
+  "start_value":0,
+  "max_action":{
+    "type":"sync:radial_menu",
+    "entries":[
+      {
+        "item":{
+          "item":"minecraft:water_bucket",
+          "tag":"{display:{Name:'{\"text\":\"Place Water\"}'}}"
+        },
+        "entity_action":{
+          "type":"apoli:block_action_at",
+          "block_action":{
+            "type":"apoli:set_block",
+            "block":"minecraft:water"
+          }
+        }
+      },
+      {
+        "item":{
+          "item":"minecraft:lava_bucket",
+          "tag":"{display:{Name:'{\"text\":\"Place Lava\"}'}}"
+        },
+        "entity_action":{
+          "type":"apoli:block_action_at",
+          "block_action":{
+            "type":"apoli:set_block",
+            "block":"minecraft:lava"
+          }
+        }
+      },
+      {
+        "item":{
+          "item":"minecraft:barrier",
+          "tag":"{display:{Name:'{\"text\":\"Place Air\"}'}}"
+        },
+        "entity_action":{
+          "type":"apoli:block_action_at",
+          "block_action":{
+            "type":"apoli:set_block",
+            "block":"minecraft:air"
+          }
+        }
+      }
+    ]
+  }
+}

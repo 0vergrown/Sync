@@ -1,5 +1,6 @@
 package dev.overgrown.sync;
 
+import dev.overgrown.sync.factory.action.entity.radial_menu.server.RadialMenuServer;
 import dev.overgrown.sync.factory.power.type.ActionOnDeathPower;
 import dev.overgrown.sync.factory.registry.SyncTypeRegistry;
 import dev.overgrown.sync.networking.ModPackets;
@@ -35,6 +36,7 @@ public class Sync implements ModInitializer {
 
         NamespaceAlias.addAlias("apoli", MOD_ID);
         SyncTypeRegistry.register();
+        RadialMenuServer.register();
 
         // Register death event handler
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
