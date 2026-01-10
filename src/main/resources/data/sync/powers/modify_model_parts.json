@@ -1,0 +1,40 @@
+{
+  "type": "sync:modify_model_parts",
+  "transformations": [
+    {
+      "model_part": "head",
+      "type": "xscale",
+      "value": 1
+    },
+    {
+      "model_part": "head",
+      "type": "yscale",
+      "value": 1
+    },
+    {
+      "model_part": "head",
+      "type": "zscale",
+      "value": 1
+    },
+    {
+      "model_part": "hat",
+      "type": "xscale",
+      "value": 1
+    },
+    {
+      "model_part": "hat",
+      "type": "yscale",
+      "value": 1
+    },
+    {
+      "model_part": "hat",
+      "type": "zscale",
+      "value": 1
+    },
+    {
+      "model_part": "body",
+      "type": "pitch",
+      "value": 2
+    }
+  ]
+}

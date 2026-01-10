@@ -46,5 +46,4 @@ public class PosePower extends Power implements Prioritized<PosePower> {
                 )
         ).allowCondition();
     }
-
 }
