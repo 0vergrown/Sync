@@ -35,6 +35,10 @@ repositories {
 		name = 'Ladysnake Mods'
 		url = 'https://maven.ladysnake.org/releases'
 	}
+    maven {
+        name = "Gegy"
+        url = uri("https://maven.gegy.dev")
+    }
 	maven {
 		url = 'https://maven.cafeteria.dev'
 		content {
@@ -90,7 +94,9 @@ dependencies {
 
 	// Add AspectsLib as an optional dependency
 	modCompileOnly "maven.modrinth:aspectslib:${project.aspectslib_version}"
-	
+
+    // Add the API of LambDynamicLights as an optional dependency
+    modCompileOnly("dev.lambdaurora.lambdynamiclights:lambdynamiclights-api:${project.lamb_dynamic_lights_version}")
 }
 
 processResources {

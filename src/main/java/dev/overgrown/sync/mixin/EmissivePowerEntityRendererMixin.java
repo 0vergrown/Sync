@@ -1,0 +1,30 @@
+package dev.overgrown.sync.mixin;
+
+import java.util.List;
+import dev.overgrown.sync.factory.power.type.EmissivePower;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import io.github.apace100.apoli.component.PowerHolderComponent;
+import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.math.BlockPos;
+
+@Mixin(value = EntityRenderer.class, priority = 998)
+public abstract class EmissivePowerEntityRendererMixin {
+    @Inject(at=@At("HEAD"), method="getBlockLight", cancellable=true)
+    public void makeEmissive (Entity entity, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
+        if (entity instanceof LivingEntity living) {
+            List<EmissivePower> emissives = PowerHolderComponent.getPowers(living, EmissivePower.class);
+            if (!emissives.isEmpty()) {
+                int max = emissives.get(0).light;
+                for (EmissivePower p : emissives) {
+                    if (p.light > max) max = p.light;
+                }
+                cir.setReturnValue(max);
+            }
+        }
+    }
+}

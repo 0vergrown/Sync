@@ -1,0 +1,5 @@
+{
+  "type": "sync:emissive",
+  "light": 15,
+  "dynamic_light": 15
+}
