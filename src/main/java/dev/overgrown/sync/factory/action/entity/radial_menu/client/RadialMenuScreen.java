@@ -51,19 +51,14 @@ public class RadialMenuScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if (client != null) {
-            // Don't clear children every frame since they're already added in init()
-            this.radialMenu.getEntries().forEach(radialMenuEntry -> {
-                if (radialMenuEntry.getButton() != null) {
-                    radialMenuEntry.getButton().render(context, mouseX, mouseY, delta);
-                }
-                context.drawItem(
-                        radialMenuEntry.getStack(),
-                        Math.round(radialMenuEntry.getPosition().x()),
-                        Math.round(radialMenuEntry.getPosition().y()),
-                        0,
-                        100
-                );
-            });
+            // Render menu background
+            radialMenu.renderBackground(context, client);
+
+            // Render buttons with custom textures
+            radialMenu.renderButtons(context, client, mouseX, mouseY, delta);
+
+            // Render icons on top of buttons
+            radialMenu.renderIcons(context, client);
         }
     }
 

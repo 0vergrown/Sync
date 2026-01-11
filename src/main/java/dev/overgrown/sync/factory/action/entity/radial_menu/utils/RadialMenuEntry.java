@@ -11,11 +11,14 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Identifier;
 
 import java.util.List;
 
 public class RadialMenuEntry {
     private final ItemStack stack;
+    private final Identifier buttonTexture;
+    private final Identifier icon;
     private ActionFactory<Entity>.Instance action;
     private ConditionFactory<Entity>.Instance condition;
     private Vector2f position;
@@ -25,9 +28,12 @@ public class RadialMenuEntry {
     @Environment(EnvType.CLIENT)
     private ButtonWidget button;
 
-    public RadialMenuEntry(ItemStack stack, ActionFactory<Entity>.Instance action,
+    public RadialMenuEntry(ItemStack stack, Identifier buttonTexture, Identifier icon,
+                           ActionFactory<Entity>.Instance action,
                            ConditionFactory<Entity>.Instance condition, int distance, int velocity) {
         this.stack = stack;
+        this.buttonTexture = buttonTexture;
+        this.icon = icon;
         this.action = action;
         this.condition = condition;
         position = new Vector2f(-100f, 0f);
@@ -37,6 +43,14 @@ public class RadialMenuEntry {
 
     public ItemStack getStack() {
         return stack;
+    }
+
+    public Identifier getButtonTexture() {
+        return buttonTexture;
+    }
+
+    public Identifier getIcon() {
+        return icon;
     }
 
     public ActionFactory<Entity>.Instance getEntityAction() {
@@ -81,12 +95,16 @@ public class RadialMenuEntry {
             RadialMenuEntry.class,
             new SerializableData()
                     .add("item", SerializableDataTypes.ITEM_STACK)
+                    .add("button_texture", SerializableDataTypes.IDENTIFIER, null)
+                    .add("icon", SerializableDataTypes.IDENTIFIER, null)
                     .add("entity_action", ApoliDataTypes.ENTITY_ACTION)
                     .add("condition", ApoliDataTypes.ENTITY_CONDITION, null)
                     .add("distance", SerializableDataTypes.INT, -1)
                     .add("velocity", SerializableDataTypes.INT, -1),
             data -> new RadialMenuEntry(
                     data.get("item"),
+                    data.get("button_texture"),
+                    data.get("icon"),
                     data.get("entity_action"),
                     data.get("condition"),
                     data.get("distance"),
@@ -95,6 +113,8 @@ public class RadialMenuEntry {
             (data, inst) -> {
                 SerializableData.Instance dataInst = data.new Instance();
                 dataInst.set("item", inst.getStack());
+                dataInst.set("button_texture", inst.getButtonTexture());
+                dataInst.set("icon", inst.getIcon());
                 dataInst.set("entity_action", inst.getEntityAction());
                 dataInst.set("condition", inst.getCondition());
                 dataInst.set("distance", inst.getDistance());

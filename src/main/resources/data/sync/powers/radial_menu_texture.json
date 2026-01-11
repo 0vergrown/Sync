@@ -1,0 +1,41 @@
+{
+  "type":"apoli:resource",
+  "min":0,
+  "max":1,
+  "hud_render":{
+    "should_render":false
+  },
+  "start_value":0,
+  "max_action":{
+    "type": "sync:radial_menu",
+    "sprite_location": "sync:textures/gui/custom_menu.png",
+    "entries": [
+      {
+        "item": {
+          "item": "minecraft:diamond_sword",
+          "amount": 1
+        },
+        "button_texture": "sync:textures/gui/custom_button.png",
+        "icon": "sync:textures/gui/right_arrow.png",
+        "entity_action": {
+          "type": "apoli:execute_command",
+          "command": "say Hello from Diamond Sword!"
+        },
+        "distance": 100,
+        "velocity": 50
+      },
+      {
+        "item": {
+          "item": "minecraft:golden_sword",
+          "amount": 1,
+          "tag": "{display:{Name:'{\"text\":\"Your mom!\"}'}}"
+        },
+        "icon": "sync:textures/gui/left_arrow.png",
+        "entity_action": {
+          "type": "apoli:execute_command",
+          "command": "say Hello from Mother!"
+        }
+      }
+    ]
+  }
+}
