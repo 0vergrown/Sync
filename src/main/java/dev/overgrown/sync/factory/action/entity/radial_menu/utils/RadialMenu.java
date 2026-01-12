@@ -36,6 +36,16 @@ public class RadialMenu {
         // Only create buttons once
         if (!buttonsInitialized) {
             entries.forEach((radialMenuEntry -> {
+                // Use custom width and height from entry
+                int buttonWidth = radialMenuEntry.getButtonWidth();
+                int buttonHeight = radialMenuEntry.getButtonHeight();
+
+                // Determine tooltip text
+                Text tooltipText = radialMenuEntry.getTooltipText();
+                if (tooltipText == null && !radialMenuEntry.getStack().isEmpty()) {
+                    tooltipText = Text.literal(radialMenuEntry.getStack().getName().getString());
+                }
+
                 ButtonWidget button = ButtonWidget.builder(
                                 Text.empty(),
                                 (widget -> {
@@ -46,8 +56,8 @@ public class RadialMenu {
                                     }
                                 }))
                         .position(-100, 0)
-                        .size(16, 20)
-                        .tooltip(Tooltip.of(Text.literal(radialMenuEntry.getStack().getName().getString())))
+                        .size(buttonWidth, buttonHeight) // Use custom size
+                        .tooltip(tooltipText != null ? Tooltip.of(tooltipText) : null)
                         .build();
 
                 // Make button transparent so only the custom texture shows
@@ -91,14 +101,21 @@ public class RadialMenu {
         entries.forEach(radialMenuEntry -> {
             ButtonWidget button = radialMenuEntry.getButton();
             if (button != null) {
-                // Draw custom button texture if provided
+                // Always render the button for tooltip handling, but make it invisible if we're drawing a custom texture
                 if (radialMenuEntry.getButtonTexture() != null) {
+                    // Temporarily set the button to be invisible so it doesn't render its default texture but still processes hover/click events and tooltips
+                    button.setAlpha(0.0f);
+                    button.render(context, mouseX, mouseY, delta);
+                    button.setAlpha(1.0f); // Reset alpha
+
+                    // Now draw the custom texture
                     try {
                         int buttonX = button.getX();
                         int buttonY = button.getY();
                         int buttonWidth = button.getWidth();
                         int buttonHeight = button.getHeight();
 
+                        // Draw the button texture scaled to the button size
                         context.drawTexture(radialMenuEntry.getButtonTexture(),
                                 buttonX, buttonY, 0, 0, buttonWidth, buttonHeight, buttonWidth, buttonHeight);
                     } catch (Exception e) {
@@ -122,11 +139,14 @@ public class RadialMenu {
                     try {
                         int buttonX = button.getX();
                         int buttonY = button.getY();
-                        // Center the icon in the button
-                        int iconX = buttonX + (button.getWidth() - 16) / 2;
-                        int iconY = buttonY + (button.getHeight() - 16) / 2;
+                        int buttonWidth = button.getWidth();
+                        int buttonHeight = button.getHeight();
 
-                        // Draw the icon texture (assuming 16x16 icon)
+                        // Center the icon in the button
+                        int iconX = buttonX + (buttonWidth - 16) / 2;
+                        int iconY = buttonY + (buttonHeight - 16) / 2;
+
+                        // Draw the icon texture (16x16 icon, but positioned within button)
                         context.drawTexture(icon, iconX, iconY, 0, 0, 16, 16, 16, 16);
                     } catch (Exception e) {
                         Sync.LOGGER.warn("Could not load icon texture: {}", icon);
@@ -137,8 +157,10 @@ public class RadialMenu {
                     if (!stack.isEmpty()) {
                         int buttonX = button.getX();
                         int buttonY = button.getY();
-                        int iconX = buttonX + (button.getWidth() - 16) / 2;
-                        int iconY = buttonY + (button.getHeight() - 16) / 2;
+                        int buttonWidth = button.getWidth();
+                        int buttonHeight = button.getHeight();
+                        int iconX = buttonX + (buttonWidth - 16) / 2;
+                        int iconY = buttonY + (buttonHeight - 16) / 2;
 
                         context.drawItem(stack, iconX, iconY, 0, 100);
                     }
@@ -161,7 +183,11 @@ public class RadialMenu {
             float distance = velocity * elapsedTime < maxDistance ? velocity * elapsedTime : maxDistance;
 
             Vector2f position = getPosFromAngle(angle, distance, center);
-            entries.get(i).setPosition(new Vector2f(position.x() - 8f, position.y() - 10f));
+
+            // Adjust position based on button size
+            int buttonWidth = entries.get(i).getButtonWidth();
+            int buttonHeight = entries.get(i).getButtonHeight();
+            entries.get(i).setPosition(new Vector2f(position.x() - buttonWidth / 2f, position.y() - buttonHeight / 2f));
         }
     }
 

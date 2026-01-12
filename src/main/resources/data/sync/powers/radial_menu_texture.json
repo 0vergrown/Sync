@@ -1,41 +1,67 @@
 {
-  "type":"apoli:resource",
-  "min":0,
-  "max":1,
-  "hud_render":{
-    "should_render":false
-  },
-  "start_value":0,
-  "max_action":{
+  "type": "apoli:active_self",
+  "entity_action": {
     "type": "sync:radial_menu",
     "sprite_location": "sync:textures/gui/custom_menu.png",
     "entries": [
       {
-        "item": {
-          "item": "minecraft:diamond_sword",
-          "amount": 1
-        },
         "button_texture": "sync:textures/gui/custom_button.png",
         "icon": "sync:textures/gui/right_arrow.png",
+        "tooltip": "Right Arrow",
+        "width": 32,
+        "height": 32,
         "entity_action": {
           "type": "apoli:execute_command",
-          "command": "say Hello from Diamond Sword!"
+          "command": "say You Pressed The Right Arrow!"
         },
         "distance": 100,
         "velocity": 50
       },
       {
-        "item": {
-          "item": "minecraft:golden_sword",
-          "amount": 1,
-          "tag": "{display:{Name:'{\"text\":\"Your mom!\"}'}}"
-        },
         "icon": "sync:textures/gui/left_arrow.png",
+        "tooltip": "Left Arrow",
+        "width": 24,
+        "height": 24,
         "entity_action": {
           "type": "apoli:execute_command",
-          "command": "say Hello from Mother!"
+          "command": "say You Pressed The Left Arrow!"
+        }
+      },
+      {
+        "item": {
+          "item": "minecraft:diamond",
+          "amount": 1
+        },
+        "icon": "minecraft:textures/item/diamond.png",
+        "tooltip": "It sparkles...",
+        "width": 40,
+        "height": 40,
+        "entity_action": {
+          "type": "apoli:execute_command",
+          "command": "say Wow! DIAMONDS!!!"
+        }
+      },
+      {
+        "item": {
+          "item": "minecraft:gold_ingot",
+          "amount": 1
+        },
+        "tooltip": "It's butter",
+        "width": 10,
+        "height": 10,
+        "entity_action": {
+          "type": "apoli:execute_command",
+          "command": "say It's 100% butter"
         }
       }
     ]
+  },
+  "cooldown": 1,
+  "hud_render": {
+    "should_render": false
+  },
+  "key": {
+    "key": "key.saveToolbarActivator",
+    "continuous": false
   }
 }
