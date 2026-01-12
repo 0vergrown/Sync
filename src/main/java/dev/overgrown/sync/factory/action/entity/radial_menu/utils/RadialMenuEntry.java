@@ -28,6 +28,10 @@ public class RadialMenuEntry {
     private final Text tooltipText;
     private final int buttonWidth;
     private final int buttonHeight;
+    private final int iconWidth;
+    private final int iconHeight;
+    private final int itemWidth;
+    private final int itemHeight;
 
     @Environment(EnvType.CLIENT)
     private ButtonWidget button;
@@ -35,7 +39,8 @@ public class RadialMenuEntry {
     public RadialMenuEntry(ItemStack stack, Identifier buttonTexture, Identifier icon,
                            ActionFactory<Entity>.Instance action,
                            ConditionFactory<Entity>.Instance condition, int distance, int velocity,
-                           Text tooltipText, int buttonWidth, int buttonHeight) {
+                           Text tooltipText, int buttonWidth, int buttonHeight,
+                           int iconWidth, int iconHeight, int itemWidth, int itemHeight) {
         this.stack = stack;
         this.buttonTexture = buttonTexture;
         this.icon = icon;
@@ -47,6 +52,10 @@ public class RadialMenuEntry {
         this.tooltipText = tooltipText;
         this.buttonWidth = buttonWidth;
         this.buttonHeight = buttonHeight;
+        this.iconWidth = iconWidth;
+        this.iconHeight = iconHeight;
+        this.itemWidth = itemWidth;
+        this.itemHeight = itemHeight;
     }
 
     public ItemStack getStack() {
@@ -103,6 +112,22 @@ public class RadialMenuEntry {
         return buttonHeight;
     }
 
+    public int getIconWidth() {
+        return iconWidth;
+    }
+
+    public int getIconHeight() {
+        return iconHeight;
+    }
+
+    public int getItemWidth() {
+        return itemWidth;
+    }
+
+    public int getItemHeight() {
+        return itemHeight;
+    }
+
     public ButtonWidget getButton() {
         return button;
     }
@@ -122,8 +147,12 @@ public class RadialMenuEntry {
                     .add("distance", SerializableDataTypes.INT, -1)
                     .add("velocity", SerializableDataTypes.INT, -1)
                     .add("tooltip", SerializableDataTypes.TEXT, null)
-                    .add("width", SerializableDataTypes.INT, 16)
-                    .add("height", SerializableDataTypes.INT, 20),
+                    .add("button_width", SerializableDataTypes.INT, 16)
+                    .add("button_height", SerializableDataTypes.INT, 20)
+                    .add("icon_width", SerializableDataTypes.INT, 16)
+                    .add("icon_height", SerializableDataTypes.INT, 16)
+                    .add("item_width", SerializableDataTypes.INT, 16)
+                    .add("item_height", SerializableDataTypes.INT, 16),
             data -> new RadialMenuEntry(
                     data.get("item"),
                     data.get("button_texture"),
@@ -133,8 +162,12 @@ public class RadialMenuEntry {
                     data.get("distance"),
                     data.get("velocity"),
                     data.get("tooltip"),
-                    data.get("width"),
-                    data.get("height")
+                    data.get("button_width"),
+                    data.get("button_height"),
+                    data.get("icon_width"),
+                    data.get("icon_height"),
+                    data.get("item_width"),
+                    data.get("item_height")
             ),
             (data, inst) -> {
                 SerializableData.Instance dataInst = data.new Instance();
@@ -146,8 +179,12 @@ public class RadialMenuEntry {
                 dataInst.set("distance", inst.getDistance());
                 dataInst.set("velocity", inst.getVelocity());
                 dataInst.set("tooltip", inst.getTooltipText());
-                dataInst.set("width", inst.getButtonWidth());
-                dataInst.set("height", inst.getButtonHeight());
+                dataInst.set("button_width", inst.getButtonWidth());
+                dataInst.set("button_height", inst.getButtonHeight());
+                dataInst.set("icon_width", inst.getIconWidth());
+                dataInst.set("icon_height", inst.getIconHeight());
+                dataInst.set("item_width", inst.getItemWidth());
+                dataInst.set("item_height", inst.getItemHeight());
                 return dataInst;
             });
 

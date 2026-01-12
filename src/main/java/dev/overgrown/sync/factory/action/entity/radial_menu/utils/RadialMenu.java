@@ -142,12 +142,16 @@ public class RadialMenu {
                         int buttonWidth = button.getWidth();
                         int buttonHeight = button.getHeight();
 
-                        // Center the icon in the button
-                        int iconX = buttonX + (buttonWidth - 16) / 2;
-                        int iconY = buttonY + (buttonHeight - 16) / 2;
+                        // Get custom icon dimensions
+                        int iconWidth = radialMenuEntry.getIconWidth();
+                        int iconHeight = radialMenuEntry.getIconHeight();
 
-                        // Draw the icon texture (16x16 icon, but positioned within button)
-                        context.drawTexture(icon, iconX, iconY, 0, 0, 16, 16, 16, 16);
+                        // Center the icon in the button
+                        int iconX = buttonX + (buttonWidth - iconWidth) / 2;
+                        int iconY = buttonY + (buttonHeight - iconHeight) / 2;
+
+                        // Draw the icon texture with custom size
+                        context.drawTexture(icon, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
                     } catch (Exception e) {
                         Sync.LOGGER.warn("Could not load icon texture: {}", icon);
                     }
@@ -159,10 +163,35 @@ public class RadialMenu {
                         int buttonY = button.getY();
                         int buttonWidth = button.getWidth();
                         int buttonHeight = button.getHeight();
-                        int iconX = buttonX + (buttonWidth - 16) / 2;
-                        int iconY = buttonY + (buttonHeight - 16) / 2;
 
-                        context.drawItem(stack, iconX, iconY, 0, 100);
+                        // Get custom item dimensions
+                        int itemWidth = radialMenuEntry.getItemWidth();
+                        int itemHeight = radialMenuEntry.getItemHeight();
+
+                        // Center the item in the button
+                        int itemX = buttonX + (buttonWidth - itemWidth) / 2;
+                        int itemY = buttonY + (buttonHeight - itemHeight) / 2;
+
+                        // Scale the item rendering since drawItem uses fixed 16x16 size
+                        // Save the current matrix
+                        var matrices = context.getMatrices();
+                        matrices.push();
+
+                        // Calculate scale factors
+                        float scaleX = itemWidth / 16.0f;
+                        float scaleY = itemHeight / 16.0f;
+
+                        // Translate to the item position
+                        matrices.translate(itemX, itemY, 0);
+
+                        // Scale to the desired size
+                        matrices.scale(scaleX, scaleY, 1.0f);
+
+                        // Draw the item at scaled coordinates (0,0 since we translated)
+                        context.drawItem(stack, 0, 0, 0, 100);
+
+                        // Restore the matrix
+                        matrices.pop();
                     }
                 }
             }

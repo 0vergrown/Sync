@@ -8,8 +8,10 @@
         "button_texture": "sync:textures/gui/custom_button.png",
         "icon": "sync:textures/gui/right_arrow.png",
         "tooltip": "Right Arrow",
-        "width": 32,
-        "height": 32,
+        "icon_width": 20,
+        "icon_height": 20,
+        "button_width": 32,
+        "button_height": 32,
         "entity_action": {
           "type": "apoli:execute_command",
           "command": "say You Pressed The Right Arrow!"
@@ -20,8 +22,8 @@
       {
         "icon": "sync:textures/gui/left_arrow.png",
         "tooltip": "Left Arrow",
-        "width": 24,
-        "height": 24,
+        "button_width": 24,
+        "button_height": 24,
         "entity_action": {
           "type": "apoli:execute_command",
           "command": "say You Pressed The Left Arrow!"
@@ -34,8 +36,8 @@
         },
         "icon": "minecraft:textures/item/diamond.png",
         "tooltip": "It sparkles...",
-        "width": 40,
-        "height": 40,
+        "button_width": 40,
+        "button_height": 40,
         "entity_action": {
           "type": "apoli:execute_command",
           "command": "say Wow! DIAMONDS!!!"
@@ -47,8 +49,10 @@
           "amount": 1
         },
         "tooltip": "It's butter",
-        "width": 10,
-        "height": 10,
+        "item_width": 9,
+        "item_height": 9,
+        "button_width": 10,
+        "button_height": 10,
         "entity_action": {
           "type": "apoli:execute_command",
           "command": "say It's 100% butter"
