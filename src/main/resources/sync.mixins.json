@@ -13,8 +13,8 @@
   },
   "client": [
     "EmissivePowerEntityRendererMixin",
-    "EntityTextureOverlayLivingEntityRendererMixin",
-    "EntityTextureOverlayPlayerEntityRendererMixin",
+    "EntityTextureOverlayPowerLivingEntityRendererMixin",
+    "EntityTextureOverlayPowerPlayerEntityRendererMixin",
     "GameRendererMixin",
     "LivingEntityRendererMixin",
     "ModifyModelPartsBipedEntityModelMixin",

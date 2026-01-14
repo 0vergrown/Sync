@@ -25,7 +25,7 @@ public class FirstPersonOverlayRenderer {
 
         // Get the player model from the player entity renderer
         if (MinecraftClient.getInstance().getEntityRenderDispatcher().getRenderer(player) instanceof net.minecraft.client.render.entity.PlayerEntityRenderer playerRenderer) {
-            PlayerEntityModel<AbstractClientPlayerEntity> model = (PlayerEntityModel<AbstractClientPlayerEntity>) playerRenderer.getModel();
+            PlayerEntityModel<AbstractClientPlayerEntity> model = playerRenderer.getModel();
 
             // Render each active overlay power
             PowerHolderComponent.getPowers(player, EntityTextureOverlayPower.class).forEach(power -> {
@@ -44,25 +44,29 @@ public class FirstPersonOverlayRenderer {
                                                          EntityTextureOverlayPower power) {
 
         Identifier texture = power.getTextureLocation();
-        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(
-                RenderLayer.getEntityTranslucent(texture)
-        );
 
-        // Set up model angles for first-person rendering
+        // Set up the model angles for first-person
         model.handSwingProgress = 0.0F;
         model.sneaking = false;
         model.leaningPitch = 0.0F;
         model.setAngles(player, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
-        // Render only the arms for first-person view
         matrices.push();
 
         // Adjust position for first-person view
-        matrices.translate(0.0F, 0.0F, 0.0F);
+        matrices.translate(0.0F, 0.1F, 0.0F);
 
-        // Render the model parts that should be visible in first person
-        model.render(matrices, vertexConsumer, light,
-                OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
+        // Get vertex consumers for different parts
+        VertexConsumer mainArmConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(texture));
+        VertexConsumer offArmConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(texture));
+
+        // Render right arm (main hand for most players)
+        model.rightArm.render(matrices, mainArmConsumer, light, OverlayTexture.DEFAULT_UV);
+        model.rightSleeve.render(matrices, mainArmConsumer, light, OverlayTexture.DEFAULT_UV);
+
+        // Render left arm (offhand)
+        model.leftArm.render(matrices, offArmConsumer, light, OverlayTexture.DEFAULT_UV);
+        model.leftSleeve.render(matrices, offArmConsumer, light, OverlayTexture.DEFAULT_UV);
 
         matrices.pop();
     }

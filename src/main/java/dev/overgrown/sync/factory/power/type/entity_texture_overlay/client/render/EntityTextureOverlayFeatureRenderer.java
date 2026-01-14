@@ -27,7 +27,6 @@ public class EntityTextureOverlayFeatureRenderer<T extends LivingEntity, M exten
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.options.getPerspective().isFirstPerson() &&
                 entity == client.player) {
-            // Don't render here - first person is handled separately
             return;
         }
 

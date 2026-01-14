@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(LivingEntityRenderer.class)
-public abstract class EntityTextureOverlayLivingEntityRendererMixin <T extends LivingEntity, M extends EntityModel<T>> {
+public abstract class EntityTextureOverlayPowerLivingEntityRendererMixin<T extends LivingEntity, M extends EntityModel<T>> {
 
     @Shadow protected abstract boolean addFeature(FeatureRenderer<T, M> feature);
 
@@ -26,8 +26,8 @@ public abstract class EntityTextureOverlayLivingEntityRendererMixin <T extends L
     @Inject(method = "<init>", at = @At("TAIL"))
     private void sync$addOverlayRenderer(EntityRendererFactory.Context ctx, M model, float shadowRadius, CallbackInfo ci) {
         // Add our overlay feature renderer to all living entity renderers
-        this.addFeature(new EntityTextureOverlayFeatureRenderer<>(
-                (LivingEntityRenderer<T, M>) (Object) this
-        ));
+        @SuppressWarnings("unchecked")
+        LivingEntityRenderer<T, M> context = (LivingEntityRenderer<T, M>) (Object) this;
+        this.addFeature(new EntityTextureOverlayFeatureRenderer<>(context));
     }
 }

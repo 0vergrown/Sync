@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerEntityRenderer.class)
-public abstract class EntityTextureOverlayPlayerEntityRendererMixin {
+public abstract class EntityTextureOverlayPowerPlayerEntityRendererMixin {
 
     @Inject(method = "renderRightArm", at = @At("TAIL"))
     private void sync$renderFirstPersonOverlayOnRightArm(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light,
