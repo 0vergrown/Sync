@@ -12,6 +12,7 @@ import dev.overgrown.sync.factory.action.entity.RandomTeleportAction;
 import dev.overgrown.sync.factory.action.entity.radial_menu.RadialMenuAction;
 import dev.overgrown.sync.factory.condition.entity.*;
 import dev.overgrown.sync.factory.power.type.*;
+import dev.overgrown.sync.factory.power.type.entity_texture_overlay.EntityTextureOverlayPower;
 import dev.overgrown.sync.utils.ApoliRegistryHelper;
 
 public class SyncTypeRegistry {
@@ -24,6 +25,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(ActionOnDeathPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyModelPartsPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(EmissivePower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(EntityTextureOverlayPower.getFactory());
 
         // ========== ENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
