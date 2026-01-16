@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class LivingEntityRendererMixin {
 
     @Inject(method = "shouldFlipUpsideDown", at = @At("HEAD"), cancellable = true)
-    private static void voile$flipModel(LivingEntity entity, CallbackInfoReturnable<Boolean> cir) {
+    private static void sync$flipModel(LivingEntity entity, CallbackInfoReturnable<Boolean> cir) {
         if (!PowerHolderComponent.hasPower(entity, FlipModelPower.class)) return;
 
         String string = Formatting.strip(entity.getName().getString());

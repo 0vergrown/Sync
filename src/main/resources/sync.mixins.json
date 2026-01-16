@@ -3,6 +3,8 @@
   "package": "dev.overgrown.sync.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "MobsIgnorePowerHostileEntityMixin",
+    "MobsIgnorePowerMobEntityMixin",
     "PlayerEntityMixin"
   ],
   "injectors": {

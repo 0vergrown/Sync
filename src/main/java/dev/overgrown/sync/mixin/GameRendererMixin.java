@@ -22,7 +22,7 @@ public abstract class GameRendererMixin {
     @Shadow public abstract Camera getCamera();
 
     @Inject(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;update(Lnet/minecraft/world/BlockView;Lnet/minecraft/entity/Entity;ZZF)V", shift = At.Shift.AFTER))
-    private void voile$flipView(float tickDelta, long limitTime, MatrixStack matrices, CallbackInfo ci) {
+    private void sync$flipView(float tickDelta, long limitTime, MatrixStack matrices, CallbackInfo ci) {
         Entity entity = this.getCamera().getFocusedEntity();
         if (entity == null) return;
 
