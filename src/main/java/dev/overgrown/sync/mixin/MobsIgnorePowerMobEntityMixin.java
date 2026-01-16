@@ -19,11 +19,12 @@ public class MobsIgnorePowerMobEntityMixin {
         // Only apply if the target is a player
         if (target instanceof PlayerEntity player) {
             // Check if player has any MobsIgnorePower that should ignore this entity
-            PowerHolderComponent.getPowers(player, MobsIgnorePower.class).forEach(power -> {
+            for (MobsIgnorePower power : PowerHolderComponent.getPowers(player, MobsIgnorePower.class)) {
                 if (power.shouldIgnore(self)) {
                     cir.setReturnValue(false);
+                    return;
                 }
-            });
+            }
         }
     }
 }
