@@ -1,8 +1,6 @@
 {
   "type": "sync:entity_texture_overlay",
-  "texture_location": "sync:textures/skins/overgrown.png",
-  "show_first_person": true,
-  "use_rendering_powers": false,
-  "render_original_model": true,
-  "render_player_outer_layer": true
+  "wide_texture_location": "sync:textures/skins/overgrown.png",
+  "slim_texture_location": "sync:textures/skins/overgrown.png",
+  "show_first_person": true
 }

@@ -11,61 +11,43 @@ import net.minecraft.util.Identifier;
 
 public class EntityTextureOverlayPower extends Power {
 
-    private final Identifier textureLocation;
+    private final Identifier wideTexture;
+    private final Identifier slimTexture;
     private final boolean showFirstPerson;
-    private final boolean useRenderingPowers;
-    private final boolean renderOriginalModel;
-    private final boolean renderPlayerOuterLayer;
 
     public EntityTextureOverlayPower(PowerType<?> type, LivingEntity entity,
-                                     Identifier textureLocation, boolean showFirstPerson,
-                                     boolean useRenderingPowers, boolean renderOriginalModel,
-                                     boolean renderPlayerOuterLayer) {
+                                     Identifier wideTexture, Identifier slimTexture, boolean showFirstPerson) {
         super(type, entity);
-        this.textureLocation = textureLocation;
+        this.wideTexture = wideTexture;
+        this.slimTexture = slimTexture;
         this.showFirstPerson = showFirstPerson;
-        this.useRenderingPowers = useRenderingPowers;
-        this.renderOriginalModel = renderOriginalModel;
-        this.renderPlayerOuterLayer = renderPlayerOuterLayer;
     }
 
-    public Identifier getTextureLocation() {
-        return textureLocation;
+    public Identifier getWideTextureLocation() {
+        return wideTexture;
+    }
+
+    public Identifier getSlimTextureLocation() {
+        return slimTexture;
     }
 
     public boolean shouldShowFirstPerson() {
         return showFirstPerson;
     }
 
-    public boolean shouldUseRenderingPowers() {
-        return useRenderingPowers;
-    }
-
-    public boolean shouldRenderOriginalModel() {
-        return renderOriginalModel;
-    }
-
-    public boolean shouldRenderPlayerOuterLayer() {
-        return renderPlayerOuterLayer;
-    }
-
     public static PowerFactory<?> getFactory() {
         return new PowerFactory<>(
                 Sync.identifier("entity_texture_overlay"),
                 new SerializableData()
-                        .add("texture_location", SerializableDataTypes.IDENTIFIER)
-                        .add("show_first_person", SerializableDataTypes.BOOLEAN, false)
-                        .add("use_rendering_powers", SerializableDataTypes.BOOLEAN, false)
-                        .add("render_original_model", SerializableDataTypes.BOOLEAN, true)
-                        .add("render_player_outer_layer", SerializableDataTypes.BOOLEAN, true),
+                        .add("wide_texture_location", SerializableDataTypes.IDENTIFIER)
+                        .add("slim_texture_location", SerializableDataTypes.IDENTIFIER)
+                        .add("show_first_person", SerializableDataTypes.BOOLEAN, false),
                 data -> (powerType, entity) -> new EntityTextureOverlayPower(
                         powerType,
                         entity,
-                        data.getId("texture_location"),
-                        data.getBoolean("show_first_person"),
-                        data.getBoolean("use_rendering_powers"),
-                        data.getBoolean("render_original_model"),
-                        data.getBoolean("render_player_outer_layer")
+                        data.getId("wide_texture_location"),
+                        data.getId("slim_texture_location"),
+                        data.getBoolean("show_first_person")
                 )
         ).allowCondition();
     }
