@@ -1,4 +1,4 @@
-package dev.overgrown.sync.factory.power.type.entity_texture_overlay;
+package dev.overgrown.sync.factory.power.type;
 
 import dev.overgrown.sync.Sync;
 import io.github.apace100.apoli.power.Power;

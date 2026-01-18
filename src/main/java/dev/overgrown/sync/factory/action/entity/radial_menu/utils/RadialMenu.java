@@ -101,8 +101,18 @@ public class RadialMenu {
         entries.forEach(radialMenuEntry -> {
             ButtonWidget button = radialMenuEntry.getButton();
             if (button != null) {
+                // Determine which button texture to use based on hover state
+                Identifier buttonTexture = radialMenuEntry.getButtonTexture();
+                Identifier highlightButtonTexture = radialMenuEntry.getHighlightButtonTexture();
+
+                // Use highlight texture if button is hovered and highlight texture exists
+                boolean isHovered = button.isSelected(); // isSelected() returns true if hovered or focused
+                if (isHovered && highlightButtonTexture != null) {
+                    buttonTexture = highlightButtonTexture;
+                }
+
                 // Always render the button for tooltip handling, but make it invisible if we're drawing a custom texture
-                if (radialMenuEntry.getButtonTexture() != null) {
+                if (buttonTexture != null) {
                     // Temporarily set the button to be invisible so it doesn't render its default texture but still processes hover/click events and tooltips
                     button.setAlpha(0.0f);
                     button.render(context, mouseX, mouseY, delta);
@@ -116,10 +126,10 @@ public class RadialMenu {
                         int buttonHeight = button.getHeight();
 
                         // Draw the button texture scaled to the button size
-                        context.drawTexture(radialMenuEntry.getButtonTexture(),
+                        context.drawTexture(buttonTexture,
                                 buttonX, buttonY, 0, 0, buttonWidth, buttonHeight, buttonWidth, buttonHeight);
                     } catch (Exception e) {
-                        Sync.LOGGER.warn("Could not load button texture: {}", radialMenuEntry.getButtonTexture());
+                        Sync.LOGGER.warn("Could not load button texture: {}", buttonTexture);
                     }
                 } else {
                     // Render default button only if no custom texture
@@ -134,7 +144,16 @@ public class RadialMenu {
         entries.forEach(radialMenuEntry -> {
             ButtonWidget button = radialMenuEntry.getButton();
             if (button != null) {
+                // Determine which icon texture to use based on hover state
                 Identifier icon = radialMenuEntry.getIcon();
+                Identifier highlightIcon = radialMenuEntry.getHighlightIcon();
+
+                // Use highlight icon if button is hovered and highlight icon exists
+                boolean isHovered = button.isSelected(); // isSelected() returns true if hovered or focused
+                if (isHovered && highlightIcon != null) {
+                    icon = highlightIcon;
+                }
+
                 if (icon != null) {
                     try {
                         int buttonX = button.getX();

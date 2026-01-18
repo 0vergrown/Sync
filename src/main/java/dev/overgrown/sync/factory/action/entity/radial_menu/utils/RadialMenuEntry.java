@@ -20,6 +20,8 @@ public class RadialMenuEntry {
     private final ItemStack stack;
     private final Identifier buttonTexture;
     private final Identifier icon;
+    private final Identifier highlightIcon;
+    private final Identifier highlightButtonTexture;
     private ActionFactory<Entity>.Instance action;
     private ConditionFactory<Entity>.Instance condition;
     private Vector2f position;
@@ -37,6 +39,7 @@ public class RadialMenuEntry {
     private ButtonWidget button;
 
     public RadialMenuEntry(ItemStack stack, Identifier buttonTexture, Identifier icon,
+                           Identifier highlightIcon, Identifier highlightButtonTexture,
                            ActionFactory<Entity>.Instance action,
                            ConditionFactory<Entity>.Instance condition, int distance, int velocity,
                            Text tooltipText, int buttonWidth, int buttonHeight,
@@ -44,6 +47,8 @@ public class RadialMenuEntry {
         this.stack = stack;
         this.buttonTexture = buttonTexture;
         this.icon = icon;
+        this.highlightIcon = highlightIcon;
+        this.highlightButtonTexture = highlightButtonTexture;
         this.action = action;
         this.condition = condition;
         position = new Vector2f(-100f, 0f);
@@ -68,6 +73,14 @@ public class RadialMenuEntry {
 
     public Identifier getIcon() {
         return icon;
+    }
+
+    public Identifier getHighlightIcon() {
+        return highlightIcon;
+    }
+
+    public Identifier getHighlightButtonTexture() {
+        return highlightButtonTexture;
     }
 
     public ActionFactory<Entity>.Instance getEntityAction() {
@@ -142,6 +155,8 @@ public class RadialMenuEntry {
                     .add("item", SerializableDataTypes.ITEM_STACK, ItemStack.EMPTY)
                     .add("button_texture", SerializableDataTypes.IDENTIFIER, null)
                     .add("icon", SerializableDataTypes.IDENTIFIER, null)
+                    .add("highlight_icon_texture", SerializableDataTypes.IDENTIFIER, null)
+                    .add("highlight_button_texture", SerializableDataTypes.IDENTIFIER, null)
                     .add("entity_action", ApoliDataTypes.ENTITY_ACTION)
                     .add("condition", ApoliDataTypes.ENTITY_CONDITION, null)
                     .add("distance", SerializableDataTypes.INT, -1)
@@ -157,6 +172,8 @@ public class RadialMenuEntry {
                     data.get("item"),
                     data.get("button_texture"),
                     data.get("icon"),
+                    data.get("highlight_icon_texture"),
+                    data.get("highlight_button_texture"),
                     data.get("entity_action"),
                     data.get("condition"),
                     data.get("distance"),
@@ -174,6 +191,8 @@ public class RadialMenuEntry {
                 dataInst.set("item", inst.getStack());
                 dataInst.set("button_texture", inst.getButtonTexture());
                 dataInst.set("icon", inst.getIcon());
+                dataInst.set("highlight_icon_texture", inst.getHighlightIcon());
+                dataInst.set("highlight_button_texture", inst.getHighlightButtonTexture());
                 dataInst.set("entity_action", inst.getEntityAction());
                 dataInst.set("condition", inst.getCondition());
                 dataInst.set("distance", inst.getDistance());

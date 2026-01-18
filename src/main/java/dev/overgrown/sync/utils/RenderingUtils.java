@@ -1,6 +1,6 @@
 package dev.overgrown.sync.utils;
 
-import dev.overgrown.sync.factory.power.type.entity_texture_overlay.EntityTextureOverlayPower;
+import dev.overgrown.sync.factory.power.type.EntityTextureOverlayPower;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;

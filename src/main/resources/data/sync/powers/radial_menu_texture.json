@@ -6,7 +6,9 @@
     "entries": [
       {
         "button_texture": "sync:textures/gui/custom_button.png",
+        "highlight_button_texture": "sync:textures/gui/button_highlight.png",
         "icon": "sync:textures/gui/right_arrow.png",
+        "highlight_icon_texture": "sync:textures/gui/right_arrow_highlight.png",
         "tooltip": "Right Arrow",
         "icon_width": 20,
         "icon_height": 20,

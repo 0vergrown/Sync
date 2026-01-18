@@ -10,7 +10,7 @@ import dev.overgrown.sync.factory.action.entity.*;
 import dev.overgrown.sync.factory.action.entity.radial_menu.RadialMenuAction;
 import dev.overgrown.sync.factory.condition.entity.*;
 import dev.overgrown.sync.factory.power.type.*;
-import dev.overgrown.sync.factory.power.type.entity_texture_overlay.EntityTextureOverlayPower;
+import dev.overgrown.sync.factory.power.type.EntityTextureOverlayPower;
 import dev.overgrown.sync.utils.ApoliRegistryHelper;
 
 public class SyncTypeRegistry {

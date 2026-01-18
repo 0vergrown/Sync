@@ -1,6 +1,6 @@
 {
   "type": "sync:entity_texture_overlay",
-  "wide_texture_location": "sync:textures/skins/overgrown.png",
+  "wide_texture_location": "sync:textures/skins/red_cloak.png",
   "slim_texture_location": "sync:textures/skins/overgrown.png",
   "show_first_person": true
 }
