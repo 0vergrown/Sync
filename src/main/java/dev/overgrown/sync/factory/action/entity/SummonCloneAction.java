@@ -19,26 +19,20 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 
 public class SummonCloneAction {
-    private static final String CAN_SIT_LABEL = "can_sit";
-    private static final String CAN_ATTACK_LABEL = "can_attack";
-    private static final String FOLLOW_OWNER_LABEL = "follow_owner";
-    private static final String INHERIT_EQUIPMENT_LABEL = "inherit_equipment";
-    private static final String INHERIT_ENCHANTMENTS_LABEL = "inherit_enchantments";
-    private static final String BIENTITY_ACTION_LABEL = "bientity_action";
-
     public static void action (SerializableData.Instance data, Entity entity) {
         if (entity instanceof PlayerEntity player) {
-            final boolean canSit = data.getBoolean(CAN_SIT_LABEL);
-            final boolean canAttack = data.getBoolean(CAN_ATTACK_LABEL);
-            final boolean followOwner = data.getBoolean(FOLLOW_OWNER_LABEL);
-            final boolean inheritsEquipment = data.getBoolean(INHERIT_EQUIPMENT_LABEL);
-            final boolean inheritsEnchantments = data.getBoolean(INHERIT_ENCHANTMENTS_LABEL);
-            final Consumer<Pair<Entity, Entity>> bientityAction = data.get(BIENTITY_ACTION_LABEL);
+            final boolean canSit = data.getBoolean("can_sit");
+            final boolean canAttack = data.getBoolean("can_attack");
+            final boolean followOwner = data.getBoolean("follow_owner");
+            final boolean inheritsEquipment = data.getBoolean("inherit_equipment");
+            final boolean inheritsEnchantments = data.getBoolean("inherit_enchantments");
+            final Consumer<Pair<Entity, Entity>> bientityAction = data.get("bientity_action");
 
             CloneEntity clone = summon(player, canSit, followOwner, canAttack, inheritsEquipment, inheritsEnchantments);
             if (bientityAction != null && clone != null) bientityAction.accept(new Pair<>(player, clone));
+        } else {
+            Sync.LOGGER.warn("Attempted to summon clone of invalid entity. Only Players are compatible with this action type.");
         }
-        else Sync.LOGGER.warn("Attempted to summon clone of invalid entity. Only Players are compatible with this action type.");
     }
 
     private static CloneEntity summon (PlayerEntity player, boolean canSit, boolean followOwner, boolean canAttack, boolean inheritsEquipment, boolean inheritsEnchantments) {
@@ -80,12 +74,13 @@ public class SummonCloneAction {
     public static ActionFactory<Entity> getFactory() {
         return new ActionFactory<>(Sync.identifier("summon_clone"),
                 new SerializableData()
-                        .add(CAN_SIT_LABEL, SerializableDataTypes.BOOLEAN, true)
-                        .add(CAN_ATTACK_LABEL, SerializableDataTypes.BOOLEAN, true)
-                        .add(FOLLOW_OWNER_LABEL, SerializableDataTypes.BOOLEAN, true)
-                        .add(INHERIT_EQUIPMENT_LABEL, SerializableDataTypes.BOOLEAN, true)
-                        .add(INHERIT_ENCHANTMENTS_LABEL, SerializableDataTypes.BOOLEAN, true)
-                        .add(BIENTITY_ACTION_LABEL, ApoliDataTypes.BIENTITY_ACTION, null),
-                SummonCloneAction::action);
+                        .add("can_sit", SerializableDataTypes.BOOLEAN, true)
+                        .add("can_attack", SerializableDataTypes.BOOLEAN, true)
+                        .add("follow_owner", SerializableDataTypes.BOOLEAN, true)
+                        .add("inherit_equipment", SerializableDataTypes.BOOLEAN, true)
+                        .add("inherit_enchantments", SerializableDataTypes.BOOLEAN, true)
+                        .add("bientity_action", ApoliDataTypes.BIENTITY_ACTION, null),
+                SummonCloneAction::action
+        );
     }
 }

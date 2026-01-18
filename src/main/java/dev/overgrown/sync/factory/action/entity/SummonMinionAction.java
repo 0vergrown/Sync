@@ -19,24 +19,15 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 
 public class SummonMinionAction {
-    private static final String TEXTURE_LABEL = "texture";
-    private static final String FOLLOW_OWNER_LABEL = "follow_owner";
-    private static final String FOLLOW_OWNER_OFFSET_LABEL = "follow_offset";
-    private static final String SCALE_LABEL = "scale";
-    private static final String INVULNERABLE_LABEL = "invulnerable";
-    private static final String LIFE_LABEL = "max_life_ticks";
-    private static final String BIENTITY_ACTION_LABEL = "bientity_action";
-
     public static void action (SerializableData.Instance data, Entity entity) {
         if (entity instanceof LivingEntity living && living.getWorld() instanceof ServerWorld world) {
-            final Identifier texture = data.get(TEXTURE_LABEL);
-            final boolean shouldFollow = data.getBoolean(FOLLOW_OWNER_LABEL);
-            final Vec3d offset = data.get(FOLLOW_OWNER_OFFSET_LABEL);
-            final float scale = data.getFloat(SCALE_LABEL);
-            final boolean isInvulnerable = data.getBoolean(INVULNERABLE_LABEL);
-            final int maxLife = data.getInt(LIFE_LABEL);
-
-            final Consumer<Pair<Entity, Entity>> bientityAction = data.get(BIENTITY_ACTION_LABEL);
+            final Identifier texture = data.get("texture");
+            final boolean shouldFollow = data.getBoolean("follow_owner");
+            final Vec3d offset = data.get("follow_offset");
+            final float scale = data.getFloat("scale");
+            final boolean isInvulnerable = data.getBoolean("invulnerable");
+            final int maxLife = data.getInt("max_life_ticks");
+            final Consumer<Pair<Entity, Entity>> bientityAction = data.get("bientity_action");
 
             MinionEntity minion = new MinionEntity(SyncEntityRegistry.MINION, world);
             minion.setOwner(living);
@@ -67,13 +58,14 @@ public class SummonMinionAction {
     public static ActionFactory<Entity> getFactory() {
         return new ActionFactory<>(Sync.identifier("summon_minion"),
                 new SerializableData()
-                        .add(TEXTURE_LABEL, SerializableDataTypes.IDENTIFIER, MinionEntity.TEMPLATE_TEXTURE)
-                        .add(FOLLOW_OWNER_LABEL, SerializableDataTypes.BOOLEAN)
-                        .add(FOLLOW_OWNER_OFFSET_LABEL, SerializableDataTypes.VECTOR, null)
-                        .add(SCALE_LABEL, SerializableDataTypes.FLOAT, 1f)
-                        .add(INVULNERABLE_LABEL, SerializableDataTypes.BOOLEAN, false)
-                        .add(LIFE_LABEL, SerializableDataTypes.INT, 1200)
-                        .add(BIENTITY_ACTION_LABEL, ApoliDataTypes.BIENTITY_ACTION, null),
-                SummonMinionAction::action);
+                        .add("texture", SerializableDataTypes.IDENTIFIER, MinionEntity.TEMPLATE_TEXTURE)
+                        .add("follow_owner", SerializableDataTypes.BOOLEAN)
+                        .add("follow_offset", SerializableDataTypes.VECTOR, null)
+                        .add("scale", SerializableDataTypes.FLOAT, 1f)
+                        .add("invulnerable", SerializableDataTypes.BOOLEAN, false)
+                        .add("max_life_ticks", SerializableDataTypes.INT, 1200)
+                        .add("bientity_action", ApoliDataTypes.BIENTITY_ACTION, null),
+                SummonMinionAction::action
+        );
     }
 }
