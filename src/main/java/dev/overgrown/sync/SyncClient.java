@@ -1,5 +1,7 @@
 package dev.overgrown.sync;
 
+import dev.overgrown.sync.entities.registry.SyncEntityModelLayerRegistry;
+import dev.overgrown.sync.entities.registry.SyncEntiyRendererRegistry;
 import dev.overgrown.sync.factory.action.entity.radial_menu.client.RadialMenuClient;
 import dev.overgrown.sync.networking.ModPackets;
 import io.netty.buffer.Unpooled;
@@ -18,6 +20,12 @@ public class SyncClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         RadialMenuClient.register();
+
+        // Register model layers FIRST
+        SyncEntityModelLayerRegistry.register();
+
+        // Then register entity renderers
+        SyncEntiyRendererRegistry.register();
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             if (client.player == null) return;

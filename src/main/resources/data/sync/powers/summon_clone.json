@@ -1,0 +1,44 @@
+{
+  "type": "apoli:active_self",
+  "entity_action": {
+    "type": "sync:summon_clone",
+    "can_sit": true,
+    "can_attack": true,
+    "follow_owner": true,
+    "inherit_equipment": true,
+    "inherit_enchantments": true,
+    "bientity_action": {
+      "type": "apoli:target_action",
+      "action": {
+        "type": "apoli:and",
+        "actions": [
+          {
+            "type": "sync:set_summon_max_life_ticks",
+            "amount": 500
+          },
+          {
+            "type": "apoli:spawn_particles",
+            "particle": "minecraft:cloud",
+            "count": 16,
+            "speed": 0.01,
+            "force": true,
+            "spread": {
+              "x": 0.30,
+              "y": 0.30,
+              "z": 0.30
+            },
+            "offset_y": 0.50
+          }
+        ]
+      }
+    }
+  },
+  "cooldown": 1,
+  "hud_render": {
+    "should_render": false
+  },
+  "key": {
+    "key": "key.saveToolbarActivator",
+    "continuous": false
+  }
+}

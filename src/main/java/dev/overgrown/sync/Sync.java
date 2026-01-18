@@ -1,5 +1,6 @@
 package dev.overgrown.sync;
 
+import dev.overgrown.sync.entities.registry.SyncEntityRegistry;
 import dev.overgrown.sync.factory.action.entity.radial_menu.server.RadialMenuServer;
 import dev.overgrown.sync.factory.power.type.ActionOnDeathPower;
 import dev.overgrown.sync.factory.registry.SyncTypeRegistry;
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 public class Sync implements ModInitializer {
     public static final String MOD_ID = "sync";
-    public static String VERSION = "";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static boolean HAS_ASPECTSLIB = false; // Flag to check if AspectsLib is present
 
@@ -37,6 +37,7 @@ public class Sync implements ModInitializer {
         NamespaceAlias.addAlias("apoli", MOD_ID);
         SyncTypeRegistry.register();
         RadialMenuServer.register();
+        SyncEntityRegistry.register();
 
         // Register death event handler
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {

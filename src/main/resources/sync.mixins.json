@@ -19,8 +19,10 @@
     "EntityTextureOverlayPowerLivingEntityRendererMixin",
     "EntityTextureOverlayPowerPlayerEntityRendererMixin",
     "GameRendererMixin",
+    "LivingEntityRendererAccessor",
     "LivingEntityRendererMixin",
     "ModifyModelPartsBipedEntityModelMixin",
-    "PlayerEntityRendererMixin"
+    "PlayerEntityRendererMixin",
+    "SummonCloneEntityActionEntityRenderDispatcherMixin"
   ]
 }

@@ -6,9 +6,7 @@ import dev.overgrown.sync.compatibility.aspectslib.condition.HasAspectCondition;
 import dev.overgrown.sync.factory.action.bientity.AddToEntitySetAction;
 import dev.overgrown.sync.factory.action.bientity.RemoveFromEntitySetAction;
 import dev.overgrown.sync.factory.action.block.SpawnEntityBlockAction;
-import dev.overgrown.sync.factory.action.entity.ActionOnEntitySetAction;
-import dev.overgrown.sync.factory.action.entity.PrintAction;
-import dev.overgrown.sync.factory.action.entity.RandomTeleportAction;
+import dev.overgrown.sync.factory.action.entity.*;
 import dev.overgrown.sync.factory.action.entity.radial_menu.RadialMenuAction;
 import dev.overgrown.sync.factory.condition.entity.*;
 import dev.overgrown.sync.factory.power.type.*;
@@ -33,6 +31,9 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(SummonCloneAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(SummonMinionAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(SetSummonMaxLifeAction.getFactory());
 
         // ========== BLOCK ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBlockAction(SpawnEntityBlockAction.getFactory());
