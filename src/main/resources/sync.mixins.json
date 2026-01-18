@@ -16,13 +16,12 @@
   },
   "client": [
     "EmissivePowerEntityRendererMixin",
-    "EntityTextureOverlayPowerLivingEntityRendererMixin",
-    "EntityTextureOverlayPowerPlayerEntityRendererMixin",
     "GameRendererMixin",
     "LivingEntityRendererAccessor",
     "LivingEntityRendererMixin",
     "ModifyModelPartsBipedEntityModelMixin",
     "PlayerEntityRendererMixin",
+    "PlayerListEntryMixin",
     "SummonCloneEntityActionEntityRenderDispatcherMixin"
   ]
 }
