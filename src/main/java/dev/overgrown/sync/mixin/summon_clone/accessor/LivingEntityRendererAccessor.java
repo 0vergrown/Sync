@@ -1,4 +1,4 @@
-package dev.overgrown.sync.mixin;
+package dev.overgrown.sync.mixin.summon_clone.accessor;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;

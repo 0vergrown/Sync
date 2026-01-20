@@ -1,0 +1,11 @@
+{
+  "type": "sync:entity_texture_overlay",
+  "wide_texture_location": "sync:textures/skins/wide_omnitrix.png",
+  "slim_texture_location": "sync:textures/skins/slim_omnitrix.png",
+  "show_first_person": true,
+  "render_as_overlay": true,
+  "red": 1.00,
+  "green": 1.00,
+  "blue": 1.00,
+  "alpha": 1.00
+}

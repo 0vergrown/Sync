@@ -1,4 +1,4 @@
-package dev.overgrown.sync.mixin;
+package dev.overgrown.sync.mixin.pose;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Share;
@@ -23,7 +23,13 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
     @Unique
     private int sync$pseudoRoll = 0;
 
-    @ModifyExpressionValue(method = "setupTransforms(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/client/util/math/MatrixStack;FFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;isFallFlying()Z"))
+    @ModifyExpressionValue(
+            method = "setupTransforms(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/client/util/math/MatrixStack;FFF)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;isFallFlying()Z"
+            )
+    )
     private boolean sync$inFallFlyingPose(boolean original, AbstractClientPlayerEntity player, @Share("applyPseudoRoll") LocalBooleanRef applyPseudoRollRef) {
 
         if (original || player.isInPose(EntityPose.FALL_FLYING)) {
@@ -42,7 +48,13 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
 
     }
 
-    @ModifyExpressionValue(method = "setupTransforms(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/client/util/math/MatrixStack;FFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;getRoll()I"))
+    @ModifyExpressionValue(
+            method = "setupTransforms(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/client/util/math/MatrixStack;FFF)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;getRoll()I"
+            )
+    )
     private int sync$applyPseudoRoll(int original, AbstractClientPlayerEntity player, @Share("applyPseudoRoll") LocalBooleanRef applyPseudoRollRef) {
         return applyPseudoRollRef.get()
                 ? sync$pseudoRoll

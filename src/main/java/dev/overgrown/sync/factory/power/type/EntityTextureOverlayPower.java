@@ -14,13 +14,25 @@ public class EntityTextureOverlayPower extends Power {
     private final Identifier wideTexture;
     private final Identifier slimTexture;
     private final boolean showFirstPerson;
+    private final boolean renderAsOverlay;
+    private final float red;
+    private final float green;
+    private final float blue;
+    private final float alpha;
 
     public EntityTextureOverlayPower(PowerType<?> type, LivingEntity entity,
-                                     Identifier wideTexture, Identifier slimTexture, boolean showFirstPerson) {
+                                     Identifier wideTexture, Identifier slimTexture,
+                                     boolean showFirstPerson, boolean renderAsOverlay,
+                                     float red, float green, float blue, float alpha) {
         super(type, entity);
         this.wideTexture = wideTexture;
         this.slimTexture = slimTexture;
         this.showFirstPerson = showFirstPerson;
+        this.renderAsOverlay = renderAsOverlay;
+        this.red = red;
+        this.green = green;
+        this.blue = blue;
+        this.alpha = alpha;
     }
 
     public Identifier getWideTextureLocation() {
@@ -35,19 +47,46 @@ public class EntityTextureOverlayPower extends Power {
         return showFirstPerson;
     }
 
+    public boolean shouldRenderAsOverlay() {
+        return renderAsOverlay;
+    }
+
+    public float getRed() {
+        return red;
+    }
+    public float getGreen() {
+        return green;
+    }
+    public float getBlue() {
+        return blue;
+    }
+    public float getAlpha() {
+        return alpha;
+    }
+
     public static PowerFactory<?> getFactory() {
         return new PowerFactory<>(
                 Sync.identifier("entity_texture_overlay"),
                 new SerializableData()
                         .add("wide_texture_location", SerializableDataTypes.IDENTIFIER)
                         .add("slim_texture_location", SerializableDataTypes.IDENTIFIER)
-                        .add("show_first_person", SerializableDataTypes.BOOLEAN, false),
+                        .add("show_first_person", SerializableDataTypes.BOOLEAN, false)
+                        .add("render_as_overlay", SerializableDataTypes.BOOLEAN, false)
+                        .add("red", SerializableDataTypes.FLOAT, 1.0F)
+                        .add("green", SerializableDataTypes.FLOAT, 1.0F)
+                        .add("blue", SerializableDataTypes.FLOAT, 1.0F)
+                        .add("alpha", SerializableDataTypes.FLOAT, 1.0F),
                 data -> (powerType, entity) -> new EntityTextureOverlayPower(
                         powerType,
                         entity,
                         data.getId("wide_texture_location"),
                         data.getId("slim_texture_location"),
-                        data.getBoolean("show_first_person")
+                        data.getBoolean("show_first_person"),
+                        data.getBoolean("render_as_overlay"),
+                        data.getFloat("red"),
+                        data.getFloat("green"),
+                        data.getFloat("blue"),
+                        data.getFloat("alpha")
                 )
         ).allowCondition();
     }

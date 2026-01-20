@@ -1,4 +1,4 @@
-package dev.overgrown.sync.mixin;
+package dev.overgrown.sync.mixin.pose;
 
 import dev.overgrown.sync.factory.power.type.PosePower;
 import io.github.apace100.apoli.component.PowerHolderComponent;
@@ -15,7 +15,9 @@ public abstract class PlayerEntityMixin {
 
 	@Inject(
 			method = "updatePose",
-			at = @At("HEAD"),
+			at = @At(
+					"HEAD"
+			),
 			cancellable = true
 	)
 	private void forcePlayerPose(CallbackInfo ci) {

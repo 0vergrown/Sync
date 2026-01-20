@@ -1,4 +1,4 @@
-package dev.overgrown.sync.mixin;
+package dev.overgrown.sync.mixin.summon_clone;
 
 import java.util.Map;
 
@@ -6,6 +6,7 @@ import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.entities.clone.CloneEntity;
 import dev.overgrown.sync.entities.clone.renderer.CloneEntityRenderer;
 import dev.overgrown.sync.entities.registry.SyncEntityRegistry;
+import dev.overgrown.sync.mixin.summon_clone.accessor.LivingEntityRendererAccessor;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Final;
@@ -32,7 +33,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.resource.ResourceManager;
 
 @Mixin(EntityRenderDispatcher.class)
-public abstract class SummonCloneEntityActionEntityRenderDispatcherMixin {
+public abstract class EntityRenderDispatcherMixin {
     @Shadow
     private @Final ItemRenderer itemRenderer;
 
@@ -52,7 +53,13 @@ public abstract class SummonCloneEntityActionEntityRenderDispatcherMixin {
     private Map<String, EntityRenderer<CloneEntity>> cloneRenderers = ImmutableMap.of();
 
     @SuppressWarnings("unchecked")
-    @Inject(at=@At("HEAD"), method="getRenderer", cancellable=true)
+    @Inject(
+            at=@At(
+                    "HEAD"
+            ),
+            method="getRenderer",
+            cancellable=true
+    )
     public <T extends Entity> void getCloneRenderer(T entity, CallbackInfoReturnable<EntityRenderer<? super T>> cir) {
         if (entity instanceof CloneEntity clone) {
             if (clone.isOwned()) {
@@ -84,7 +91,12 @@ public abstract class SummonCloneEntityActionEntityRenderDispatcherMixin {
         }
     }
 
-    @Inject(at = @At("HEAD"), method="reload")
+    @Inject(
+            at = @At(
+                    "HEAD"
+            ),
+            method="reload"
+    )
     public void reload (ResourceManager manager, CallbackInfo info) {
         Context context = new Context((EntityRenderDispatcher)(Object)this, this.itemRenderer, this.blockRenderManager, this.heldItemRenderer, manager, this.modelLoader, this.textRenderer);
         this.cloneRenderers = ImmutableMap.of(

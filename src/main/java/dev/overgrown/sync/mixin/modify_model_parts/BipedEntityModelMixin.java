@@ -1,4 +1,4 @@
-package dev.overgrown.sync.mixin;
+package dev.overgrown.sync.mixin.modify_model_parts;
 
 import dev.overgrown.sync.factory.power.type.ModifyModelPartsPower;
 import dev.overgrown.sync.utils.ModelPartTransformation;
@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.*;
 
 @Mixin(BipedEntityModel.class)
-public abstract class ModifyModelPartsBipedEntityModelMixin<T extends LivingEntity>
+public abstract class BipedEntityModelMixin<T extends LivingEntity>
         extends AnimalModel<T>
         implements ModelWithArms,
         ModelWithHead {
@@ -39,7 +39,9 @@ public abstract class ModifyModelPartsBipedEntityModelMixin<T extends LivingEnti
 
     @Inject(
             method = "setAngles(Lnet/minecraft/entity/LivingEntity;FFFFF)V",
-            at = @At(value = "HEAD")
+            at = @At(
+                    value = "HEAD"
+            )
     )
     public void setAnglesHead(T livingEntity, float f, float g, float h, float i, float j, CallbackInfo ci) {
         UUID entityId = livingEntity.getUuid();
@@ -67,7 +69,9 @@ public abstract class ModifyModelPartsBipedEntityModelMixin<T extends LivingEnti
 
     @Inject(
             method = "setAngles(Lnet/minecraft/entity/LivingEntity;FFFFF)V",
-            at = @At(value = "TAIL")
+            at = @At(
+                    value = "TAIL"
+            )
     )
     public void setAnglesTail(T livingEntity, float f, float g, float h, float i, float j, CallbackInfo ci) {
         if (!PowerHolderComponent.hasPower(livingEntity, ModifyModelPartsPower.class)) {

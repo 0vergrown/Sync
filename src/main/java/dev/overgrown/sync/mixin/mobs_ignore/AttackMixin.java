@@ -1,4 +1,4 @@
-package dev.overgrown.sync.mixin;
+package dev.overgrown.sync.mixin.mobs_ignore;
 
 import dev.overgrown.sync.factory.power.type.MobsIgnorePower;
 import io.github.apace100.apoli.component.PowerHolderComponent;
@@ -12,9 +12,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
-public class MobsIgnorePowerAttackMixin {
+public class AttackMixin {
 
-    @Inject(method = "onAttacking", at = @At("HEAD"))
+    @Inject(
+            method = "onAttacking",
+            at = @At(
+                    "HEAD"
+            )
+    )
     private void sync$onAttacking(Entity target, CallbackInfo ci) {
         LivingEntity self = (LivingEntity)(Object)this;
 
@@ -32,7 +37,12 @@ public class MobsIgnorePowerAttackMixin {
         }
     }
 
-    @Inject(method = "onDamaged", at = @At("HEAD"))
+    @Inject(
+            method = "onDamaged",
+            at = @At(
+                    "HEAD"
+            )
+    )
     private void sync$onDamaged(DamageSource damageSource, CallbackInfo ci) {
         LivingEntity self = (LivingEntity)(Object)this;
 

@@ -1,4 +1,4 @@
-package dev.overgrown.sync.mixin;
+package dev.overgrown.sync.mixin.emissive;
 
 import java.util.List;
 import dev.overgrown.sync.factory.power.type.EmissivePower;
@@ -13,8 +13,14 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 
 @Mixin(value = EntityRenderer.class, priority = 998)
-public abstract class EmissivePowerEntityRendererMixin {
-    @Inject(at=@At("HEAD"), method="getBlockLight", cancellable=true)
+public abstract class EntityRendererMixin {
+    @Inject(
+            at=@At(
+                    "HEAD"
+            ),
+            method="getBlockLight",
+            cancellable=true
+    )
     public void makeEmissive (Entity entity, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
         if (entity instanceof LivingEntity living) {
             List<EmissivePower> emissives = PowerHolderComponent.getPowers(living, EmissivePower.class);

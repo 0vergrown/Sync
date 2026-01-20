@@ -1,4 +1,4 @@
-package dev.overgrown.sync.mixin;
+package dev.overgrown.sync.mixin.flip_model;
 
 import dev.overgrown.sync.factory.power.type.FlipModelPower;
 import io.github.apace100.apoli.component.PowerHolderComponent;
@@ -21,7 +21,14 @@ public abstract class GameRendererMixin {
 
     @Shadow public abstract Camera getCamera();
 
-    @Inject(method = "renderWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;update(Lnet/minecraft/world/BlockView;Lnet/minecraft/entity/Entity;ZZF)V", shift = At.Shift.AFTER))
+    @Inject(
+            method = "renderWorld",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/render/Camera;update(Lnet/minecraft/world/BlockView;Lnet/minecraft/entity/Entity;ZZF)V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void sync$flipView(float tickDelta, long limitTime, MatrixStack matrices, CallbackInfo ci) {
         Entity entity = this.getCamera().getFocusedEntity();
         if (entity == null) return;

@@ -1,4 +1,4 @@
-package dev.overgrown.sync.mixin;
+package dev.overgrown.sync.mixin.mobs_ignore;
 
 import dev.overgrown.sync.factory.power.type.MobsIgnorePower;
 import io.github.apace100.apoli.component.PowerHolderComponent;
@@ -10,8 +10,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public class MobsIgnorePowerMobEntityMixin {
-    @Inject(method = "canTarget(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
+public class MobEntityMixin {
+    @Inject(
+            method = "canTarget(Lnet/minecraft/entity/LivingEntity;)Z",
+            at = @At(
+                    "HEAD"
+            ),
+            cancellable = true
+    )
     private void sync$canTarget(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
         // Cast 'this' to LivingEntity
         LivingEntity self = (LivingEntity)(Object)this;
