@@ -24,4 +24,10 @@ public class RenderingUtils {
         }
         return null;
     }
+
+    // Check if cape should be hidden
+    public static boolean shouldHideCape(LivingEntity entity) {
+        List<EntityTextureOverlayPower> powers = getTextureOverlays(entity);
+        return !powers.isEmpty() && powers.get(0).isActive() && powers.get(0).shouldHideCape();
+    }
 }

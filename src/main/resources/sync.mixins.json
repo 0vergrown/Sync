@@ -16,6 +16,7 @@
   },
   "client": [
     "emissive.EntityRendererMixin",
+    "entity_texture_overlay.CapeFeatureRendererMixin",
     "entity_texture_overlay.PlayerEntityRendererMixin",
     "entity_texture_overlay.PlayerListEntryMixin",
     "flip_model.GameRendererMixin",

@@ -19,11 +19,13 @@ public class EntityTextureOverlayPower extends Power {
     private final float green;
     private final float blue;
     private final float alpha;
+    private final boolean hideCape;
 
     public EntityTextureOverlayPower(PowerType<?> type, LivingEntity entity,
                                      Identifier wideTexture, Identifier slimTexture,
                                      boolean showFirstPerson, boolean renderAsOverlay,
-                                     float red, float green, float blue, float alpha) {
+                                     float red, float green, float blue, float alpha,
+                                     boolean hideCape) {
         super(type, entity);
         this.wideTexture = wideTexture;
         this.slimTexture = slimTexture;
@@ -33,6 +35,7 @@ public class EntityTextureOverlayPower extends Power {
         this.green = green;
         this.blue = blue;
         this.alpha = alpha;
+        this.hideCape = hideCape;
     }
 
     public Identifier getWideTextureLocation() {
@@ -64,6 +67,10 @@ public class EntityTextureOverlayPower extends Power {
         return alpha;
     }
 
+    public boolean shouldHideCape() {
+        return hideCape;
+    }
+
     public static PowerFactory<?> getFactory() {
         return new PowerFactory<>(
                 Sync.identifier("entity_texture_overlay"),
@@ -75,7 +82,8 @@ public class EntityTextureOverlayPower extends Power {
                         .add("red", SerializableDataTypes.FLOAT, 1.0F)
                         .add("green", SerializableDataTypes.FLOAT, 1.0F)
                         .add("blue", SerializableDataTypes.FLOAT, 1.0F)
-                        .add("alpha", SerializableDataTypes.FLOAT, 1.0F),
+                        .add("alpha", SerializableDataTypes.FLOAT, 1.0F)
+                        .add("hide_cape", SerializableDataTypes.BOOLEAN, false),
                 data -> (powerType, entity) -> new EntityTextureOverlayPower(
                         powerType,
                         entity,
@@ -86,7 +94,8 @@ public class EntityTextureOverlayPower extends Power {
                         data.getFloat("red"),
                         data.getFloat("green"),
                         data.getFloat("blue"),
-                        data.getFloat("alpha")
+                        data.getFloat("alpha"),
+                        data.getBoolean("hide_cape")
                 )
         ).allowCondition();
     }
