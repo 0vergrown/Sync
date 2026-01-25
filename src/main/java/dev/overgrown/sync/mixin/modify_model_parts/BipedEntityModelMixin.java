@@ -48,6 +48,13 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
         boolean hasPower = PowerHolderComponent.hasPower(livingEntity, ModifyModelPartsPower.class);
         Boolean hadPower = SYNC$HAS_POWER.get(entityId);
 
+        // Clean up stale entries when we encounter an entity
+        if (!SYNC$HAS_POWER.containsKey(entityId) && livingEntity.isRemoved()) {
+            SYNC$ORIGINAL_VALUES.remove(entityId);
+            SYNC$HAS_POWER.remove(entityId);
+            return;
+        }
+
         if (hasPower) {
             // Store original values when first gaining power
             if (!SYNC$ORIGINAL_VALUES.containsKey(entityId)) {
@@ -115,13 +122,12 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
         originals.put(partName + "_pitch", part.getDefaultTransform().pitch);
         originals.put(partName + "_yaw", part.getDefaultTransform().yaw);
         originals.put(partName + "_roll", part.getDefaultTransform().roll);
-        // Scale defaults are always 1.0, not stored in defaultTransform
-        originals.put(partName + "_xScale", 1.0f);
-        originals.put(partName + "_yScale", 1.0f);
-        originals.put(partName + "_zScale", 1.0f);
+        originals.put(partName + "_xScale", part.xScale);
+        originals.put(partName + "_yScale", part.yScale);
+        originals.put(partName + "_zScale", part.zScale);
         // Visible/hidden defaults
-        originals.put(partName + "_visible", 1.0f); // 1 = true
-        originals.put(partName + "_hidden", 0.0f);  // 0 = false
+        originals.put(partName + "_visible", part.visible ? 1.0f : 0.0f); // 1 = true
+        originals.put(partName + "_hidden", part.hidden ? 1.0f : 0.0f); // 0 = false
     }
 
     @Unique
