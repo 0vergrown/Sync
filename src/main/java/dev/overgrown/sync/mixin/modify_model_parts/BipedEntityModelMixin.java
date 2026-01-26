@@ -33,9 +33,9 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
     @Shadow @Final public ModelPart rightLeg;
 
     @Unique
-    private static final Map<UUID, Map<String, Float>> SYNC$ORIGINAL_VALUES = new HashMap<>();
+    private final Map<String, Float> SYNC$ORIGINAL_VALUES = new HashMap<>();
     @Unique
-    private static final Map<UUID, Boolean> SYNC$HAS_POWER = new HashMap<>();
+    private boolean SYNC$HAS_POWER = false;
 
     @Inject(
             method = "setAngles(Lnet/minecraft/entity/LivingEntity;FFFFF)V",
@@ -44,34 +44,23 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
             )
     )
     public void setAnglesHead(T livingEntity, float f, float g, float h, float i, float j, CallbackInfo ci) {
-        UUID entityId = livingEntity.getUuid();
         boolean hasPower = PowerHolderComponent.hasPower(livingEntity, ModifyModelPartsPower.class);
-        Boolean hadPower = SYNC$HAS_POWER.get(entityId);
-
-        // Clean up stale entries when we encounter an entity
-        if (!SYNC$HAS_POWER.containsKey(entityId) && livingEntity.isRemoved()) {
-            SYNC$ORIGINAL_VALUES.remove(entityId);
-            SYNC$HAS_POWER.remove(entityId);
-            return;
-        }
 
         if (hasPower) {
             // Store original values when first gaining power
-            if (!SYNC$ORIGINAL_VALUES.containsKey(entityId)) {
-                storeOriginalValues(entityId);
+            if (SYNC$ORIGINAL_VALUES.isEmpty()) {
+                storeOriginalValues();
             }
 
-            // Reset to original values before normal model animations
-            if (hadPower == null || hadPower) { // Only reset if they had power last frame or just gained it
-                restoreOriginalValues(entityId);
-            }
-        } else if (hadPower != null && hadPower) {
+            // Always reset to original values before applying transformations
+            restoreOriginalValues();
+        } else if (SYNC$HAS_POWER) {
             // If just lost the power then reset to original values
-            restoreOriginalValues(entityId);
-            SYNC$ORIGINAL_VALUES.remove(entityId);
+            restoreOriginalValues();
+            SYNC$ORIGINAL_VALUES.clear();
         }
 
-        SYNC$HAS_POWER.put(entityId, hasPower);
+        SYNC$HAS_POWER = hasPower;
     }
 
     @Inject(
@@ -97,73 +86,68 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
     }
 
     @Unique
-    private void storeOriginalValues(UUID entityId) {
-        Map<String, Float> originals = new HashMap<>();
-
-        // Store default values for each part
-        storePartValues(originals, head, "head");
-        storePartValues(originals, hat, "hat");
-        storePartValues(originals, body, "body");
-        storePartValues(originals, rightArm, "rightarm");
-        storePartValues(originals, leftArm, "leftarm");
-        storePartValues(originals, rightLeg, "rightleg");
-        storePartValues(originals, leftLeg, "leftleg");
-
-        SYNC$ORIGINAL_VALUES.put(entityId, originals);
+    private void storeOriginalValues() {
+        // Store current values for each part
+        storePartValues(head, "head");
+        storePartValues(hat, "hat");
+        storePartValues(body, "body");
+        storePartValues(rightArm, "rightarm");
+        storePartValues(leftArm, "leftarm");
+        storePartValues(rightLeg, "rightleg");
+        storePartValues(leftLeg, "leftleg");
     }
 
     @Unique
-    private void storePartValues(Map<String, Float> originals, ModelPart part, String partName) {
-        if (part == null) return;
-
-        originals.put(partName + "_pivotX", part.getDefaultTransform().pivotX);
-        originals.put(partName + "_pivotY", part.getDefaultTransform().pivotY);
-        originals.put(partName + "_pivotZ", part.getDefaultTransform().pivotZ);
-        originals.put(partName + "_pitch", part.getDefaultTransform().pitch);
-        originals.put(partName + "_yaw", part.getDefaultTransform().yaw);
-        originals.put(partName + "_roll", part.getDefaultTransform().roll);
-        originals.put(partName + "_xScale", part.xScale);
-        originals.put(partName + "_yScale", part.yScale);
-        originals.put(partName + "_zScale", part.zScale);
-        // Visible/hidden defaults
-        originals.put(partName + "_visible", part.visible ? 1.0f : 0.0f); // 1 = true
-        originals.put(partName + "_hidden", part.hidden ? 1.0f : 0.0f); // 0 = false
-    }
-
-    @Unique
-    private void restoreOriginalValues(UUID entityId) {
-        Map<String, Float> originals = SYNC$ORIGINAL_VALUES.get(entityId);
-        if (originals == null) return;
-
-        restorePartValues(head, "head", originals);
-        restorePartValues(hat, "hat", originals);
-        restorePartValues(body, "body", originals);
-        restorePartValues(rightArm, "rightarm", originals);
-        restorePartValues(leftArm, "leftarm", originals);
-        restorePartValues(rightLeg, "rightleg", originals);
-        restorePartValues(leftLeg, "leftleg", originals);
-    }
-
-    @Unique
-    private void restorePartValues(ModelPart part, String partName, Map<String, Float> originals) {
+    private void storePartValues(ModelPart part, String partName) {
         if (part == null) return;
 
         String prefix = partName + "_";
-        part.pivotX = originals.getOrDefault(prefix + "pivotX", part.getDefaultTransform().pivotX);
-        part.pivotY = originals.getOrDefault(prefix + "pivotY", part.getDefaultTransform().pivotY);
-        part.pivotZ = originals.getOrDefault(prefix + "pivotZ", part.getDefaultTransform().pivotZ);
-        part.pitch = originals.getOrDefault(prefix + "pitch", part.getDefaultTransform().pitch);
-        part.yaw = originals.getOrDefault(prefix + "yaw", part.getDefaultTransform().yaw);
-        part.roll = originals.getOrDefault(prefix + "roll", part.getDefaultTransform().roll);
-        part.xScale = originals.getOrDefault(prefix + "xScale", 1.0f);
-        part.yScale = originals.getOrDefault(prefix + "yScale", 1.0f);
-        part.zScale = originals.getOrDefault(prefix + "zScale", 1.0f);
+        SYNC$ORIGINAL_VALUES.put(prefix + "pivotX", part.pivotX);
+        SYNC$ORIGINAL_VALUES.put(prefix + "pivotY", part.pivotY);
+        SYNC$ORIGINAL_VALUES.put(prefix + "pivotZ", part.pivotZ);
+        SYNC$ORIGINAL_VALUES.put(prefix + "pitch", part.pitch);
+        SYNC$ORIGINAL_VALUES.put(prefix + "yaw", part.yaw);
+        SYNC$ORIGINAL_VALUES.put(prefix + "roll", part.roll);
+        SYNC$ORIGINAL_VALUES.put(prefix + "xScale", part.xScale);
+        SYNC$ORIGINAL_VALUES.put(prefix + "yScale", part.yScale);
+        SYNC$ORIGINAL_VALUES.put(prefix + "zScale", part.zScale);
+        SYNC$ORIGINAL_VALUES.put(prefix + "visible", part.visible ? 1.0f : 0.0f);
+        SYNC$ORIGINAL_VALUES.put(prefix + "hidden", part.hidden ? 1.0f : 0.0f);
+    }
 
-        Float visible = originals.get(prefix + "visible");
+    @Unique
+    private void restoreOriginalValues() {
+        if (SYNC$ORIGINAL_VALUES.isEmpty()) return;
+
+        restorePartValues(head, "head");
+        restorePartValues(hat, "hat");
+        restorePartValues(body, "body");
+        restorePartValues(rightArm, "rightarm");
+        restorePartValues(leftArm, "leftarm");
+        restorePartValues(rightLeg, "rightleg");
+        restorePartValues(leftLeg, "leftleg");
+    }
+
+    @Unique
+    private void restorePartValues(ModelPart part, String partName) {
+        if (part == null) return;
+
+        String prefix = partName + "_";
+        part.pivotX = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pivotX", part.pivotX);
+        part.pivotY = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pivotY", part.pivotY);
+        part.pivotZ = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pivotZ", part.pivotZ);
+        part.pitch = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pitch", part.pitch);
+        part.yaw = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "yaw", part.yaw);
+        part.roll = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "roll", part.roll);
+        part.xScale = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "xScale", 1.0f);
+        part.yScale = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "yScale", 1.0f);
+        part.zScale = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "zScale", 1.0f);
+
+        Float visible = SYNC$ORIGINAL_VALUES.get(prefix + "visible");
         if (visible != null) {
             part.visible = visible != 0;
         }
-        Float hidden = originals.get(prefix + "hidden");
+        Float hidden = SYNC$ORIGINAL_VALUES.get(prefix + "hidden");
         if (hidden != null) {
             part.hidden = hidden != 0;
         }
@@ -191,15 +175,6 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
         String type = t.getType().toLowerCase();
         float value = t.getValue();
 
-        // Get original value from storage
-        UUID entityId = null;
-        Map<String, Float> originals = null;
-        if (SYNC$ORIGINAL_VALUES.size() == 1) {
-            // If only one entity has power, use its values
-            entityId = SYNC$ORIGINAL_VALUES.keySet().iterator().next();
-            originals = SYNC$ORIGINAL_VALUES.get(entityId);
-        }
-
         switch (type) {
             case "pitch":
                 targetPart.pitch += value;
@@ -217,30 +192,17 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
                 targetPart.hidden = value != 0;
                 break;
             case "xscale":
-                if (originals != null) {
-                    // Get original scale from storage
-                    float original = originals.getOrDefault(t.getModelPart().toLowerCase() + "_xScale", 1.0f);
-                    targetPart.xScale = original + value;
-                } else {
-                    // Fallback: assume original is 1
-                    targetPart.xScale = 1.0f + value;
-                }
+                // Get original value from storage
+                float originalX = SYNC$ORIGINAL_VALUES.getOrDefault(t.getModelPart().toLowerCase() + "_xScale", 1.0f);
+                targetPart.xScale = originalX + value;
                 break;
             case "yscale":
-                if (originals != null) {
-                    float original = originals.getOrDefault(t.getModelPart().toLowerCase() + "_yScale", 1.0f);
-                    targetPart.yScale = original + value;
-                } else {
-                    targetPart.yScale = 1.0f + value;
-                }
+                float originalY = SYNC$ORIGINAL_VALUES.getOrDefault(t.getModelPart().toLowerCase() + "_yScale", 1.0f);
+                targetPart.yScale = originalY + value;
                 break;
             case "zscale":
-                if (originals != null) {
-                    float original = originals.getOrDefault(t.getModelPart().toLowerCase() + "_zScale", 1.0f);
-                    targetPart.zScale = original + value;
-                } else {
-                    targetPart.zScale = 1.0f + value;
-                }
+                float originalZ = SYNC$ORIGINAL_VALUES.getOrDefault(t.getModelPart().toLowerCase() + "_zScale", 1.0f);
+                targetPart.zScale = originalZ + value;
                 break;
             case "pivotx":
                 targetPart.pivotX += value;
