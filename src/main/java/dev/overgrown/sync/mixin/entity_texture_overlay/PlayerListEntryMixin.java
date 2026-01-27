@@ -18,6 +18,7 @@ public abstract class PlayerListEntryMixin {
 
     @Shadow @Final private GameProfile profile;
     @Shadow public abstract String getModel();
+    @Shadow protected abstract void loadTextures();
 
     @Inject(
             method = "getSkinTexture",
@@ -32,6 +33,8 @@ public abstract class PlayerListEntryMixin {
         if (mc.world != null) {
             var player = mc.world.getPlayerByUuid(this.profile.getId());
             if (player != null) {
+                this.loadTextures();
+
                 boolean isFirstPerson = mc.player == player && mc.options.getPerspective() == Perspective.FIRST_PERSON;
                 var texture = RenderingUtils.getPrimaryOverlayTexture(player,
                         this.getModel().equalsIgnoreCase("slim"), isFirstPerson);
