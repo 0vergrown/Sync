@@ -5,6 +5,7 @@ import dev.overgrown.sync.compatibility.aspectslib.SetEntityAspectsPower;
 import dev.overgrown.sync.compatibility.aspectslib.condition.HasAspectCondition;
 import dev.overgrown.sync.factory.action.bientity.AddToEntitySetAction;
 import dev.overgrown.sync.factory.action.bientity.RemoveFromEntitySetAction;
+import dev.overgrown.sync.factory.action.block.GhostBlockAction;
 import dev.overgrown.sync.factory.action.block.SpawnEntityBlockAction;
 import dev.overgrown.sync.factory.action.entity.*;
 import dev.overgrown.sync.factory.action.entity.radial_menu.RadialMenuAction;
@@ -37,6 +38,7 @@ public class SyncTypeRegistry {
 
         // ========== BLOCK ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBlockAction(SpawnEntityBlockAction.getFactory());
+        ApoliRegistryHelper.registerBlockAction(GhostBlockAction.getFactory());
 
         // ========== ENTITY CONDITION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityCondition(HasCommandTagCondition.getFactory());

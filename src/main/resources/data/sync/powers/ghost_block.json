@@ -1,0 +1,26 @@
+{
+  "type": "apoli:active_self",
+  "entity_action": {
+    "type": "apoli:block_action_at",
+    "block_action": {
+      "type": "sync:ghost_block",
+      "block": "minecraft:chest",
+      "tick": 100,
+      "nbt": "{Items:[{Slot:0b,id:\"minecraft:bone\",Count:5b}]}",
+      "block_action": {
+        "type": "apoli:explode",
+        "destruction_type": "none",
+        "power": 5,
+        "create_fire": false
+      }
+    }
+  },
+  "cooldown": 1,
+  "hud_render": {
+    "should_render": false
+  },
+  "key": {
+    "key": "key.saveToolbarActivator",
+    "continuous": false
+  }
+}
