@@ -35,6 +35,10 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
     @Unique
     private final Map<String, Float> SYNC$ORIGINAL_VALUES = new HashMap<>();
     @Unique
+    private final Map<String, Float> SYNC$LOCKED_VALUES = new HashMap<>();
+    @Unique
+    private final Set<String> SYNC$OVERRIDE_ANIMATION_PARTS = new HashSet<>();
+    @Unique
     private boolean SYNC$HAS_POWER = false;
 
     @Inject(
@@ -54,10 +58,16 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
 
             // Always reset to original values before applying transformations
             restoreOriginalValues();
+
+            // Clear override sets for this frame
+            SYNC$LOCKED_VALUES.clear();
+            SYNC$OVERRIDE_ANIMATION_PARTS.clear();
         } else if (SYNC$HAS_POWER) {
             // If just lost the power then reset to original values
             restoreOriginalValues();
             SYNC$ORIGINAL_VALUES.clear();
+            SYNC$LOCKED_VALUES.clear();
+            SYNC$OVERRIDE_ANIMATION_PARTS.clear();
         }
 
         SYNC$HAS_POWER = hasPower;
@@ -80,6 +90,16 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
             transformations.addAll(power.getTransformations());
         });
 
+        // First pass: collect all locked values and mark override parts
+        for (ModelPartTransformation t : transformations) {
+            if (t.getOverrideAnimation() != null && t.getOverrideAnimation()) {
+                String partName = t.getModelPart().toLowerCase();
+                String type = t.getType().toLowerCase();
+                SYNC$OVERRIDE_ANIMATION_PARTS.add(partName + "_" + type);
+            }
+        }
+
+        // Second pass: apply transformations
         for (ModelPartTransformation t : transformations) {
             applyTransformation(t);
         }
@@ -136,9 +156,22 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
         part.pivotX = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pivotX", part.pivotX);
         part.pivotY = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pivotY", part.pivotY);
         part.pivotZ = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pivotZ", part.pivotZ);
-        part.pitch = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pitch", part.pitch);
-        part.yaw = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "yaw", part.yaw);
-        part.roll = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "roll", part.roll);
+
+        // Only restore pitch/yaw/roll if they're not locked by override_animation
+        String pitchKey = partName + "_pitch";
+        String yawKey = partName + "_yaw";
+        String rollKey = partName + "_roll";
+
+        if (!SYNC$OVERRIDE_ANIMATION_PARTS.contains(pitchKey)) {
+            part.pitch = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pitch", part.pitch);
+        }
+        if (!SYNC$OVERRIDE_ANIMATION_PARTS.contains(yawKey)) {
+            part.yaw = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "yaw", part.yaw);
+        }
+        if (!SYNC$OVERRIDE_ANIMATION_PARTS.contains(rollKey)) {
+            part.roll = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "roll", part.roll);
+        }
+
         part.xScale = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "xScale", 1.0f);
         part.yScale = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "yScale", 1.0f);
         part.zScale = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "zScale", 1.0f);
@@ -172,18 +205,38 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
         ModelPart targetPart = getModelPart(t.getModelPart());
         if (targetPart == null) return;
 
+        String partName = t.getModelPart().toLowerCase();
         String type = t.getType().toLowerCase();
         float value = t.getValue();
+        boolean overrideAnimation = t.getOverrideAnimation() != null && t.getOverrideAnimation();
 
         switch (type) {
             case "pitch":
-                targetPart.pitch += value;
+                if (overrideAnimation) {
+                    // Lock the pitch to the exact value
+                    targetPart.pitch = value;
+                    SYNC$LOCKED_VALUES.put(partName + "_pitch", value);
+                } else {
+                    targetPart.pitch += value;
+                }
                 break;
             case "yaw":
-                targetPart.yaw += value;
+                if (overrideAnimation) {
+                    // Lock the yaw to the exact value
+                    targetPart.yaw = value;
+                    SYNC$LOCKED_VALUES.put(partName + "_yaw", value);
+                } else {
+                    targetPart.yaw += value;
+                }
                 break;
             case "roll":
-                targetPart.roll += value;
+                if (overrideAnimation) {
+                    // Lock the roll to the exact value
+                    targetPart.roll = value;
+                    SYNC$LOCKED_VALUES.put(partName + "_roll", value);
+                } else {
+                    targetPart.roll += value;
+                }
                 break;
             case "visible":
                 targetPart.visible = value != 0;
@@ -193,15 +246,15 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
                 break;
             case "xscale":
                 // Get original value from storage
-                float originalX = SYNC$ORIGINAL_VALUES.getOrDefault(t.getModelPart().toLowerCase() + "_xScale", 1.0f);
+                float originalX = SYNC$ORIGINAL_VALUES.getOrDefault(partName + "_xScale", 1.0f);
                 targetPart.xScale = originalX + value;
                 break;
             case "yscale":
-                float originalY = SYNC$ORIGINAL_VALUES.getOrDefault(t.getModelPart().toLowerCase() + "_yScale", 1.0f);
+                float originalY = SYNC$ORIGINAL_VALUES.getOrDefault(partName + "_yScale", 1.0f);
                 targetPart.yScale = originalY + value;
                 break;
             case "zscale":
-                float originalZ = SYNC$ORIGINAL_VALUES.getOrDefault(t.getModelPart().toLowerCase() + "_zScale", 1.0f);
+                float originalZ = SYNC$ORIGINAL_VALUES.getOrDefault(partName + "_zScale", 1.0f);
                 targetPart.zScale = originalZ + value;
                 break;
             case "pivotx":

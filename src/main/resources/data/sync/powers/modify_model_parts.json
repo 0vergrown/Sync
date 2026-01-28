@@ -35,6 +35,18 @@
       "model_part": "body",
       "type": "pitch",
       "value": 2
+    },
+    {
+      "model_part": "leftleg",
+      "type": "pitch",
+      "value": 6.6,
+      "override_animation": true
+    },
+    {
+      "model_part": "rightarm",
+      "type": "pitch",
+      "value": 10.0,
+      "override_animation": false
     }
   ]
 }
