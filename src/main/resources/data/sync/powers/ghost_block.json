@@ -1,7 +1,12 @@
 {
   "type": "apoli:active_self",
   "entity_action": {
-    "type": "apoli:block_action_at",
+    "type": "apoli:raycast",
+    "distance": 16.00,
+    "block": true,
+    "entity": true,
+    "shape_type": "visual",
+    "fluid_handling": "any",
     "block_action": {
       "type": "sync:ghost_block",
       "block": "minecraft:chest",
@@ -12,8 +17,22 @@
         "destruction_type": "none",
         "power": 5,
         "create_fire": false
+      },
+      "add_block": false,
+      "end_action": {
+        "type": "apoli:area_of_effect",
+        "radius": 5,
+        "shape": "cube",
+        "block_action": {
+          "type": "apoli:bonemeal",
+          "effects": false
+        }
       }
-    }
+    },
+    "command_at_hit":"particle minecraft:block_marker minecraft:emerald_block ~ ~ ~ 0 0 0 0.0 1 normal @a",
+    "command_along_ray":"particle minecraft:soul_fire_flame",
+    "command_step":1,
+    "command_along_ray_only_on_hit":true
   },
   "cooldown": 1,
   "hud_render": {
