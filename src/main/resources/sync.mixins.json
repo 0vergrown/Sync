@@ -19,7 +19,7 @@
     "entity_texture_overlay.CapeFeatureRendererMixin",
     "entity_texture_overlay.PlayerEntityRendererMixin",
     "entity_texture_overlay.PlayerListEntryMixin",
-    "extra_limbs.PlayerEntityRendererMixin",
+    "modify_player_model.PlayerEntityRendererMixin",
     "flip_model.GameRendererMixin",
     "flip_model.LivingEntityRendererMixin",
     "modify_model_parts.BipedEntityModelMixin",
