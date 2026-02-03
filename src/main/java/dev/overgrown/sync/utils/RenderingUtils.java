@@ -1,6 +1,7 @@
 package dev.overgrown.sync.utils;
 
 import dev.overgrown.sync.client.render.model.FourArmsPlayerEntityModel;
+import dev.overgrown.sync.client.render.model.StinkFlyPlayerEntityModel;
 import dev.overgrown.sync.entities.registry.SyncEntityModelLayerRegistry;
 import dev.overgrown.sync.factory.power.type.EntityTextureOverlayPower;
 import dev.overgrown.sync.factory.power.type.ModifyPlayerModelPower;
@@ -17,6 +18,8 @@ public class RenderingUtils {
 
     private static FourArmsPlayerEntityModel<AbstractClientPlayerEntity> FOUR_ARMS_MODEL;
     private static FourArmsPlayerEntityModel<AbstractClientPlayerEntity> FOUR_ARMS_MODEL_SLIM;
+    private static StinkFlyPlayerEntityModel<AbstractClientPlayerEntity> STINKFLY_MODEL;
+    private static StinkFlyPlayerEntityModel<AbstractClientPlayerEntity> STINKFLY_MODEL_SLIM;
 
     public static boolean hasTextureOverlay(LivingEntity entity) {
         return !PowerHolderComponent.getPowers(entity, EntityTextureOverlayPower.class).isEmpty();
@@ -40,18 +43,26 @@ public class RenderingUtils {
         return !powers.isEmpty() && powers.get(0).isActive() && powers.get(0).shouldHideCape();
     }
 
+    public static boolean hasSmallArms(AbstractClientPlayerEntity player) {
+        return player.getModel().equalsIgnoreCase("slim");
+    }
+
     public static void bakeModels(EntityRendererFactory.Context ctx, boolean slim) {
         if (slim) {
             FOUR_ARMS_MODEL_SLIM = new FourArmsPlayerEntityModel<>(ctx.getPart(SyncEntityModelLayerRegistry.FOUR_ARMS_PLAYER_SLIM_MODEL_LAYER), true);
+            STINKFLY_MODEL_SLIM = new StinkFlyPlayerEntityModel<>(ctx.getPart(SyncEntityModelLayerRegistry.STINKFLY_PLAYER_SLIM_MODEL_LAYER), true);
         } else {
             FOUR_ARMS_MODEL = new FourArmsPlayerEntityModel<>(ctx.getPart(SyncEntityModelLayerRegistry.FOUR_ARMS_PLAYER_MODEL_LAYER), false);
+            STINKFLY_MODEL = new StinkFlyPlayerEntityModel<>(ctx.getPart(SyncEntityModelLayerRegistry.STINKFLY_PLAYER_MODEL_LAYER), false);
         }
     }
 
     public static PlayerEntityModel<AbstractClientPlayerEntity> getOverriddenPlayerModel(AbstractClientPlayerEntity player, PlayerEntityModel<AbstractClientPlayerEntity> original) {
         for (ModifyPlayerModelPower power : PowerHolderComponent.getPowers(player, ModifyPlayerModelPower.class)) {
             if (power.model == ModifyPlayerModelPower.Model.FOUR_ARMS) {
-                return FOUR_ARMS_MODEL;
+                return hasSmallArms(player) ? FOUR_ARMS_MODEL_SLIM : FOUR_ARMS_MODEL;
+            } else if (power.model == ModifyPlayerModelPower.Model.STINKFLY) {
+                return hasSmallArms(player) ? STINKFLY_MODEL_SLIM : STINKFLY_MODEL;
             }
         }
 

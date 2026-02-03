@@ -2,6 +2,7 @@ package dev.overgrown.sync.entities.registry;
 
 import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.client.render.model.FourArmsPlayerEntityModel;
+import dev.overgrown.sync.client.render.model.StinkFlyPlayerEntityModel;
 import dev.overgrown.sync.entities.clone.model.CloneEntityModel;
 import dev.overgrown.sync.entities.minion.model.MinionEntityModel;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
@@ -25,6 +26,9 @@ public class SyncEntityModelLayerRegistry {
     public static final EntityModelLayer FOUR_ARMS_PLAYER_MODEL_LAYER = new EntityModelLayer(Sync.identifier("player_four_arms"), "main");
     public static final EntityModelLayer FOUR_ARMS_PLAYER_SLIM_MODEL_LAYER = new EntityModelLayer(Sync.identifier("player_four_arms_slim"), "main");
 
+    public static final EntityModelLayer STINKFLY_PLAYER_MODEL_LAYER = new EntityModelLayer(Sync.identifier("player_stinkfly"), "main");
+    public static final EntityModelLayer STINKFLY_PLAYER_SLIM_MODEL_LAYER = new EntityModelLayer(Sync.identifier("player_stinkfly_slim"), "main");
+
     public static void register () {
         EntityModelLayerRegistry.registerModelLayer(CLONE_MODEL_LAYER, CloneEntityModel::getTexturedModelData);
         EntityModelLayerRegistry.registerModelLayer(CLONE_INNER_LAYER, CloneEntityModel::getTexturedModelDataInner);
@@ -38,5 +42,8 @@ public class SyncEntityModelLayerRegistry {
 
         EntityModelLayerRegistry.registerModelLayer(FOUR_ARMS_PLAYER_MODEL_LAYER, FourArmsPlayerEntityModel::getTexturedModelData);
         EntityModelLayerRegistry.registerModelLayer(FOUR_ARMS_PLAYER_SLIM_MODEL_LAYER, FourArmsPlayerEntityModel::getSlimTexturedModelData);
+
+        EntityModelLayerRegistry.registerModelLayer(STINKFLY_PLAYER_MODEL_LAYER, StinkFlyPlayerEntityModel::getTexturedModelData);
+        EntityModelLayerRegistry.registerModelLayer(STINKFLY_PLAYER_SLIM_MODEL_LAYER, StinkFlyPlayerEntityModel::getSlimTexturedModelData);
     }
 }

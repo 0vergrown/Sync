@@ -49,6 +49,7 @@ public class FourArmsPlayerEntityModel<T extends LivingEntity> extends PlayerEnt
         return modelData;
     }
 
+    @Override
     protected Iterable<ModelPart> getBodyParts() {
         return Iterables.concat(super.getBodyParts(), ImmutableList.of(this.rightSecondArm, this.leftSecondArm, this.rightSecondSleeve, this.leftSecondSleeve));
     }
@@ -86,6 +87,7 @@ public class FourArmsPlayerEntityModel<T extends LivingEntity> extends PlayerEnt
         this.leftSecondSleeve.pivotY += 3;
     }
 
+    @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         this.rightSecondArm.visible = visible;
