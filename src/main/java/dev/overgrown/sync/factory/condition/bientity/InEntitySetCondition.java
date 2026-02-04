@@ -1,4 +1,4 @@
-package dev.overgrown.sync.factory.condition.entity;
+package dev.overgrown.sync.factory.condition.bientity;
 
 import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.power.type.EntitySetPower;

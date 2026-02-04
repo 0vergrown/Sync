@@ -1,7 +1,7 @@
 package dev.overgrown.sync.mixin.entity_texture_overlay;
 
 import com.mojang.authlib.GameProfile;
-import dev.overgrown.sync.utils.RenderingUtils;
+import dev.overgrown.sync.utils.entity_texture_overlay.RenderingUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.Perspective;

@@ -1,4 +1,4 @@
-package dev.overgrown.sync.utils;
+package dev.overgrown.sync.utils.summon_clone_or_minion;
 
 import java.util.UUID;
 

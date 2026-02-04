@@ -1,4 +1,4 @@
-package dev.overgrown.sync.utils;
+package dev.overgrown.sync.utils.entity_texture_overlay;
 
 import dev.overgrown.sync.factory.power.type.EntityTextureOverlayPower;
 import io.github.apace100.apoli.component.PowerHolderComponent;

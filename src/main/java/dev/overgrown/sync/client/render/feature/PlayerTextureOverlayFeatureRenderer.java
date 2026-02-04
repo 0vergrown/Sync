@@ -1,6 +1,6 @@
 package dev.overgrown.sync.client.render.feature;
 
-import dev.overgrown.sync.utils.RenderingUtils;
+import dev.overgrown.sync.utils.entity_texture_overlay.RenderingUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

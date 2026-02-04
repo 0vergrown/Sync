@@ -4,8 +4,8 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.UUID;
 
-import dev.overgrown.sync.utils.ExtraTameable;
-import dev.overgrown.sync.utils.Temporary;
+import dev.overgrown.sync.utils.summon_clone_or_minion.ExtraTameable;
+import dev.overgrown.sync.utils.summon_clone_or_minion.Temporary;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.server.world.ServerWorld;
 import org.jetbrains.annotations.Nullable;

@@ -1,7 +1,7 @@
 package dev.overgrown.sync.factory.power.type;
 
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.utils.ModelPartTransformation;
+import dev.overgrown.sync.utils.modify_model_parts.ModelPartTransformation;
 import io.github.apace100.apoli.power.Power;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.power.factory.PowerFactory;

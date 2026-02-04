@@ -1,4 +1,4 @@
-package dev.overgrown.sync.utils;
+package dev.overgrown.sync.utils.modify_model_parts;
 
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataType;

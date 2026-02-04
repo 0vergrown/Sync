@@ -9,10 +9,11 @@ import dev.overgrown.sync.factory.action.block.GhostBlockAction;
 import dev.overgrown.sync.factory.action.block.SpawnEntityBlockAction;
 import dev.overgrown.sync.factory.action.entity.*;
 import dev.overgrown.sync.factory.action.entity.radial_menu.RadialMenuAction;
+import dev.overgrown.sync.factory.condition.bientity.InEntitySetCondition;
 import dev.overgrown.sync.factory.condition.entity.*;
 import dev.overgrown.sync.factory.power.type.*;
 import dev.overgrown.sync.factory.power.type.EntityTextureOverlayPower;
-import dev.overgrown.sync.utils.ApoliRegistryHelper;
+import dev.overgrown.sync.utils.registry.ApoliRegistryHelper;
 
 public class SyncTypeRegistry {
 
@@ -41,11 +42,12 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerBlockAction(GhostBlockAction.getFactory());
 
         // ========== ENTITY CONDITION REGISTRATIONS ==========
-        ApoliRegistryHelper.registerEntityCondition(HasCommandTagCondition.getFactory());
-        ApoliRegistryHelper.registerEntityCondition(EntitySetSizeCondition.getFactory());
-        ApoliRegistryHelper.registerEntityCondition(InPoseCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(EntityInRadiusCondition.getFactory());
+        ApoliRegistryHelper.registerEntityCondition(EntitySetSizeCondition.getFactory());
+        ApoliRegistryHelper.registerEntityCondition(HasCommandTagCondition.getFactory());
+        ApoliRegistryHelper.registerEntityCondition(InPoseCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(KeyPressedCondition.getFactory());
+        ApoliRegistryHelper.registerEntityCondition(PlayerModelTypeCondition.getFactory());
 
         // ========== BIENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBientityAction(AddToEntitySetAction.getFactory());

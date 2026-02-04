@@ -1,4 +1,4 @@
-package dev.overgrown.sync.utils;
+package dev.overgrown.sync.utils.key_pressed;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;

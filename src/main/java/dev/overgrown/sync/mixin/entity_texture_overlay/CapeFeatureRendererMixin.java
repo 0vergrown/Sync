@@ -1,6 +1,6 @@
 package dev.overgrown.sync.mixin.entity_texture_overlay;
 
-import dev.overgrown.sync.utils.RenderingUtils;
+import dev.overgrown.sync.utils.entity_texture_overlay.RenderingUtils;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.feature.CapeFeatureRenderer;
 import org.spongepowered.asm.mixin.Mixin;

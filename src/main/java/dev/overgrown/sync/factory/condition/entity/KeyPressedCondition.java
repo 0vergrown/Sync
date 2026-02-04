@@ -1,7 +1,7 @@
 package dev.overgrown.sync.factory.condition.entity;
 
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.utils.KeyPressManager;
+import dev.overgrown.sync.utils.key_pressed.KeyPressManager;
 import io.github.apace100.apoli.power.factory.condition.ConditionFactory;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;

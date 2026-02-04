@@ -16,6 +16,7 @@ import java.util.Map;
 
 public class SyncClient implements ClientModInitializer {
     private static final Map<String, Boolean> LAST_KEY_STATES = new HashMap<>();
+    private static String lastModelType = null;
 
     @Override
     public void onInitializeClient() {
@@ -30,6 +31,23 @@ public class SyncClient implements ClientModInitializer {
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
 
+            // Player Model Type Detection
+            String currentModelType = client.player.getModel();
+
+            // The getModel() method returns "slim" or "default"
+            // Convert "default" to "wide" for consistency
+            if (currentModelType.equals("default")) {
+                currentModelType = "wide";
+            }
+
+            if (lastModelType == null || !lastModelType.equals(currentModelType)) {
+                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+                buf.writeString(currentModelType);
+                ClientPlayNetworking.send(ModPackets.PLAYER_MODEL_TYPE_UPDATE, buf);
+                lastModelType = currentModelType;
+            }
+
+            // Key Pressed Condition:
             for (KeyBinding keyBinding : client.options.allKeys) {
                 String key = keyBinding.getTranslationKey();
                 boolean pressed = keyBinding.isPressed();

@@ -5,7 +5,8 @@ import dev.overgrown.sync.factory.action.entity.radial_menu.server.RadialMenuSer
 import dev.overgrown.sync.factory.power.type.ActionOnDeathPower;
 import dev.overgrown.sync.factory.registry.SyncTypeRegistry;
 import dev.overgrown.sync.networking.ModPackets;
-import dev.overgrown.sync.utils.KeyPressManager;
+import dev.overgrown.sync.utils.key_pressed.KeyPressManager;
+import dev.overgrown.sync.utils.player_model_type.PlayerModelTypeManager;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -50,6 +51,16 @@ public class Sync implements ModInitializer {
         });
 
         ServerPlayNetworking.registerGlobalReceiver(
+                ModPackets.PLAYER_MODEL_TYPE_UPDATE,
+                (server, player, handler, buf, responseSender) -> {
+                    String modelType = buf.readString();
+                    server.execute(() -> {
+                        PlayerModelTypeManager.setModelType(player, modelType);
+                    });
+                }
+        );
+
+        ServerPlayNetworking.registerGlobalReceiver(
                 ModPackets.KEY_PRESS_UPDATE,
                 (server, player, handler, buf, responseSender) -> {
                     String key = buf.readString();
@@ -61,8 +72,10 @@ public class Sync implements ModInitializer {
         );
 
         ServerPlayConnectionEvents.DISCONNECT.register(
-                (handler, server) ->
-                        KeyPressManager.removePlayer(handler.player.getUuid())
+                (handler, server) -> {
+                    KeyPressManager.removePlayer(handler.player.getUuid());
+                    PlayerModelTypeManager.removePlayer(handler.player.getUuid());
+                }
         );
     }
 }

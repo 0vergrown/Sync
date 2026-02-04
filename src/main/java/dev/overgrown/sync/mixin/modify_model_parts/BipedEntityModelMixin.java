@@ -1,7 +1,7 @@
 package dev.overgrown.sync.mixin.modify_model_parts;
 
 import dev.overgrown.sync.factory.power.type.ModifyModelPartsPower;
-import dev.overgrown.sync.utils.ModelPartTransformation;
+import dev.overgrown.sync.utils.modify_model_parts.ModelPartTransformation;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.minecraft.client.model.ModelPart;

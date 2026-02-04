@@ -1,0 +1,29 @@
+{
+  "type": "apoli:action_over_time",
+  "entity_action": {
+    "type": "apoli:if_else_list",
+    "actions": [
+      {
+        "condition": {
+          "type": "sync:player_model_type",
+          "model_type": "wide"
+        },
+        "action": {
+          "type": "apoli:execute_command",
+          "command": "tellraw @s {\"text\":\"Your model is WIDE!\",\"color\":\"green\"}"
+        }
+      },
+      {
+        "condition": {
+          "type": "sync:player_model_type",
+          "model_type": "slim"
+        },
+        "action": {
+          "type": "apoli:execute_command",
+          "command": "tellraw @s {\"text\":\"Your model is SLIM!\",\"color\":\"green\"}"
+        }
+      }
+    ]
+  },
+  "interval": 20
+}

@@ -1,4 +1,4 @@
-package dev.overgrown.sync.utils;
+package dev.overgrown.sync.utils.registry;
 
 import io.github.apace100.apoli.power.factory.PowerFactory;
 import io.github.apace100.apoli.power.factory.PowerFactorySupplier;
@@ -45,7 +45,7 @@ public class ApoliRegistryHelper {
         Registry.register(ApoliRegistries.BLOCK_CONDITION, conditionFactory.getSerializerId(), conditionFactory);
     }
 
-    public static void registerBlockAction(ActionFactory<Triple<World, BlockPos, Direction>> actionFactory) { // Renamed parameter for clarity
+    public static void registerBlockAction(ActionFactory<Triple<World, BlockPos, Direction>> actionFactory) {
         Registry.register(ApoliRegistries.BLOCK_ACTION, actionFactory.getSerializerId(), actionFactory);
     }
 
