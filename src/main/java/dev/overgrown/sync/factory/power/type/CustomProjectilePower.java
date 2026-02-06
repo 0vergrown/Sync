@@ -238,7 +238,7 @@ public class CustomProjectilePower extends CooldownPower implements Active {
     }
 
     public static PowerFactory<CustomProjectilePower> getFactory() {
-        return new PowerFactory<>(
+        PowerFactory<CustomProjectilePower> factory = new PowerFactory<>(
                 Sync.identifier("custom_projectile"),
                 new SerializableData()
                         .add("cooldown", SerializableDataTypes.INT, 1)
@@ -293,6 +293,8 @@ public class CustomProjectilePower extends CooldownPower implements Active {
                     power.setKey(data.get("key"));
                     return power;
                 }
-        ).allowCondition();
+        );
+        factory.allowCondition();
+        return factory;
     }
 }
