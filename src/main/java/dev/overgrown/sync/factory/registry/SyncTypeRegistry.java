@@ -33,6 +33,7 @@ public class SyncTypeRegistry {
         // ========== ENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(GrantAllPowersAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RemovePowerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RevokeAllPowersAction.getFactory());
