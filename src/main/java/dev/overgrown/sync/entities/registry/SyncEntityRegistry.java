@@ -2,6 +2,7 @@ package dev.overgrown.sync.entities.registry;
 
 import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.entities.clone.CloneEntity;
+import dev.overgrown.sync.entities.custom_projectile.CustomProjectileEntity;
 import dev.overgrown.sync.entities.minion.MinionEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.Entity;
@@ -25,6 +26,12 @@ public class SyncEntityRegistry {
             EntityType.Builder.create(MinionEntity::new, SpawnGroup.MISC)
                     .setDimensions(0.5f, 0.5f)
                     .disableSummon()
+    );
+
+    public static final EntityType<CustomProjectileEntity> CUSTOM_PROJECTILE = register(
+            Sync.identifier("custom_projectile"),
+            EntityType.Builder.<CustomProjectileEntity>create(CustomProjectileEntity::new, SpawnGroup.MISC)
+                    .setDimensions(0.25f, 0.25f)
     );
 
     public static <T extends Entity> EntityType<T> register (Identifier id, EntityType.Builder<T> builder) {
