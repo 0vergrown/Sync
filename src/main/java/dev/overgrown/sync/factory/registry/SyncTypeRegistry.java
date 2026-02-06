@@ -11,6 +11,7 @@ import dev.overgrown.sync.factory.action.entity.*;
 import dev.overgrown.sync.factory.action.entity.radial_menu.RadialMenuAction;
 import dev.overgrown.sync.factory.condition.bientity.InEntitySetCondition;
 import dev.overgrown.sync.factory.condition.entity.*;
+import dev.overgrown.sync.factory.condition.item.FuelCondition;
 import dev.overgrown.sync.factory.power.type.*;
 import dev.overgrown.sync.factory.power.type.EntityTextureOverlayPower;
 import dev.overgrown.sync.utils.registry.ApoliRegistryHelper;
@@ -33,6 +34,8 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(RemovePowerAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(RevokeAllPowersAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(SummonCloneAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(SummonMinionAction.getFactory());
@@ -56,6 +59,9 @@ public class SyncTypeRegistry {
 
         // ========== BIENTITY CONDITION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBientityCondition(InEntitySetCondition.getFactory());
+
+        // ========== ITEM CONDITION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerItemCondition(FuelCondition.getFactory());
 
         if (Sync.HAS_ASPECTSLIB) {
             ApoliRegistryHelper.registerPowerFactory(SetEntityAspectsPower.createFactory());
