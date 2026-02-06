@@ -104,9 +104,6 @@ public class GrantAllPowersAction {
     // Method to register powers from a data pack structure
     public static void loadPowersFromResourceManager(ResourceManager manager) {
         sourcePowerRegistry.clear();
-
-        // This would typically be called from a resource reload listener
-        // For now, it's a placeholder for the actual implementation
     }
 
     public static ActionFactory<Entity> getFactory() {
