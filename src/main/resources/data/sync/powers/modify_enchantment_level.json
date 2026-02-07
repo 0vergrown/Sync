@@ -1,0 +1,14 @@
+{
+  "type": "sync:modify_enchantment_level",
+  "enchantment": "minecraft:sharpness",
+  "modifier": {
+    "operation": "addition",
+    "value": 5
+  },
+  "item_condition": {
+    "type": "apoli:ingredient",
+    "ingredient": {
+      "item": "minecraft:diamond_sword"
+    }
+  }
+}

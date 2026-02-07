@@ -6,7 +6,10 @@
     "mobs_ignore.AttackMixin",
     "mobs_ignore.HostileEntityMixin",
     "mobs_ignore.MobEntityMixin",
-    "pose.PlayerEntityMixin"
+    "pose.PlayerEntityMixin",
+    "modify_enchantment_level.EnchantmentHelperMixin",
+    "edible_item.ItemStackMixin",
+    "edible_item.HungerManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
