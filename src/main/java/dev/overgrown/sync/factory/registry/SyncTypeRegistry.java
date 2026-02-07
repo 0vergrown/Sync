@@ -28,6 +28,8 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(EntityTextureOverlayPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(MobsIgnorePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(CustomProjectilePower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentLevelPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(EdibleItemPower.getFactory());
 
         // ========== ENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
