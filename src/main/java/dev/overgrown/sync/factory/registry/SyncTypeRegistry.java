@@ -34,13 +34,15 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(GrantAllPowersAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RemovePowerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RevokeAllPowersAction.getFactory());
-        ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(SaveLocationAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(SetSummonMaxLifeAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(SummonCloneAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(SummonMinionAction.getFactory());
-        ApoliRegistryHelper.registerEntityAction(SetSummonMaxLifeAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(TeleportToLocationAction.getFactory());
 
         // ========== BLOCK ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBlockAction(SpawnEntityBlockAction.getFactory());
