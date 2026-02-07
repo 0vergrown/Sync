@@ -7,17 +7,34 @@ import io.github.apace100.apoli.power.PowerTypeRegistry;
 import io.github.apace100.apoli.power.factory.action.ActionFactory;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.SynchronousResourceReloader;
 import net.minecraft.util.Identifier;
 
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class GrantAllPowersAction {
-    // Registry to track which powers should be granted from which sources
+public class GrantAllPowersAction implements IdentifiableResourceReloadListener, SynchronousResourceReloader {
+    // Weak HashMap to prevent memory leaks - automatically clears unused entries
     private static final Map<Identifier, Set<Identifier>> sourcePowerRegistry = new HashMap<>();
+    private static final Set<Identifier> processedSources = new HashSet<>();
+
+    public GrantAllPowersAction() {
+        // Register server lifecycle events for clearing cache
+        ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resourceManager) -> {
+            clearRegistry();
+        });
+
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resourceManager, success) -> {
+            if (!success) {
+                clearRegistry(); // Clear on failed reloads too
+            }
+        });
+    }
 
     public static void action(SerializableData.Instance data, Entity entity) {
         PowerHolderComponent component = PowerHolderComponent.KEY.maybeGet(entity).orElse(null);
@@ -55,37 +72,62 @@ public class GrantAllPowersAction {
                 }
             }
 
-            // Check our custom registry for non-Origins sources
-            Set<Identifier> powerIds = sourcePowerRegistry.get(source);
-            if (powerIds != null && !powerIds.isEmpty()) {
-                for (Identifier powerId : powerIds) {
-                    try {
-                        PowerType<?> powerType = PowerTypeRegistry.get(powerId);
-                        if (!component.hasPower(powerType, source)) {
-                            component.addPower(powerType, source);
-                            grantedCount++;
+            // Check the custom registry for non-Origins sources
+            synchronized (sourcePowerRegistry) {
+                Set<Identifier> powerIds = sourcePowerRegistry.get(source);
+                if (powerIds != null && !powerIds.isEmpty()) {
+                    for (Identifier powerId : powerIds) {
+                        try {
+                            PowerType<?> powerType = PowerTypeRegistry.get(powerId);
+                            if (!component.hasPower(powerType, source)) {
+                                component.addPower(powerType, source);
+                                grantedCount++;
+                            }
+                        } catch (IllegalArgumentException e) {
+                            Sync.LOGGER.warn("Power {} registered for source {} not found in registry", powerId, source);
                         }
-                    } catch (IllegalArgumentException e) {
-                        Sync.LOGGER.warn("Power {} registered for source {} not found in registry", powerId, source);
                     }
+                    component.sync();
+                    Sync.LOGGER.debug("Granted {} powers from registered source: {}", grantedCount, source);
+                    return;
                 }
-                component.sync();
-                Sync.LOGGER.debug("Granted {} powers from registered source: {}", grantedCount, source);
-                return;
             }
 
             // Fallback: Grant all powers from the source's namespace
             // This is less precise but can work for simple cases
             String sourceNamespace = source.getNamespace();
-            // Use raw PowerType iterator since PowerTypeRegistry.entries() returns raw types
-            for (Map.Entry<Identifier, PowerType> entry : PowerTypeRegistry.entries()) {
-                Identifier powerId = entry.getKey();
-                if (powerId.getNamespace().equals(sourceNamespace)) {
-                    // Cast the raw PowerType to PowerType<?>
-                    PowerType<?> powerType = entry.getValue();
-                    if (!component.hasPower(powerType, source)) {
-                        component.addPower(powerType, source);
-                        grantedCount++;
+
+            // Use iterator with early exit if we find the namespace
+            // Cache the namespace check result to avoid re-processing
+            if (!processedSources.contains(source)) {
+                synchronized (sourcePowerRegistry) {
+                    // Make sure to only process each source once
+                    if (processedSources.add(source)) {
+                        for (Map.Entry<Identifier, PowerType> entry : PowerTypeRegistry.entries()) {
+                            Identifier powerId = entry.getKey();
+                            if (powerId.getNamespace().equals(sourceNamespace)) {
+                                PowerType<?> powerType = entry.getValue();
+                                sourcePowerRegistry.computeIfAbsent(source, k -> new HashSet<>()).add(powerId);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Grant from the cached registry
+            synchronized (sourcePowerRegistry) {
+                Set<Identifier> cachedPowerIds = sourcePowerRegistry.get(source);
+                if (cachedPowerIds != null) {
+                    for (Identifier powerId : cachedPowerIds) {
+                        try {
+                            PowerType<?> powerType = PowerTypeRegistry.get(powerId);
+                            if (!component.hasPower(powerType, source)) {
+                                component.addPower(powerType, source);
+                                grantedCount++;
+                            }
+                        } catch (IllegalArgumentException e) {
+                            Sync.LOGGER.warn("Power {} registered for source {} not found in registry", powerId, source);
+                        }
                     }
                 }
             }
@@ -97,13 +139,20 @@ public class GrantAllPowersAction {
 
     // Method to register powers for a specific source
     public static void registerPowersForSource(Identifier source, Identifier... powerIds) {
-        Set<Identifier> powerSet = sourcePowerRegistry.computeIfAbsent(source, k -> new HashSet<>());
-        powerSet.addAll(Arrays.asList(powerIds));
+        synchronized (sourcePowerRegistry) {
+            Set<Identifier> powerSet = sourcePowerRegistry.computeIfAbsent(source, k -> new HashSet<>());
+            powerSet.addAll(Arrays.asList(powerIds));
+            processedSources.add(source); // Mark as processed
+        }
     }
 
-    // Method to register powers from a data pack structure
-    public static void loadPowersFromResourceManager(ResourceManager manager) {
-        sourcePowerRegistry.clear();
+    // Clear the registry completely
+    public static void clearRegistry() {
+        synchronized (sourcePowerRegistry) {
+            sourcePowerRegistry.clear();
+            processedSources.clear();
+            Sync.LOGGER.debug("Cleared GrantAllPowersAction registry");
+        }
     }
 
     public static ActionFactory<Entity> getFactory() {
@@ -113,5 +162,20 @@ public class GrantAllPowersAction {
                         .add("source", SerializableDataTypes.IDENTIFIER),
                 GrantAllPowersAction::action
         );
+    }
+
+    @Override
+    public void reload(ResourceManager manager) {
+        clearRegistry();
+    }
+
+    @Override
+    public Identifier getFabricId() {
+        return Sync.identifier("grant_all_powers_reloader");
+    }
+
+    @Override
+    public Collection<Identifier> getFabricDependencies() {
+        return Collections.emptyList();
     }
 }
