@@ -1,0 +1,50 @@
+{
+  "type": "apoli:active_self",
+  "entity_action": {
+    "type": "apoli:if_else",
+    "condition": {
+      "type": "apoli:sneaking"
+    },
+    "if_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "sync:save_location",
+          "id": "my_save",
+          "overwrite": true
+        },
+        {
+          "type": "sync:print",
+          "message": "Location Saved!",
+          "show_in_chat": true,
+          "logger_id": "Sync/Save_Location"
+        }
+      ]
+    },
+    "else_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "sync:teleport_to_location",
+          "id": "my_save"
+        },
+        {
+          "type": "sync:print",
+          "message": "You've been teleported!",
+          "show_in_chat": true,
+          "logger_id": "Sync/Teleport_To_Location"
+        }
+      ]
+    }
+  },
+  "cooldown": 100,
+  "hud_render": {
+    "should_render": true,
+    "sprite_location": "origins:textures/gui/resource_bar.png",
+    "bar_index": 4
+  },
+  "key": {
+    "key": "key.saveToolbarActivator",
+    "continuous": false
+  }
+}

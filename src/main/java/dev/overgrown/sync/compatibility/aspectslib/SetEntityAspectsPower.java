@@ -3,7 +3,7 @@ package dev.overgrown.sync.compatibility.aspectslib;
 import dev.overgrown.aspectslib.api.IAspectAffinityEntity;
 import dev.overgrown.aspectslib.data.AspectData;
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.data.SyncDataTypes;
+import dev.overgrown.sync.data.general.SyncDataTypes;
 import io.github.apace100.apoli.power.Power;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.power.factory.PowerFactory;
