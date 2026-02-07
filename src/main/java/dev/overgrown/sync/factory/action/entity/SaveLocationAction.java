@@ -1,21 +1,16 @@
 package dev.overgrown.sync.factory.action.entity;
 
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.data.SavedLocationsState;
+import dev.overgrown.sync.data.EntityLocationsState;
 import io.github.apace100.apoli.power.factory.action.ActionFactory;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import net.minecraft.entity.Entity;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 
 public class SaveLocationAction {
 
     public static void action(SerializableData.Instance data, Entity entity) {
-        if (!(entity instanceof ServerPlayerEntity player)) {
-            return;
-        }
-
         if (!(entity.getWorld() instanceof ServerWorld serverWorld)) {
             return;
         }
@@ -23,9 +18,9 @@ public class SaveLocationAction {
         String id = data.getString("id");
         boolean overwrite = data.getBoolean("overwrite");
 
-        SavedLocationsState state = SavedLocationsState.get(serverWorld);
+        EntityLocationsState state = EntityLocationsState.get(serverWorld);
         state.saveLocation(
-                player.getUuid(),
+                entity.getUuid(),
                 id,
                 entity.getPos(),
                 entity.getWorld().getRegistryKey(),

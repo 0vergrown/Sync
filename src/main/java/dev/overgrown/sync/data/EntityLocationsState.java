@@ -16,66 +16,66 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class SavedLocationsState extends PersistentState {
-    private static final String STATE_NAME = "sync_saved_locations";
+public class EntityLocationsState extends PersistentState {
+    private static final String STATE_NAME = "sync_entity_locations";
 
-    private final Map<UUID, Map<String, SavedLocation>> playerLocations = new HashMap<>();
+    private final Map<UUID, Map<String, SavedLocation>> entityLocations = new HashMap<>();
 
-    public SavedLocationsState() {
+    public EntityLocationsState() {
         super();
     }
 
-    public static SavedLocationsState get(ServerWorld world) {
+    public static EntityLocationsState get(ServerWorld world) {
         return world.getPersistentStateManager().getOrCreate(
-                SavedLocationsState::fromNbt,
-                SavedLocationsState::new,
+                EntityLocationsState::fromNbt,
+                EntityLocationsState::new,
                 STATE_NAME
         );
     }
 
-    public void saveLocation(UUID playerId, String id, Vec3d position, RegistryKey<World> dimension, float yaw, float pitch, boolean overwrite) {
-        Map<String, SavedLocation> playerMap = playerLocations.computeIfAbsent(playerId, k -> new HashMap<>());
+    public void saveLocation(UUID entityId, String id, Vec3d position, RegistryKey<World> dimension, float yaw, float pitch, boolean overwrite) {
+        Map<String, SavedLocation> entityMap = entityLocations.computeIfAbsent(entityId, k -> new HashMap<>());
 
-        if (!overwrite && playerMap.containsKey(id)) {
+        if (!overwrite && entityMap.containsKey(id)) {
             return; // Don't overwrite if overwrite is false
         }
 
-        playerMap.put(id, new SavedLocation(position, dimension, yaw, pitch));
+        entityMap.put(id, new SavedLocation(position, dimension, yaw, pitch));
         markDirty();
     }
 
     @Nullable
-    public SavedLocation getLocation(UUID playerId, String id) {
-        Map<String, SavedLocation> playerMap = playerLocations.get(playerId);
-        if (playerMap == null) {
+    public SavedLocation getLocation(UUID entityId, String id) {
+        Map<String, SavedLocation> entityMap = entityLocations.get(entityId);
+        if (entityMap == null) {
             return null;
         }
-        return playerMap.get(id);
+        return entityMap.get(id);
     }
 
-    public boolean removeLocation(UUID playerId, String id) {
-        Map<String, SavedLocation> playerMap = playerLocations.get(playerId);
-        if (playerMap == null) {
+    public boolean removeLocation(UUID entityId, String id) {
+        Map<String, SavedLocation> entityMap = entityLocations.get(entityId);
+        if (entityMap == null) {
             return false;
         }
 
-        boolean removed = playerMap.remove(id) != null;
+        boolean removed = entityMap.remove(id) != null;
         if (removed) {
             markDirty();
         }
         return removed;
     }
 
-    public static SavedLocationsState fromNbt(NbtCompound nbt) {
-        SavedLocationsState state = new SavedLocationsState();
-        NbtList playersList = nbt.getList("players", NbtElement.COMPOUND_TYPE);
+    public static EntityLocationsState fromNbt(NbtCompound nbt) {
+        EntityLocationsState state = new EntityLocationsState();
+        NbtList entitiesList = nbt.getList("entities", NbtElement.COMPOUND_TYPE);
 
-        for (NbtElement playerElement : playersList) {
-            NbtCompound playerCompound = (NbtCompound) playerElement;
-            UUID playerId = playerCompound.getUuid("playerId");
-            NbtList locationsList = playerCompound.getList("locations", NbtElement.COMPOUND_TYPE);
+        for (NbtElement entityElement : entitiesList) {
+            NbtCompound entityCompound = (NbtCompound) entityElement;
+            UUID entityId = entityCompound.getUuid("entityId");
+            NbtList locationsList = entityCompound.getList("locations", NbtElement.COMPOUND_TYPE);
 
-            Map<String, SavedLocation> playerMap = new HashMap<>();
+            Map<String, SavedLocation> entityMap = new HashMap<>();
             for (NbtElement locationElement : locationsList) {
                 NbtCompound locationCompound = (NbtCompound) locationElement;
                 String id = locationCompound.getString("id");
@@ -91,10 +91,10 @@ public class SavedLocationsState extends PersistentState {
                 float yaw = locationCompound.getFloat("yaw");
                 float pitch = locationCompound.getFloat("pitch");
 
-                playerMap.put(id, new SavedLocation(position, dimension, yaw, pitch));
+                entityMap.put(id, new SavedLocation(position, dimension, yaw, pitch));
             }
 
-            state.playerLocations.put(playerId, playerMap);
+            state.entityLocations.put(entityId, entityMap);
         }
 
         return state;
@@ -102,14 +102,14 @@ public class SavedLocationsState extends PersistentState {
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
-        NbtList playersList = new NbtList();
+        NbtList entitiesList = new NbtList();
 
-        for (Map.Entry<UUID, Map<String, SavedLocation>> playerEntry : playerLocations.entrySet()) {
-            NbtCompound playerCompound = new NbtCompound();
-            playerCompound.putUuid("playerId", playerEntry.getKey());
+        for (Map.Entry<UUID, Map<String, SavedLocation>> entityEntry : entityLocations.entrySet()) {
+            NbtCompound entityCompound = new NbtCompound();
+            entityCompound.putUuid("entityId", entityEntry.getKey());
 
             NbtList locationsList = new NbtList();
-            for (Map.Entry<String, SavedLocation> locationEntry : playerEntry.getValue().entrySet()) {
+            for (Map.Entry<String, SavedLocation> locationEntry : entityEntry.getValue().entrySet()) {
                 NbtCompound locationCompound = new NbtCompound();
                 locationCompound.putString("id", locationEntry.getKey());
                 locationCompound.putDouble("x", locationEntry.getValue().position().x);
@@ -122,11 +122,11 @@ public class SavedLocationsState extends PersistentState {
                 locationsList.add(locationCompound);
             }
 
-            playerCompound.put("locations", locationsList);
-            playersList.add(playerCompound);
+            entityCompound.put("locations", locationsList);
+            entitiesList.add(entityCompound);
         }
 
-        nbt.put("players", playersList);
+        nbt.put("entities", entitiesList);
         return nbt;
     }
 
