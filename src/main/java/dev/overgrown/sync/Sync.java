@@ -1,6 +1,7 @@
 package dev.overgrown.sync;
 
 import dev.overgrown.sync.entities.registry.SyncEntityRegistry;
+import dev.overgrown.sync.events.save_location_and_teleport_to_location.EntityCleanupHandler;
 import dev.overgrown.sync.factory.action.entity.radial_menu.server.RadialMenuServer;
 import dev.overgrown.sync.factory.power.type.ActionOnDeathPower;
 import dev.overgrown.sync.factory.registry.SyncTypeRegistry;
@@ -39,6 +40,9 @@ public class Sync implements ModInitializer {
         SyncTypeRegistry.register();
         RadialMenuServer.register();
         SyncEntityRegistry.register();
+
+        // Register entity cleanup handler
+        EntityCleanupHandler.register();
 
         // Register death event handler
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {

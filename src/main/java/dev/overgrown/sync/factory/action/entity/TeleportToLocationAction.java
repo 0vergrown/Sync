@@ -1,7 +1,7 @@
 package dev.overgrown.sync.factory.action.entity;
 
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.data.EntityLocationsState;
+import dev.overgrown.sync.data.save_location_and_teleport_to_location.EntityLocationsState;
 import io.github.apace100.apoli.power.factory.action.ActionFactory;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
