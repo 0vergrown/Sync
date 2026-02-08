@@ -1,0 +1,86 @@
+{
+  "type": "apoli:active_self",
+  "entity_action": {
+    "type": "sync:custom_projectile",
+    "entity_id": "sync:brick_projectile",
+    "texture_location":"minecraft:textures/item/brick.png",
+    "count": 3,
+    "speed": 2.0,
+    "divergence": 0.5,
+    "sound": "minecraft:entity.arrow.shoot",
+    "tag":"{Glowing:1b}",
+    "entity_action_before_firing":{
+      "type":"apoli:and",
+      "actions":[
+        {
+          "type":"apoli:swing_hand",
+          "hand":"MAIN_HAND"
+        },
+        {
+          "type": "apoli:play_sound",
+          "sound": "minecraft:entity.ender_eye.death",
+          "volume": 1.00,
+          "pitch": 1.00
+        }
+      ]
+    },
+    "bientity_action_after_firing":{
+      "type":"apoli:delay",
+      "action":{
+        "type":"apoli:target_action",
+        "action":{
+          "type":"apoli:execute_command",
+          "command":"kill @s"
+        }
+      },
+      "ticks":400
+    },
+    "bientity_action_on_miss":{
+      "type":"apoli:target_action",
+      "action":{
+        "type":"apoli:execute_command",
+        "command":"particle snowflake ^ ^ ^ 0.3 0.3 0.3 0.2 6 normal"
+      }
+    },
+    "bientity_action_on_hit":{
+      "type":"apoli:and",
+      "actions":[
+        {
+          "type": "apoli:damage",
+          "amount": 5,
+          "damage_type": "minecraft:arrow"
+        },
+        {
+          "type":"apoli:target_action",
+          "action":{
+            "type":"apoli:execute_command",
+            "command":"particle snowflake ^ ^ ^ 0.3 0.3 0.3 0.2 6 normal"
+          }
+        }
+      ]
+    },
+    "owner_target_bientity_action_on_hit":{
+      "type":"apoli:actor_action",
+      "action":{
+        "type": "apoli:damage",
+        "amount": 10,
+        "damage_type": "minecraft:cramming"
+      }
+    },
+    "tick_bientity_action":{
+      "type":"apoli:target_action",
+      "action":{
+        "type":"apoli:execute_command",
+        "command":"particle snowflake ^ ^ ^ 0.15 0.15 0.15 0.04 4 normal"
+      }
+    }
+  },
+  "cooldown": 1,
+  "hud_render": {
+    "should_render": false
+  },
+  "key": {
+    "key": "key.saveToolbarActivator",
+    "continuous": false
+  }
+}
