@@ -1,0 +1,15 @@
+{
+  "type": "apoli:active_self",
+  "entity_action": {
+    "type": "sync:remove_power",
+    "power": "*:*"
+  },
+  "cooldown": 1,
+  "hud_render": {
+    "should_render": false
+  },
+  "key": {
+    "key": "key.saveToolbarActivator",
+    "continuous": false
+  }
+}

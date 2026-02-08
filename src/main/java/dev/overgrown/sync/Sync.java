@@ -1,6 +1,8 @@
 package dev.overgrown.sync;
 
 import dev.overgrown.sync.entities.registry.SyncEntityRegistry;
+import dev.overgrown.sync.events.save_location_and_teleport_to_location.EntityCleanupHandler;
+import dev.overgrown.sync.factory.action.entity.GrantAllPowersAction;
 import dev.overgrown.sync.factory.action.entity.radial_menu.server.RadialMenuServer;
 import dev.overgrown.sync.factory.power.type.ActionOnDeathPower;
 import dev.overgrown.sync.factory.registry.SyncTypeRegistry;
@@ -13,7 +15,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import io.github.apace100.apoli.util.NamespaceAlias;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -39,6 +43,13 @@ public class Sync implements ModInitializer {
         SyncTypeRegistry.register();
         RadialMenuServer.register();
         SyncEntityRegistry.register();
+
+        // Register entity cleanup handler
+        EntityCleanupHandler.register();
+
+        // Register GrantAllPowersAction as a resource reload listener
+        ResourceManagerHelper.get(ResourceType.SERVER_DATA)
+                .registerReloadListener(new GrantAllPowersAction());
 
         // Register death event handler
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {

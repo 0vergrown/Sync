@@ -1,0 +1,24 @@
+{
+  "type":"apoli:action_over_time",
+  "entity_action":{
+    "type":"apoli:if_else",
+    "condition":{
+      "type":"apoli:equipped_item",
+      "equipment_slot":"mainhand",
+      "item_condition":{
+        "type":"sync:fuel",
+        "comparison":">=",
+        "compare_to":10
+      }
+    },
+    "if_action":{
+      "type":"apoli:execute_command",
+      "command":"tellraw @s {\"text\":\"This item has a fuel time value of 10 or more!!!\",\"color\":\"green\"}"
+    },
+    "else_action":{
+      "type":"apoli:execute_command",
+      "command":"tellraw @s {\"text\":\"This item does not a fuel time value of 10 or more...\",\"color\":\"red\"}"
+    }
+  },
+  "interval":20
+}

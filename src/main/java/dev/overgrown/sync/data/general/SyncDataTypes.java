@@ -1,4 +1,4 @@
-package dev.overgrown.sync.data;
+package dev.overgrown.sync.data.general;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

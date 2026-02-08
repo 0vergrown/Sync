@@ -1,20 +1,89 @@
 {
-  "type": "sync:custom_projectile",
-  "texture_location": "sync:textures/entity/custom_projectile.png",
-  "count": 1,
-  "speed": 1.5,
-  "divergence": 1.0,
-  "cooldown": 20,
-  "key": {
-    "key": "key.use",
-    "continuous": false
+  "type":"sync:custom_projectile",
+  "cooldown":40,
+  "hud_render":{
+    "should_render":false,
+    "sprite_location":"origins:textures/gui/community/spiderkolo/resource_bar_01.png",
+    "bar_index":5
   },
-  "bientity_action_on_hit": {
-    "type": "apoli:damage",
-    "amount": 5,
-    "source": {
-      "name": "sync.custom_projectile",
-      "bypasses_armor": false
+  "texture_location":"minecraft:textures/item/brick.png",
+  "count":1,
+  "interval": 0,
+  "start_delay": 0,
+  "speed":2.5,
+  "divergence":0,
+  "tag":"{NoGravity:1b}",
+  "entity_action_before_firing":{
+    "type":"apoli:and",
+    "actions":[
+      {
+        "type":"apoli:swing_hand",
+        "hand":"MAIN_HAND"
+      },
+      {
+        "type": "apoli:play_sound",
+        "sound": "minecraft:entity.ender_eye.death",
+        "volume": 1.00,
+        "pitch": 1.00
+      }
+    ]
+  },
+  "bientity_action_after_firing":{
+    "type":"apoli:delay",
+    "action":{
+      "type":"apoli:target_action",
+      "action":{
+        "type":"apoli:execute_command",
+        "command":"kill @s"
+      }
+    },
+    "ticks":400
+  },
+  "bientity_action_on_miss":{
+    "type":"apoli:target_action",
+    "action":{
+      "type":"apoli:execute_command",
+      "command":"particle snowflake ^ ^ ^ 0.3 0.3 0.3 0.2 6 normal"
     }
+  },
+  "bientity_action_on_hit":{
+    "type":"apoli:and",
+    "actions":[
+      {
+        "type": "apoli:damage",
+        "amount": 5,
+        "damage_type": "minecraft:arrow"
+      },
+      {
+        "type":"apoli:target_action",
+        "action":{
+          "type":"apoli:execute_command",
+          "command":"particle snowflake ^ ^ ^ 0.3 0.3 0.3 0.2 6 normal"
+        }
+      }
+    ]
+  },
+  "owner_target_bientity_action_on_hit":{
+    "type":"apoli:actor_action",
+    "action":{
+      "type": "apoli:damage",
+      "amount": 10,
+      "damage_type": "minecraft:cramming"
+    }
+  },
+  "allow_conditional_cancelling":false,
+  "tick_bientity_action":{
+    "type":"apoli:target_action",
+    "action":{
+      "type":"apoli:execute_command",
+      "command":"particle snowflake ^ ^ ^ 0.15 0.15 0.15 0.04 4 normal"
+    }
+  },
+  "key":{
+    "key":"key.saveToolbarActivator",
+    "continuous":true
+  },
+  "condition":{
+    "type":"apoli:sneaking"
   }
 }
