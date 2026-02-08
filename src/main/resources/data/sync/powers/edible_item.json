@@ -1,0 +1,22 @@
+{
+  "type": "sync:edible_item",
+  "food_component": {
+    "hunger": 6,
+    "saturation": 0.8,
+    "meat": false,
+    "always_edible": true,
+    "snack": false
+  },
+  "item_condition": {
+    "type": "apoli:ingredient",
+    "ingredient": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result_stack": {
+    "item": "minecraft:diamond_block",
+    "amount": 1
+  },
+  "consume_animation": "EAT",
+  "consume_sound": "minecraft:entity.generic.eat"
+}
