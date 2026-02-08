@@ -30,6 +30,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(MobsIgnorePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentLevelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyModelPartsPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(ModifyPlayerModelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PosePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(SprintingPower.getFactory());
 

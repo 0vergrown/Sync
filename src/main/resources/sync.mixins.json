@@ -26,6 +26,7 @@
     "flip_model.GameRendererMixin",
     "flip_model.LivingEntityRendererMixin",
     "modify_model_parts.BipedEntityModelMixin",
+    "modify_player_model.PlayerEntityRendererMixin",
     "pose.LivingEntityRendererMixin",
     "pose.PlayerEntityRendererMixin",
     "summon_clone.EntityRenderDispatcherMixin",
