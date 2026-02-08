@@ -3,13 +3,14 @@
   "package": "dev.overgrown.sync.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "edible_item.HungerManagerMixin",
+    "edible_item.ItemStackMixin",
     "mobs_ignore.AttackMixin",
     "mobs_ignore.HostileEntityMixin",
     "mobs_ignore.MobEntityMixin",
-    "pose.PlayerEntityMixin",
     "modify_enchantment_level.EnchantmentHelperMixin",
-    "edible_item.ItemStackMixin",
-    "edible_item.HungerManagerMixin"
+    "pose.PlayerEntityMixin",
+    "sprinting.SprintingPowerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

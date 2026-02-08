@@ -20,17 +20,18 @@ public class SyncTypeRegistry {
 
     public static void register() {
         // ========== POWER TYPE REGISTRATIONS ==========
-        ApoliRegistryHelper.registerPowerFactory(EntitySetPower.getFactory());
-        ApoliRegistryHelper.registerPowerFactory(FlipModelPower.getFactory());
-        ApoliRegistryHelper.registerPowerFactory(PosePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ActionOnDeathPower.getFactory());
-        ApoliRegistryHelper.registerPowerFactory(ModifyModelPartsPower.getFactory());
-        ApoliRegistryHelper.registerPowerFactory(EmissivePower.getFactory());
-        ApoliRegistryHelper.registerPowerFactory(EntityTextureOverlayPower.getFactory());
-        ApoliRegistryHelper.registerPowerFactory(MobsIgnorePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(CustomProjectilePower.getFactory());
-        ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentLevelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(EdibleItemPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(EmissivePower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(EntitySetPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(EntityTextureOverlayPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(FlipModelPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(MobsIgnorePower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentLevelPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(ModifyModelPartsPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(PosePower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(SprintingPower.getFactory());
 
         // ========== ENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
