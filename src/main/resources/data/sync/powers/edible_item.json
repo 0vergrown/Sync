@@ -3,9 +3,9 @@
   "food_component": {
     "hunger": 6,
     "saturation": 0.8,
-    "is_meat": false,
-    "is_always_edible": true,
-    "is_snack": false
+    "meat": false,
+    "always_edible": true,
+    "snack": false
   },
   "item_condition": {
     "type": "apoli:ingredient",

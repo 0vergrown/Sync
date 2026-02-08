@@ -130,7 +130,9 @@ public abstract class ItemStackMixin implements PotentiallyEdibleItemStack {
         edibleItemPower.applyEffects();
         edibleItemPower.executeEntityAction();
 
-        ItemStack consumed = user.eatFood(world, this.copy());
+        ItemStack copy = this.copy();
+        ((EntityLinkedItemStack) (Object) copy).setEntity(user);
+        ItemStack consumed = user.eatFood(world, copy);
         ItemStack result = edibleItemPower.executeItemActions(consumed);
 
         if (!result.isEmpty()) {
