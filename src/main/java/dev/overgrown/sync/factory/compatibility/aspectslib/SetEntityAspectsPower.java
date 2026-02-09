@@ -1,9 +1,9 @@
-package dev.overgrown.sync.compatibility.aspectslib;
+package dev.overgrown.sync.factory.compatibility.aspectslib;
 
 import dev.overgrown.aspectslib.api.IAspectAffinityEntity;
 import dev.overgrown.aspectslib.data.AspectData;
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.compatibility.aspectslib.data.DataTypes;
+import dev.overgrown.sync.factory.compatibility.aspectslib.data.DataTypes;
 import io.github.apace100.apoli.power.Power;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.power.factory.PowerFactory;

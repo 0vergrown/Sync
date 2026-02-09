@@ -1,4 +1,4 @@
-package dev.overgrown.sync.compatibility.lambdynamiclights;
+package dev.overgrown.sync.factory.power.type.emissive.compatibility.lambdynamiclights;
 
 import dev.lambdaurora.lambdynlights.api.DynamicLightsContext;
 import dev.lambdaurora.lambdynlights.api.DynamicLightsInitializer;

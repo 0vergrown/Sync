@@ -1,4 +1,4 @@
-package dev.overgrown.sync.compatibility.aspectslib.data;
+package dev.overgrown.sync.factory.compatibility.aspectslib.data;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

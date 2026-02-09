@@ -1,8 +1,8 @@
 package dev.overgrown.sync.registry.factory;
 
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.compatibility.aspectslib.SetEntityAspectsPower;
-import dev.overgrown.sync.compatibility.aspectslib.condition.HasAspectCondition;
+import dev.overgrown.sync.factory.compatibility.aspectslib.SetEntityAspectsPower;
+import dev.overgrown.sync.factory.compatibility.aspectslib.condition.HasAspectCondition;
 import dev.overgrown.sync.factory.action.bientity.add_to_entity_set.AddToEntitySetAction;
 import dev.overgrown.sync.factory.action.bientity.remove_from_entity_set.RemoveFromEntitySetAction;
 import dev.overgrown.sync.factory.action.block.ghost_block.GhostBlockAction;
