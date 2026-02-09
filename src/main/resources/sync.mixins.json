@@ -10,6 +10,7 @@
     "mobs_ignore.MobEntityMixin",
     "modify_enchantment_level.EnchantmentHelperMixin",
     "pose.PlayerEntityMixin",
+    "prevent_sprinting_particles.PreventSprintingParticlesMixin",
     "sprinting.SprintingPowerMixin"
   ],
   "injectors": {
