@@ -3,9 +3,9 @@ package dev.overgrown.sync.mixin.summon_clone;
 import java.util.Map;
 
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.entities.clone.CloneEntity;
-import dev.overgrown.sync.entities.clone.renderer.CloneEntityRenderer;
-import dev.overgrown.sync.entities.registry.SyncEntityRegistry;
+import dev.overgrown.sync.factory.action.entity.summons.entities.clone.CloneEntity;
+import dev.overgrown.sync.factory.action.entity.summons.entities.clone.renderer.CloneEntityRenderer;
+import dev.overgrown.sync.registry.entities.SyncEntityRegistry;
 import dev.overgrown.sync.mixin.summon_clone.accessor.LivingEntityRendererAccessor;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.util.Identifier;

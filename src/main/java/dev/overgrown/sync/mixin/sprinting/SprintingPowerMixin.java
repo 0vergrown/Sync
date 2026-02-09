@@ -1,6 +1,6 @@
 package dev.overgrown.sync.mixin.sprinting;
 
-import dev.overgrown.sync.factory.power.type.SprintingPower;
+import dev.overgrown.sync.factory.power.type.sprinting.SprintingPower;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.minecraft.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;

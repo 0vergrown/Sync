@@ -1,6 +1,6 @@
 package dev.overgrown.sync;
 
-import dev.overgrown.sync.utils.key_pressed.KeyPressManager;
+import dev.overgrown.sync.factory.condition.entity.key_pressed.utils.KeyPressManager;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 

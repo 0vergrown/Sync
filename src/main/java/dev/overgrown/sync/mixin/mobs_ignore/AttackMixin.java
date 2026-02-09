@@ -1,6 +1,6 @@
 package dev.overgrown.sync.mixin.mobs_ignore;
 
-import dev.overgrown.sync.factory.power.type.MobsIgnorePower;
+import dev.overgrown.sync.factory.power.type.mobs_ignore.MobsIgnorePower;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;

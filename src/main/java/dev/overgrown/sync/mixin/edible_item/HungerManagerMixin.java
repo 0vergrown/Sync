@@ -1,7 +1,7 @@
 package dev.overgrown.sync.mixin.edible_item;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import dev.overgrown.sync.access.PotentiallyEdibleItemStack;
+import dev.overgrown.sync.factory.power.type.edible_item.access.PotentiallyEdibleItemStack;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;

@@ -1,6 +1,6 @@
 package dev.overgrown.sync.mixin.flip_model;
 
-import dev.overgrown.sync.factory.power.type.FlipModelPower;
+import dev.overgrown.sync.factory.power.type.flip_model.FlipModelPower;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;

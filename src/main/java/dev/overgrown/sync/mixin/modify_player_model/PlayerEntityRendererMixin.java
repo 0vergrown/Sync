@@ -1,6 +1,6 @@
 package dev.overgrown.sync.mixin.modify_player_model;
 
-import dev.overgrown.sync.utils.modify_player_model.ModelRendering;
+import dev.overgrown.sync.factory.power.type.modify_player_model.utils.ModelRendering;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRendererFactory;

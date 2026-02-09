@@ -2,7 +2,7 @@ package dev.overgrown.sync.mixin.modify_enchantment_level;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import dev.overgrown.sync.factory.power.type.ModifyEnchantmentLevelPower;
+import dev.overgrown.sync.factory.power.type.modify_enchantment_level.ModifyEnchantmentLevelPower;
 import io.github.apace100.apoli.access.EntityLinkedItemStack;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;

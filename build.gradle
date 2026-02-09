@@ -97,6 +97,9 @@ dependencies {
 
     // Add the API of LambDynamicLights as an optional dependency
     modCompileOnly("dev.lambdaurora.lambdynamiclights:lambdynamiclights-api:${project.lamb_dynamic_lights_version}")
+
+	// Add Figura as an optional dependency
+	modCompileOnly "org.figuramc:figura-fabric:${project.figura_version}"
 }
 
 processResources {

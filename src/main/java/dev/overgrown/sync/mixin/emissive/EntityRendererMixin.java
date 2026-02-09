@@ -1,7 +1,7 @@
 package dev.overgrown.sync.mixin.emissive;
 
 import java.util.List;
-import dev.overgrown.sync.factory.power.type.EmissivePower;
+import dev.overgrown.sync.factory.power.type.emissive.EmissivePower;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

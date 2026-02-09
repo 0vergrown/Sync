@@ -5,7 +5,7 @@ import dev.lambdaurora.lambdynlights.api.DynamicLightsInitializer;
 import dev.lambdaurora.lambdynlights.api.entity.EntityLightSource;
 import dev.lambdaurora.lambdynlights.api.entity.luminance.EntityLuminance;
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.factory.power.type.EmissivePower;
+import dev.overgrown.sync.factory.power.type.emissive.EmissivePower;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;

@@ -1,7 +1,7 @@
 package dev.overgrown.sync;
 
-import dev.overgrown.sync.entities.registry.SyncEntityModelLayerRegistry;
-import dev.overgrown.sync.entities.registry.SyncEntiyRendererRegistry;
+import dev.overgrown.sync.registry.entities.SyncEntityModelLayerRegistry;
+import dev.overgrown.sync.registry.entities.SyncEntiyRendererRegistry;
 import dev.overgrown.sync.factory.action.entity.radial_menu.client.RadialMenuClient;
 import dev.overgrown.sync.networking.ModPackets;
 import io.netty.buffer.Unpooled;

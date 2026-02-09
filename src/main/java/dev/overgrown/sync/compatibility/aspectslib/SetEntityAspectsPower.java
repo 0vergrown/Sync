@@ -3,7 +3,7 @@ package dev.overgrown.sync.compatibility.aspectslib;
 import dev.overgrown.aspectslib.api.IAspectAffinityEntity;
 import dev.overgrown.aspectslib.data.AspectData;
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.data.general.SyncDataTypes;
+import dev.overgrown.sync.compatibility.aspectslib.data.DataTypes;
 import io.github.apace100.apoli.power.Power;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.power.factory.PowerFactory;
@@ -55,7 +55,7 @@ public class SetEntityAspectsPower extends Power {
         return new PowerFactory<>(
                 Sync.identifier("set_entity_aspects"),
                 new SerializableData()
-                        .add("aspects", SyncDataTypes.STRING_INT_MAP),
+                        .add("aspects", DataTypes.STRING_INT_MAP),
                 data -> (type, entity) -> new SetEntityAspectsPower(type, entity, data.get("aspects"))
         ).allowCondition();
     }

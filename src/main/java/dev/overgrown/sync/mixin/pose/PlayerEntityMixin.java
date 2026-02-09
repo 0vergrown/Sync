@@ -1,6 +1,6 @@
 package dev.overgrown.sync.mixin.pose;
 
-import dev.overgrown.sync.factory.power.type.PosePower;
+import dev.overgrown.sync.factory.power.type.pose.PosePower;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;

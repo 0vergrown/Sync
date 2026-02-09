@@ -1,14 +1,14 @@
 package dev.overgrown.sync;
 
-import dev.overgrown.sync.entities.registry.SyncEntityRegistry;
-import dev.overgrown.sync.events.save_location_and_teleport_to_location.EntityCleanupHandler;
-import dev.overgrown.sync.factory.action.entity.GrantAllPowersAction;
+import dev.overgrown.sync.registry.entities.SyncEntityRegistry;
+import dev.overgrown.sync.factory.action.entity.teleportation.events.EntityCleanupHandler;
+import dev.overgrown.sync.factory.action.entity.grant_all_powers.GrantAllPowersAction;
 import dev.overgrown.sync.factory.action.entity.radial_menu.server.RadialMenuServer;
-import dev.overgrown.sync.factory.power.type.ActionOnDeathPower;
-import dev.overgrown.sync.factory.registry.SyncTypeRegistry;
+import dev.overgrown.sync.factory.power.type.action_on_death.ActionOnDeathPower;
+import dev.overgrown.sync.registry.factory.SyncTypeRegistry;
 import dev.overgrown.sync.networking.ModPackets;
-import dev.overgrown.sync.utils.key_pressed.KeyPressManager;
-import dev.overgrown.sync.utils.player_model_type.PlayerModelTypeManager;
+import dev.overgrown.sync.factory.condition.entity.key_pressed.utils.KeyPressManager;
+import dev.overgrown.sync.factory.condition.entity.player_model_type.utils.PlayerModelTypeManager;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
