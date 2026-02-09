@@ -28,7 +28,7 @@
       "dev.overgrown.sync.SyncDataGenerator"
     ],
     "lambdynlights:initializer": [
-      "dev.overgrown.sync.compatibility.lambdynamiclights.DynamicLightsEntry"
+      "dev.overgrown.sync.factory.power.type.emissive.compatibility.lambdynamiclights.DynamicLightsEntry"
     ]
   },
   "mixins":[
