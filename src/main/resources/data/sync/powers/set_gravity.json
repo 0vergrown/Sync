@@ -1,0 +1,7 @@
+{
+  "type": "apoli:action_over_time",
+  "entity_action": {
+    "type": "sync:set_no_gravity"
+  },
+  "interval": 100
+}
