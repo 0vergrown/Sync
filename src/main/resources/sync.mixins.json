@@ -21,6 +21,8 @@
   },
   "client": [
     "emissive.EntityRendererMixin",
+    "energy_swirl.LivingEntityRendererMixin",
+    "energy_swirl.accessor.LivingEntityRendererAccessor",
     "entity_texture_overlay.CapeFeatureRendererMixin",
     "entity_texture_overlay.PlayerEntityRendererMixin",
     "entity_texture_overlay.PlayerListEntryMixin",

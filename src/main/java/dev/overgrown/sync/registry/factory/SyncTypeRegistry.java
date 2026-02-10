@@ -32,6 +32,7 @@ import dev.overgrown.sync.factory.condition.item.fuel.FuelCondition;
 import dev.overgrown.sync.factory.power.type.action_on_death.ActionOnDeathPower;
 import dev.overgrown.sync.factory.power.type.custom_projectile.CustomProjectilePower;
 import dev.overgrown.sync.factory.power.type.emissive.EmissivePower;
+import dev.overgrown.sync.factory.power.type.energy_swirl.EnergySwirlPower;
 import dev.overgrown.sync.factory.power.type.entity_set.EntitySetPower;
 import dev.overgrown.sync.factory.power.type.entity_texture_overlay.EntityTextureOverlayPower;
 import dev.overgrown.sync.factory.power.type.edible_item.EdibleItemPower;
@@ -53,6 +54,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(CustomProjectilePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(EdibleItemPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(EmissivePower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(EnergySwirlPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(EntitySetPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(EntityTextureOverlayPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(FlipModelPower.getFactory());
