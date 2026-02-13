@@ -20,7 +20,6 @@ public class DynamicLightsEntry implements DynamicLightsInitializer {
     private static final EntityLuminance EMISSIVE_POWER_LUMINANCE = new EntityLuminance() {
         @Override
         public @NotNull Type type() {
-            // This will be set when we register the type
             return TYPE;
         }
 
@@ -78,7 +77,6 @@ public class DynamicLightsEntry implements DynamicLightsInitializer {
     }
 
     @Override
-    public void onInitializeDynamicLights() {
-        // Empty implementation for the deprecated method
-    }
+    @SuppressWarnings("removal")
+    public void onInitializeDynamicLights() {}
 }
