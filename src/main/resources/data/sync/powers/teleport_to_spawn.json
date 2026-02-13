@@ -1,0 +1,49 @@
+{
+  "type": "apoli:active_self",
+  "entity_action": {
+    "type": "apoli:if_else",
+    "condition": {
+      "type": "apoli:sneaking"
+    },
+    "if_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "sync:teleport_to_spawn",
+          "player_spawn": false
+        },
+        {
+          "type": "sync:print",
+          "message": "You were sent to Spawn!!!",
+          "show_in_chat": true,
+          "logger_id": "Sync/Teleport_To_Spawn"
+        }
+      ]
+    },
+    "else_action": {
+      "type": "apoli:and",
+      "actions": [
+        {
+          "type": "sync:teleport_to_spawn",
+          "player_spawn": true
+        },
+        {
+          "type": "sync:print",
+          "message": "You've been teleported to your bed!!!!",
+          "show_in_chat": true,
+          "logger_id": "Sync/Bed_teleport"
+        }
+      ]
+    }
+  },
+  "cooldown": 100,
+  "hud_render": {
+    "should_render": true,
+    "sprite_location": "origins:textures/gui/resource_bar.png",
+    "bar_index": 4
+  },
+  "key": {
+    "key": "key.saveToolbarActivator",
+    "continuous": false
+  }
+}

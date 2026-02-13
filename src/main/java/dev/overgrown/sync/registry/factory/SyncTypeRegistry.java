@@ -2,6 +2,7 @@ package dev.overgrown.sync.registry.factory;
 
 import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
+import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
 import dev.overgrown.sync.factory.compatibility.aspectslib.SetEntityAspectsPower;
 import dev.overgrown.sync.factory.compatibility.aspectslib.condition.HasAspectCondition;
 import dev.overgrown.sync.factory.action.bientity.add_to_entity_set.AddToEntitySetAction;
@@ -81,6 +82,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityAction(SummonCloneAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(SummonMinionAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(TeleportToLocationAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(TeleportToSpawnAction.getFactory());
 
         // ========== BLOCK ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBlockAction(SpawnEntityBlockAction.getFactory());
