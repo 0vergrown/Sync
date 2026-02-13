@@ -49,21 +49,36 @@ public class EnergySwirlFeatureRenderer<T extends LivingEntity, M extends Entity
         float size = power.getSize();
         float speed = power.getSpeed();
 
-        // Calculate animation based on entity age and speed
-        float age = entity.age + tickDelta;
-        float xOffset = MathHelper.cos(age * 0.02f) * 3.0f; // Similar to wither effect
-        float yOffset = age * speed % 1.0f; // Vertical scrolling
+        // Calculate animation offsets
+        float xOffset;
+        float yOffset;
+
+        if (speed == 0.0f) {
+            // Static overlay (no animation)
+            xOffset = 0.0f;
+            yOffset = 0.0f;
+        } else {
+            // Animated overlay (original behavior)
+            float age = entity.age + tickDelta;
+            xOffset = MathHelper.cos(age * 0.02f) * 3.0f; // Horizontal swirling motion
+            yOffset = age * speed % 1.0f; // Vertical scrolling
+        }
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(
-                RenderLayer.getEnergySwirl(texture, xOffset, yOffset)
+                RenderLayer.getEnergySwirl(texture, xOffset % 1.0f, yOffset)
         );
 
         // Apply size scaling
         matrices.push();
         matrices.scale(size, size, size);
 
+        // Get and configure the model
+        EntityModel<T> model = this.getContextModel();
+        model.animateModel(entity, limbAngle, limbDistance, tickDelta);
+        model.setAngles(entity, limbAngle, limbDistance, animationProgress, headYaw, headPitch);
+
         // Render the energy swirl
-        this.getContextModel().render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV,
+        model.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV,
                 0.5F, 0.5F, 0.5F, 1.0F);
 
         matrices.pop();
