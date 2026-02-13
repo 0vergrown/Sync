@@ -18,13 +18,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.StackReference;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
-import net.minecraft.world.World;
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +35,6 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
 
     private static final ConcurrentHashMap<UUID, ConcurrentHashMap<ItemStack, NbtList>> ENTITY_ITEM_ENCHANTS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<UUID, ConcurrentHashMap<ModifyEnchantmentLevelPower, Pair<Integer, Boolean>>> POWER_MODIFIER_CACHE = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<UUID, ItemStack> MODIFIED_EMPTY_STACKS = new ConcurrentHashMap<>();
 
     private final Enchantment enchantment;
     private final Predicate<ItemStack> itemCondition;
@@ -55,8 +52,8 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
     public void onAdded() {
         ENTITY_ITEM_ENCHANTS.computeIfAbsent(entity.getUuid(), uuid -> new ConcurrentHashMap<>());
         POWER_MODIFIER_CACHE
-            .computeIfAbsent(entity.getUuid(), uuid -> new ConcurrentHashMap<>())
-            .compute(this, (power, cache) -> new Pair<>(0, false));
+                .computeIfAbsent(entity.getUuid(), uuid -> new ConcurrentHashMap<>())
+                .compute(this, (power, cache) -> new Pair<>(0, false));
     }
 
     @Override
@@ -68,61 +65,27 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
             POWER_MODIFIER_CACHE.remove(entity.getUuid());
             ENTITY_ITEM_ENCHANTS.remove(entity.getUuid());
         }
-        for (int slot : ItemSlotArgumentTypeAccessor.getSlotMappings().values()) {
-            StackReference stackReference = entity.getStackReference(slot);
-            if (stackReference != StackReference.EMPTY && isWorkableEmptyStack(entity, stackReference)) {
-                stackReference.set(ItemStack.EMPTY);
-            }
-        }
-        MODIFIED_EMPTY_STACKS.remove(entity.getUuid());
     }
 
     @Override
     public void tick() {
+        // Link all item stacks in the entity's inventory to the entity
         for (int slot : ItemSlotArgumentTypeAccessor.getSlotMappings().values()) {
             StackReference stackReference = entity.getStackReference(slot);
             if (stackReference == StackReference.EMPTY) continue;
             ItemStack stack = stackReference.get();
-            if (stack.isEmpty() && !isWorkableEmptyStack(entity, stackReference) && checkItemCondition(stack)) {
-                stackReference.set(getOrCreateWorkableEmptyStack(entity));
+            if (!stack.isEmpty()) {
+                ((EntityLinkedItemStack) (Object) stack).setEntity(entity);
             }
         }
     }
 
-    public static ItemStack getOrCreateWorkableEmptyStack(Entity entity) {
-        if (!isInEnchantmentMap(entity)) return ItemStack.EMPTY;
-        UUID uuid = entity.getUuid();
-        if (MODIFIED_EMPTY_STACKS.containsKey(uuid)) return MODIFIED_EMPTY_STACKS.get(uuid);
-        ItemStack workableEmptyStack = new ItemStack(Items.AIR, 0);
-        ((EntityLinkedItemStack) (Object) workableEmptyStack).setEntity(entity);
-        return MODIFIED_EMPTY_STACKS.compute(uuid, (prevUuid, prevStack) -> workableEmptyStack);
-    }
-
-    public static void integrateCallback(Entity entity, World world) {
-        MODIFIED_EMPTY_STACKS.remove(entity.getUuid());
-    }
-
-    public static boolean isWorkableEmptyStack(StackReference stackReference) {
-        Entity stackHolder = ((EntityLinkedItemStack) (Object) stackReference.get()).getEntity();
-        return stackHolder != null && isWorkableEmptyStack(stackHolder, stackReference);
-    }
-
-    public static boolean isWorkableEmptyStack(Entity entity, StackReference stackReference) {
-        return stackReference.get().isEmpty()
-            && MODIFIED_EMPTY_STACKS.containsKey(entity.getUuid())
-            && stackReference.get() == MODIFIED_EMPTY_STACKS.get(entity.getUuid());
-    }
-
-    public static boolean isInEnchantmentMap(LivingEntity entity) {
-        return ENTITY_ITEM_ENCHANTS.containsKey(entity.getUuid());
-    }
-
     public static boolean isInEnchantmentMap(Entity entity) {
-        return entity instanceof LivingEntity livingEntity && isInEnchantmentMap(livingEntity);
+        return entity instanceof LivingEntity && ENTITY_ITEM_ENCHANTS.containsKey(entity.getUuid());
     }
 
     public boolean doesApply(Enchantment enchantment, ItemStack self) {
-        return enchantment.equals(this.enchantment) && checkItemCondition(self);
+        return this.enchantment.equals(enchantment) && checkItemCondition(self);
     }
 
     public boolean checkItemCondition(ItemStack self) {
@@ -133,7 +96,7 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
         for (int index = 0; index < enchantmentsNbt.size(); ++index) {
             NbtCompound enchantmentNbt = enchantmentsNbt.getCompound(index);
             Identifier enchantmentId = Identifier.tryParse(enchantmentNbt.getString("id"));
-            if (enchantmentId != null && id != null && enchantmentId.equals(id)) {
+            if (enchantmentId != null && enchantmentId.equals(id)) {
                 return Optional.of(index);
             }
         }
@@ -146,6 +109,8 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
 
         NbtList newEnchantmentsNbt = enchants.copy();
         for (ModifyEnchantmentLevelPower power : PowerHolderComponent.getPowers(livingStackHolder, ModifyEnchantmentLevelPower.class)) {
+            if (!power.isActive()) continue; // Only apply active powers
+
             Enchantment enchantment = power.enchantment;
             Identifier enchantmentId = Registries.ENCHANTMENT.getId(enchantment);
             if (enchantmentId == null || !power.doesApply(enchantment, self)) continue;
@@ -155,13 +120,17 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
                 NbtCompound existingEnchantmentNbt = newEnchantmentsNbt.getCompound(enchantmentIndex.get());
                 int enchantmentLvl = existingEnchantmentNbt.getInt("lvl");
                 int newEnchantmentLvl = (int) ModifierUtil.applyModifiers(livingStackHolder, power.getModifiers(), enchantmentLvl);
-                existingEnchantmentNbt.putInt("lvl", newEnchantmentLvl);
+                existingEnchantmentNbt.putInt("lvl", Math.max(0, newEnchantmentLvl)); // Ensure non-negative
                 newEnchantmentsNbt.set(enchantmentIndex.get(), existingEnchantmentNbt);
             } else {
-                NbtCompound newEnchantmentNbt = new NbtCompound();
-                newEnchantmentNbt.putString("id", enchantmentId.toString());
-                newEnchantmentNbt.putInt("lvl", (int) ModifierUtil.applyModifiers(livingStackHolder, power.getModifiers(), 0));
-                newEnchantmentsNbt.add(newEnchantmentNbt);
+                int baseLevel = 0;
+                int newEnchantmentLvl = (int) ModifierUtil.applyModifiers(livingStackHolder, power.getModifiers(), baseLevel);
+                if (newEnchantmentLvl > 0) { // Only add if result is positive
+                    NbtCompound newEnchantmentNbt = new NbtCompound();
+                    newEnchantmentNbt.putString("id", enchantmentId.toString());
+                    newEnchantmentNbt.putInt("lvl", newEnchantmentLvl);
+                    newEnchantmentsNbt.add(newEnchantmentNbt);
+                }
             }
         }
         return newEnchantmentsNbt;
@@ -215,7 +184,7 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
             }).orElse(0);
         }
 
-        Entity nullSafeEntity = livingEntity == null ? ((EntityLinkedItemStack) (Object) stack).getEntity() : livingEntity;
+        Entity nullSafeEntity = livingEntity != null ? livingEntity : ((EntityLinkedItemStack) (Object) stack).getEntity();
         if (!(nullSafeEntity instanceof LivingEntity livingNullSafeEntity) || !ENTITY_ITEM_ENCHANTS.containsKey(livingNullSafeEntity.getUuid())) {
             return EnchantmentHelper.getLevel(enchantment, stack);
         }
@@ -251,20 +220,20 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
 
     public static PowerFactory<?> getFactory() {
         return new PowerFactory<>(
-            Sync.identifier("modify_enchantment_level"),
-            new SerializableData()
-                .add("enchantment", SerializableDataTypes.ENCHANTMENT)
-                .add("item_condition", ApoliDataTypes.ITEM_CONDITION, null)
-                .add("modifier", Modifier.DATA_TYPE, null)
-                .add("modifiers", Modifier.LIST_TYPE, null),
-            data -> (powerType, livingEntity) -> new ModifyEnchantmentLevelPower(
-                powerType,
-                livingEntity,
-                data.get("enchantment"),
-                data.get("item_condition"),
-                data.get("modifier"),
-                data.get("modifiers")
-            )
+                Sync.identifier("modify_enchantment_level"),
+                new SerializableData()
+                        .add("enchantment", SerializableDataTypes.ENCHANTMENT)
+                        .add("item_condition", ApoliDataTypes.ITEM_CONDITION, null)
+                        .add("modifier", Modifier.DATA_TYPE, null)
+                        .add("modifiers", Modifier.LIST_TYPE, null),
+                data -> (powerType, livingEntity) -> new ModifyEnchantmentLevelPower(
+                        powerType,
+                        livingEntity,
+                        data.get("enchantment"),
+                        data.get("item_condition"),
+                        data.get("modifier"),
+                        data.get("modifiers")
+                )
         ).allowCondition();
     }
 }
