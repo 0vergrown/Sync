@@ -1,0 +1,15 @@
+{
+  "type": "sync:prevent_label_render",
+  "entity_condition": {
+    "type": "apoli:in_block_anywhere",
+    "block_condition": {
+      "type": "apoli:fluid",
+      "fluid_condition": {
+        "type": "apoli:in_tag",
+        "tag": "minecraft:water"
+      }
+    },
+    "comparison": ">=",
+    "compare_to": 1
+  }
+}
