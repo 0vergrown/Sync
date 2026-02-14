@@ -39,6 +39,7 @@ import dev.overgrown.sync.factory.power.type.entity_texture_overlay.EntityTextur
 import dev.overgrown.sync.factory.power.type.edible_item.EdibleItemPower;
 import dev.overgrown.sync.factory.power.type.flip_model.FlipModelPower;
 import dev.overgrown.sync.factory.power.type.mobs_ignore.MobsIgnorePower;
+import dev.overgrown.sync.factory.power.type.modify_enchantment_damage_dealt.ModifyEnchantmentDamageDealtPower;
 import dev.overgrown.sync.factory.power.type.modify_enchantment_level.ModifyEnchantmentLevelPower;
 import dev.overgrown.sync.factory.power.type.modify_model_parts.ModifyModelPartsPower;
 import dev.overgrown.sync.factory.power.type.modify_player_model.ModifyPlayerModelPower;
@@ -60,6 +61,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(EntityTextureOverlayPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(FlipModelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(MobsIgnorePower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentDamageDealtPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentLevelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyModelPartsPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyPlayerModelPower.getFactory());
