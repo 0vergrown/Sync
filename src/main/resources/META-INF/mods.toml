@@ -1,0 +1,13 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[properties]
+"connector:placeholder"=true
+
+[[mods]]
+modId="sync"
+version="1.9.0"
+displayName="Sync"
+authors="overgrown"
+description='''Sync is an Apoli (Origins) addon that backports newer features to old versions of the game and more!'''

@@ -1,70 +1,65 @@
 package dev.overgrown.sync.mixin.modify_enchantment_level;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.sugar.Local;
 import dev.overgrown.sync.factory.power.type.modify_enchantment_level.ModifyEnchantmentLevelPower;
 import io.github.apace100.apoli.access.EntityLinkedItemStack;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Map;
 
 @Mixin(EnchantmentHelper.class)
 public class EnchantmentHelperMixin {
 
-    @ModifyExpressionValue(
-            method = "forEachEnchantment(Lnet/minecraft/enchantment/EnchantmentHelper$Consumer;Lnet/minecraft/item/ItemStack;)V",
+    @Inject(
+            method = "get(Lnet/minecraft/item/ItemStack;)Ljava/util/Map;",
             at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/item/ItemStack;isEmpty()Z"
-            )
+                    "HEAD"
+            ),
+            cancellable = true
     )
-    private static boolean sync$forEachIsEmpty(boolean original, @Local(argsOnly = true) ItemStack stack) {
-        if (!original) {
-            return false; // Stack is not empty, proceed normally
-        }
-        // Stack is empty - only skip if there's no entity or entity is not in map
+    private static void sync$modifyGet(ItemStack stack, CallbackInfoReturnable<Map<Enchantment, Integer>> cir) {
         Entity entity = ((EntityLinkedItemStack) (Object) stack).getEntity();
-        return entity == null || !ModifyEnchantmentLevelPower.isInEnchantmentMap(entity);
-    }
-
-    @ModifyExpressionValue(
-            method = "forEachEnchantment(Lnet/minecraft/enchantment/EnchantmentHelper$Consumer;Lnet/minecraft/item/ItemStack;)V",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/item/ItemStack;getEnchantments()Lnet/minecraft/nbt/NbtList;"
-            )
-    )
-    private static NbtList sync$getEnchantmentsOnForEach(NbtList original, @Local(argsOnly = true) ItemStack stack) {
-        return ModifyEnchantmentLevelPower.getEnchantments(stack, original);
-    }
-
-    @ModifyExpressionValue(
-            method = "getLevel",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/item/ItemStack;isEmpty()Z"
-            )
-    )
-    private static boolean sync$getLevelWhenEmpty(boolean original, @Local(argsOnly = true) ItemStack stack) {
-        if (!original) {
-            return false; // Stack is not empty, proceed normally
+        if (entity != null && ModifyEnchantmentLevelPower.isInEnchantmentMap(entity)) {
+            Map<Enchantment, Integer> result = ModifyEnchantmentLevelPower.get(stack, true);
+            if (result != null) {
+                cir.setReturnValue(result);
+            }
         }
-        // Stack is empty - only skip if there's no entity or entity is not in map
-        Entity entity = ((EntityLinkedItemStack) (Object) stack).getEntity();
-        return entity == null || !ModifyEnchantmentLevelPower.isInEnchantmentMap(entity);
     }
 
-    @ModifyExpressionValue(
-            method = "getLevel",
+    @Inject(
+            method = "getLevel(Lnet/minecraft/enchantment/Enchantment;Lnet/minecraft/item/ItemStack;)I",
             at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/item/ItemStack;getEnchantments()Lnet/minecraft/nbt/NbtList;"
-            )
+                    "HEAD"
+            ),
+            cancellable = true
     )
-    private static NbtList sync$getEnchantmentsOnGetLevel(NbtList original, @Local(argsOnly = true) ItemStack stack) {
-        return ModifyEnchantmentLevelPower.getEnchantments(stack, original);
+    private static void sync$modifyGetLevel(Enchantment enchantment, ItemStack stack, CallbackInfoReturnable<Integer> cir) {
+        Entity entity = ((EntityLinkedItemStack) (Object) stack).getEntity();
+        if (entity != null && ModifyEnchantmentLevelPower.isInEnchantmentMap(entity)) {
+            int level = ModifyEnchantmentLevelPower.getLevel(enchantment, stack, true);
+            cir.setReturnValue(level);
+        }
+    }
+
+    @Inject(
+            method = "getEquipmentLevel(Lnet/minecraft/enchantment/Enchantment;Lnet/minecraft/entity/LivingEntity;)I",
+            at = @At(
+                    "HEAD"
+            ),
+            cancellable = true
+    )
+    private static void sync$modifyEquipmentLevel(Enchantment enchantment, LivingEntity entity, CallbackInfoReturnable<Integer> cir) {
+        if (ModifyEnchantmentLevelPower.isInEnchantmentMap(entity)) {
+            int level = ModifyEnchantmentLevelPower.getEquipmentLevel(enchantment, entity, true);
+            cir.setReturnValue(level);
+        }
     }
 }

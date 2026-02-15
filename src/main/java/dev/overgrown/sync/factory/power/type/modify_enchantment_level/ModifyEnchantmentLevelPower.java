@@ -142,6 +142,12 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
             return originalTag;
         }
         ConcurrentHashMap<ItemStack, NbtList> itemEnchants = ENTITY_ITEM_ENCHANTS.get(stackHolder.getUuid());
+
+        // Handle empty stacks with entity link
+        if (stack.isEmpty() && itemEnchants.containsKey(stack)) {
+            return itemEnchants.get(stack);
+        }
+
         if (shouldReapplyEnchantments(livingStackHolder, stack)) {
             itemEnchants.computeIfAbsent(stack, _stack -> originalTag);
             return itemEnchants.compute(stack, (_stack, nbtElements) -> generateEnchantments(originalTag, stack));

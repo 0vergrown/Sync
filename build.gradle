@@ -108,6 +108,10 @@ processResources {
 	filesMatching("fabric.mod.json") {
 		expand "version": inputs.properties.version
 	}
+
+	filesMatching("META-INF/mods.toml") {
+		expand "version": project.version
+	}
 }
 
 tasks.withType(JavaCompile).configureEach {
