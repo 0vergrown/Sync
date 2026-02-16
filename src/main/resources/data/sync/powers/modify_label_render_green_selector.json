@@ -1,5 +1,20 @@
 {
-  "type": "sync:prevent_label_render",
+  "type": "sync:modify_label_render",
+  "text": [
+    {
+      "text": "[",
+      "color": "yellow"
+    },
+    {
+      "selector": "@s",
+      "color": "green",
+      "bold": true
+    },
+    {
+      "text": "]",
+      "color": "yellow"
+    }
+  ],
   "entity_condition": {
     "type": "apoli:in_block_anywhere",
     "block_condition": {

@@ -1,0 +1,4 @@
+{
+  "type": "sync:modify_label_render",
+  "render_mode": "hide_partially"
+}

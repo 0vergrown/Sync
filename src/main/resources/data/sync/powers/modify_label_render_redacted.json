@@ -1,0 +1,8 @@
+{
+  "type": "sync:modify_label_render",
+  "text": {
+    "text": "[REDACTED]",
+    "bold": true,
+    "color": "black"
+  }
+}

@@ -44,7 +44,7 @@ import dev.overgrown.sync.factory.power.type.modify_enchantment_level.ModifyEnch
 import dev.overgrown.sync.factory.power.type.modify_model_parts.ModifyModelPartsPower;
 import dev.overgrown.sync.factory.power.type.modify_player_model.ModifyPlayerModelPower;
 import dev.overgrown.sync.factory.power.type.pose.PosePower;
-import dev.overgrown.sync.factory.power.type.prevent_label_render.PreventLabelRenderPower;
+import dev.overgrown.sync.factory.power.type.modify_label_render.ModifyLabelRenderPower;
 import dev.overgrown.sync.factory.power.type.prevent_sprinting_particles.PreventSprintingParticlesPower;
 import dev.overgrown.sync.factory.power.type.sprinting.SprintingPower;
 import dev.overgrown.sync.registry.factory.utils.ApoliRegistryHelper;
@@ -64,10 +64,10 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(MobsIgnorePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentDamageDealtPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentLevelPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(ModifyLabelRenderPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyModelPartsPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyPlayerModelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PosePower.getFactory());
-        ApoliRegistryHelper.registerPowerFactory(PreventLabelRenderPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PreventSprintingParticlesPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(SprintingPower.getFactory());
 

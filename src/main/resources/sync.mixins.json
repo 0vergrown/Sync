@@ -36,7 +36,7 @@
     "modify_player_model.PlayerEntityRendererMixin",
     "pose.LivingEntityRendererMixin",
     "pose.PlayerEntityRendererMixin",
-    "prevent_label_render.EntityRendererMixin",
+    "modify_label_render.EntityRendererMixin",
     "summon_clone.EntityRenderDispatcherMixin",
     "summon_clone.accessor.LivingEntityRendererAccessor"
   ]
