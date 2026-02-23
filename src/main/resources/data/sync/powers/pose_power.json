@@ -8,9 +8,9 @@
       "should_render": false
     }
   },
-  "standing": {
+  "throw_spear": {
     "type":"sync:pose",
-    "pose":"standing",
+    "arm_pose":"throw_spear",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -21,7 +21,7 @@
   },
   "fall_flying": {
     "type":"sync:pose",
-    "pose":"fall_flying",
+    "entity_pose":"fall_flying",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -32,7 +32,8 @@
   },
   "sleeping": {
     "type":"sync:pose",
-    "pose":"sleeping",
+    "entity_pose":"sleeping",
+    "arm_pose": "bow_and_arrow",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -43,7 +44,7 @@
   },
   "swimming": {
     "type":"sync:pose",
-    "pose":"swimming",
+    "entity_pose":"swimming",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -54,7 +55,7 @@
   },
   "spin_attack": {
     "type":"sync:pose",
-    "pose":"spin_attack",
+    "entity_pose":"spin_attack",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -65,7 +66,7 @@
   },
   "crouching": {
     "type":"sync:pose",
-    "pose":"crouching",
+    "entity_pose":"crouching",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -76,7 +77,7 @@
   },
   "long_jumping": {
     "type":"sync:pose",
-    "pose":"long_jumping",
+    "entity_pose":"long_jumping",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -87,7 +88,7 @@
   },
   "dying": {
     "type":"sync:pose",
-    "pose":"dying",
+    "entity_pose":"dying",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -98,7 +99,7 @@
   },
   "croaking": {
     "type":"sync:pose",
-    "pose":"croaking",
+    "entity_pose":"croaking",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -109,7 +110,7 @@
   },
   "using_tongue": {
     "type":"sync:pose",
-    "pose":"using_tongue",
+    "entity_pose":"using_tongue",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -120,7 +121,7 @@
   },
   "sitting": {
     "type":"sync:pose",
-    "pose":"sitting",
+    "entity_pose":"sitting",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -131,7 +132,7 @@
   },
   "roaring": {
     "type":"sync:pose",
-    "pose":"roaring",
+    "entity_pose":"roaring",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -142,7 +143,7 @@
   },
   "sniffing": {
     "type":"sync:pose",
-    "pose":"sniffing",
+    "entity_pose":"sniffing",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -153,7 +154,7 @@
   },
   "emerging": {
     "type":"sync:pose",
-    "pose":"emerging",
+    "entity_pose":"emerging",
     "priority":0,
     "condition":{
       "type":"apoli:resource",
@@ -164,7 +165,7 @@
   },
   "digging": {
     "type":"sync:pose",
-    "pose":"digging",
+    "entity_pose":"digging",
     "priority":0,
     "condition":{
       "type":"apoli:resource",

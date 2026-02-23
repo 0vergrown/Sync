@@ -8,18 +8,29 @@ import io.github.apace100.apoli.power.factory.PowerFactory;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataType;
 import io.github.apace100.calio.data.SerializableDataTypes;
+import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.LivingEntity;
+import org.jetbrains.annotations.Nullable;
 
 public class PosePower extends Power implements Prioritized<PosePower> {
 
-    private final EntityPose pose;
-    private final int priority;
-    public static final SerializableDataType<EntityPose> ENTITY_POSE = SerializableDataType.enumValue(EntityPose.class);
+    public static final SerializableDataType<EntityPose> ENTITY_POSE =
+            SerializableDataType.enumValue(EntityPose.class);
+    public static final SerializableDataType<BipedEntityModel.ArmPose> ARM_POSE =
+            SerializableDataType.enumValue(BipedEntityModel.ArmPose.class);
 
-    public PosePower(PowerType<?> type, LivingEntity entity, EntityPose pose, int priority) {
+    @Nullable private final EntityPose entityPose;
+    @Nullable private final BipedEntityModel.ArmPose armPose;
+    private final int priority;
+
+    public PosePower(PowerType<?> type, LivingEntity entity,
+                     @Nullable EntityPose entityPose,
+                     @Nullable BipedEntityModel.ArmPose armPose,
+                     int priority) {
         super(type, entity);
-        this.pose = pose;
+        this.entityPose = entityPose;
+        this.armPose = armPose;
         this.priority = priority;
     }
 
@@ -28,20 +39,28 @@ public class PosePower extends Power implements Prioritized<PosePower> {
         return priority;
     }
 
-    public EntityPose getPose() {
-        return pose;
+    @Nullable
+    public EntityPose getEntityPose() {
+        return entityPose;
+    }
+
+    @Nullable
+    public BipedEntityModel.ArmPose getArmPose() {
+        return armPose;
     }
 
     public static PowerFactory<?> getFactory() {
         return new PowerFactory<>(
                 Sync.identifier("pose"),
                 new SerializableData()
-                        .add("pose", PosePower.ENTITY_POSE)
+                        .add("entity_pose", ENTITY_POSE, null)
+                        .add("arm_pose", ARM_POSE, null)
                         .add("priority", SerializableDataTypes.INT, 0),
                 data -> (powerType, entity) -> new PosePower(
                         powerType,
                         entity,
-                        data.get("pose"),
+                        data.get("entity_pose"),
+                        data.get("arm_pose"),
                         data.get("priority")
                 )
         ).allowCondition();

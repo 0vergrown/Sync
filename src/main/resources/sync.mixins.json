@@ -32,11 +32,12 @@
     "flip_model.GameRendererMixin",
     "flip_model.LivingEntityRendererMixin",
     "integration.connector.ClientTickEventMixin",
+    "modify_label_render.EntityRendererMixin",
     "modify_model_parts.BipedEntityModelMixin",
     "modify_player_model.PlayerEntityRendererMixin",
+    "pose.BipedEntityModelMixin",
     "pose.LivingEntityRendererMixin",
     "pose.PlayerEntityRendererMixin",
-    "modify_label_render.EntityRendererMixin",
     "summon_clone.EntityRenderDispatcherMixin",
     "summon_clone.accessor.LivingEntityRendererAccessor"
   ]
