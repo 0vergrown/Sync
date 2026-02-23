@@ -1,6 +1,7 @@
 package dev.overgrown.sync.registry.factory;
 
 import dev.overgrown.sync.Sync;
+import dev.overgrown.sync.factory.action.bientity.convert_entity.ConvertEntityAction;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
 import dev.overgrown.sync.factory.compatibility.aspectslib.SetEntityAspectsPower;
@@ -102,6 +103,7 @@ public class SyncTypeRegistry {
 
         // ========== BIENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBientityAction(AddToEntitySetAction.getFactory());
+        ApoliRegistryHelper.registerBientityAction(ConvertEntityAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(RemoveFromEntitySetAction.getFactory());
 
         // ========== BIENTITY CONDITION REGISTRATIONS ==========
