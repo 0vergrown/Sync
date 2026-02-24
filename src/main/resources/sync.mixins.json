@@ -23,6 +23,9 @@
     "requireAnnotations": true
   },
   "client": [
+    "disguise.EntityRenderDispatcherDisguiseMixin",
+    "disguise.EntityRendererDisguiseNameMixin",
+    "disguise.PlayerListEntryDisguiseMixin",
     "emissive.EntityRendererMixin",
     "energy_swirl.LivingEntityRendererMixin",
     "energy_swirl.accessor.LivingEntityRendererAccessor",

@@ -4,6 +4,8 @@ import dev.overgrown.sync.registry.entities.SyncEntityRegistry;
 import dev.overgrown.sync.factory.action.entity.teleportation.events.EntityCleanupHandler;
 import dev.overgrown.sync.factory.action.entity.grant_all_powers.GrantAllPowersAction;
 import dev.overgrown.sync.factory.action.entity.radial_menu.server.RadialMenuServer;
+import dev.overgrown.sync.factory.disguise.DisguiseData;
+import dev.overgrown.sync.factory.disguise.DisguiseManager;
 import dev.overgrown.sync.factory.power.type.action_on_death.ActionOnDeathPower;
 import dev.overgrown.sync.registry.factory.SyncTypeRegistry;
 import dev.overgrown.sync.networking.ModPackets;
@@ -17,11 +19,16 @@ import io.github.apace100.apoli.util.NamespaceAlias;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceType;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.UUID;
 
 public class Sync implements ModInitializer {
     public static final String MOD_ID = "sync";
@@ -55,19 +62,18 @@ public class Sync implements ModInitializer {
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
             if (entity instanceof ServerPlayerEntity) {
                 PowerHolderComponent component = PowerHolderComponent.KEY.get(entity);
-                component.getPowers(ActionOnDeathPower.class).forEach(power -> {
-                    power.onDeath(damageSource, entity.getMaxHealth()); // Use max health as damage amount
-                });
+                component.getPowers(ActionOnDeathPower.class).forEach(power ->
+                        power.onDeath(damageSource, entity.getMaxHealth())); // Use max health as damage amount
             }
+            // Clean up disguise when an entity dies
+            DisguiseManager.removePlayer(entity.getUuid());
         });
 
         ServerPlayNetworking.registerGlobalReceiver(
                 ModPackets.PLAYER_MODEL_TYPE_UPDATE,
                 (server, player, handler, buf, responseSender) -> {
                     String modelType = buf.readString();
-                    server.execute(() -> {
-                        PlayerModelTypeManager.setModelType(player, modelType);
-                    });
+                    server.execute(() -> PlayerModelTypeManager.setModelType(player, modelType));
                 }
         );
 
@@ -76,11 +82,16 @@ public class Sync implements ModInitializer {
                 (server, player, handler, buf, responseSender) -> {
                     String key = buf.readString();
                     boolean pressed = buf.readBoolean();
-                    server.execute(() ->
-                            KeyPressManager.updateKeyState(player.getUuid(), key, pressed)
-                    );
+                    server.execute(() -> KeyPressManager.updateKeyState(player.getUuid(), key, pressed));
                 }
         );
+
+        // Connect / Disconnect
+        ServerPlayConnectionEvents.JOIN.register((handler, packetSender, server) -> {
+            // Send all active disguises to the newly joined player so they
+            // immediately see the correct appearance of everyone around them.
+            server.execute(() -> syncDisguisesToPlayer(handler.player, server));
+        });
 
         ServerPlayConnectionEvents.DISCONNECT.register(
                 (handler, server) -> {
@@ -88,5 +99,25 @@ public class Sync implements ModInitializer {
                     PlayerModelTypeManager.removePlayer(handler.player.getUuid());
                 }
         );
+    }
+
+    /**
+     * Sends every currently-active disguise to {@code recipient} so they render
+     * correctly when the player first loads the world / their surroundings.
+     */
+    private static void syncDisguisesToPlayer(ServerPlayerEntity recipient, MinecraftServer server) {
+        Map<UUID, DisguiseData> all = DisguiseManager.getAllDisguises();
+        if (all.isEmpty()) return;
+
+        // Iterate all loaded entities across all dimensions.
+        server.getWorlds().forEach(world -> {
+            world.iterateEntities().forEach(entity -> {
+                DisguiseData data = all.get(entity.getUuid());
+                if (data != null) {
+                    PacketByteBuf buf = DisguiseManager.buildSetPacket(entity.getId(), data);
+                    ServerPlayNetworking.send(recipient, ModPackets.DISGUISE_UPDATE, buf);
+                }
+            });
+        });
     }
 }

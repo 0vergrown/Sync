@@ -3,11 +3,15 @@ package dev.overgrown.sync;
 import dev.overgrown.sync.registry.entities.SyncEntityModelLayerRegistry;
 import dev.overgrown.sync.registry.entities.SyncEntiyRendererRegistry;
 import dev.overgrown.sync.factory.action.entity.radial_menu.client.RadialMenuClient;
+import dev.overgrown.sync.factory.disguise.DisguiseData;
+import dev.overgrown.sync.factory.disguise.client.ClientDisguiseManager;
 import dev.overgrown.sync.networking.ModPackets;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.network.PacketByteBuf;
 
@@ -27,6 +31,30 @@ public class SyncClient implements ClientModInitializer {
 
         // Then register entity renderers
         SyncEntiyRendererRegistry.register();
+
+        // Disguise packet handler (Server to Client)
+        ClientPlayNetworking.registerGlobalReceiver(
+                ModPackets.DISGUISE_UPDATE,
+                (client, handler, buf, responseSender) -> {
+                    int entityNetId   = buf.readInt();
+                    boolean hasDisguise = buf.readBoolean();
+
+                    if (hasDisguise) {
+                        DisguiseData data = DisguiseData.read(buf);
+                        client.execute(() -> ClientDisguiseManager.setDisguise(entityNetId, data));
+                    } else {
+                        client.execute(() -> ClientDisguiseManager.removeDisguise(entityNetId));
+                    }
+                }
+        );
+
+        // Clear disguise cache when local player unloads (world change / disconnect)
+        ClientEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client.player != null && entity == client.player) {
+                ClientDisguiseManager.clear();
+            }
+        });
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             if (client.player == null) return;

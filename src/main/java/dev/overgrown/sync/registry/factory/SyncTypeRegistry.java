@@ -2,6 +2,7 @@ package dev.overgrown.sync.registry.factory;
 
 import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.action.bientity.convert_entity.ConvertEntityAction;
+import dev.overgrown.sync.factory.action.bientity.disguise.DisguiseAction;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
 import dev.overgrown.sync.factory.compatibility.aspectslib.SetEntityAspectsPower;
@@ -18,12 +19,15 @@ import dev.overgrown.sync.factory.action.entity.summons.SummonCloneAction;
 import dev.overgrown.sync.factory.action.entity.summons.SummonMinionAction;
 import dev.overgrown.sync.factory.action.entity.print.PrintAction;
 import dev.overgrown.sync.factory.action.entity.radial_menu.RadialMenuAction;
+import dev.overgrown.sync.factory.action.entity.remove_disguise.RemoveDisguiseAction;
 import dev.overgrown.sync.factory.action.entity.remove_power.RemovePowerAction;
 import dev.overgrown.sync.factory.action.entity.revoke_all_powers.RevokeAllPowersAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.RandomTeleportAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.SaveLocationAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToLocationAction;
+import dev.overgrown.sync.factory.condition.bientity.disguised.DisguisedBientityCondition;
 import dev.overgrown.sync.factory.condition.bientity.in_entity_set.InEntitySetCondition;
+import dev.overgrown.sync.factory.condition.entity.disguised.DisguisedEntityCondition;
 import dev.overgrown.sync.factory.condition.entity.entity_in_radius.EntityInRadiusCondition;
 import dev.overgrown.sync.factory.condition.entity.entity_set_size.EntitySetSizeCondition;
 import dev.overgrown.sync.factory.condition.entity.has_command_tag.HasCommandTagCondition;
@@ -79,6 +83,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityAction(GrantAllPowersAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(RemoveDisguiseAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RemovePowerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RevokeAllPowersAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(SetNoGravityAction.getFactory());
@@ -94,6 +99,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerBlockAction(GhostBlockAction.getFactory());
 
         // ========== ENTITY CONDITION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerEntityCondition(DisguisedEntityCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(EntityInRadiusCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(EntitySetSizeCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(HasCommandTagCondition.getFactory());
@@ -104,9 +110,11 @@ public class SyncTypeRegistry {
         // ========== BIENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBientityAction(AddToEntitySetAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(ConvertEntityAction.getFactory());
+        ApoliRegistryHelper.registerBientityAction(DisguiseAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(RemoveFromEntitySetAction.getFactory());
 
         // ========== BIENTITY CONDITION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerBientityCondition(DisguisedBientityCondition.getFactory());
         ApoliRegistryHelper.registerBientityCondition(InEntitySetCondition.getFactory());
 
         // ========== ITEM CONDITION REGISTRATIONS ==========
