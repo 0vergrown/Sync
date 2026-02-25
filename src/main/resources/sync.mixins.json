@@ -26,6 +26,7 @@
     "disguise.EntityRenderDispatcherDisguiseMixin",
     "disguise.EntityRendererDisguiseNameMixin",
     "disguise.PlayerListEntryDisguiseMixin",
+    "disguise.accessor.LimbAnimatorAccessor",
     "emissive.EntityRendererMixin",
     "energy_swirl.LivingEntityRendererMixin",
     "energy_swirl.accessor.LivingEntityRendererAccessor",

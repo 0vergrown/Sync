@@ -2,10 +2,12 @@ package dev.overgrown.sync.factory.disguise.client;
 
 import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.disguise.DisguiseData;
+import dev.overgrown.sync.mixin.disguise.accessor.LimbAnimatorAccessor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.Registries;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,35 +70,46 @@ public class ClientDisguiseManager {
         return data != null && uuid.equals(data.getTargetPlayerUuid());
     }
 
-    /**
-     * Returns the dummy entity for non-player disguises, after updating its
-     * position / rotation to match the actor.
-     */
     @Nullable
     public static Entity getSyncedDummy(int entityNetId, Entity actor) {
         Entity dummy = DUMMY_ENTITIES.get(entityNetId);
         if (dummy == null) return null;
 
-        // Synchronize world-space state so (hopefully) animations look correct.
         dummy.setPos(actor.getX(), actor.getY(), actor.getZ());
+        dummy.prevX = actor.prevX;
+        dummy.prevY = actor.prevY;
+        dummy.prevZ = actor.prevZ;
+        dummy.lastRenderX = actor.lastRenderX;
+        dummy.lastRenderY = actor.lastRenderY;
+        dummy.lastRenderZ = actor.lastRenderZ;
+
         dummy.setYaw(actor.getYaw());
         dummy.setPitch(actor.getPitch());
+        dummy.prevYaw = actor.prevYaw;
+        dummy.prevPitch = actor.prevPitch;
         dummy.age = actor.age;
 
-        if (dummy instanceof net.minecraft.entity.LivingEntity dLiving
-                && actor instanceof net.minecraft.entity.LivingEntity aLiving) {
+        if (dummy instanceof LivingEntity dLiving && actor instanceof LivingEntity aLiving) {
             dLiving.bodyYaw     = aLiving.bodyYaw;
             dLiving.prevBodyYaw = aLiving.prevBodyYaw;
             dLiving.headYaw     = aLiving.headYaw;
             dLiving.prevHeadYaw = aLiving.prevHeadYaw;
             dLiving.hurtTime    = aLiving.hurtTime;
             dLiving.deathTime   = aLiving.deathTime;
+
+            dLiving.handSwingProgress     = aLiving.handSwingProgress;
+            dLiving.lastHandSwingProgress = aLiving.lastHandSwingProgress;
+
+            LimbAnimatorAccessor dummyLimb = (LimbAnimatorAccessor) (Object) dLiving.limbAnimator;
+            LimbAnimatorAccessor realLimb  = (LimbAnimatorAccessor) (Object) aLiving.limbAnimator;
+            dLiving.limbAnimator.setSpeed(aLiving.limbAnimator.getSpeed());
+            dummyLimb.sync$setPrevSpeed(realLimb.sync$getPrevSpeed());
+            dummyLimb.sync$setPos(realLimb.sync$getPos());
         }
 
         return dummy;
     }
 
-    // Internal
     private static void createDummy(int entityNetId, DisguiseData data) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null) return;
@@ -107,10 +120,13 @@ public class ClientDisguiseManager {
         try {
             Entity dummy = entityType.create(client.world);
             if (dummy != null) {
+                dummy.setId(-entityNetId - 1);
                 DUMMY_ENTITIES.put(entityNetId, dummy);
+            } else {
+                Sync.LOGGER.warn("[Sync] Disguise dummy creation returned null for type: {}", data.getTargetEntityTypeId());
             }
         } catch (Exception e) {
-            Sync.LOGGER.warn("Could not create dummy entity for disguise (type={}): {}",
+            Sync.LOGGER.warn("[Sync] Could not create dummy entity for disguise (type={}): {}",
                     data.getTargetEntityTypeId(), e.getMessage());
         }
     }
