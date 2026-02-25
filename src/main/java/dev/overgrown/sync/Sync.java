@@ -12,6 +12,7 @@ import dev.overgrown.sync.networking.ModPackets;
 import dev.overgrown.sync.factory.condition.entity.key_pressed.utils.KeyPressManager;
 import dev.overgrown.sync.factory.condition.entity.player_model_type.utils.PlayerModelTypeManager;
 import io.github.apace100.apoli.component.PowerHolderComponent;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -19,10 +20,16 @@ import io.github.apace100.apoli.util.NamespaceAlias;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.command.argument.IdentifierArgumentType;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.Registries;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +106,49 @@ public class Sync implements ModInitializer {
                     PlayerModelTypeManager.removePlayer(handler.player.getUuid());
                 }
         );
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            dispatcher.register(CommandManager.literal("disguise")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(CommandManager.argument("entity_type", IdentifierArgumentType.identifier())
+                            .suggests((ctx, builder) -> {
+                                Registries.ENTITY_TYPE.getIds().forEach(id -> {
+                                    if (id.toString().startsWith(builder.getRemaining()) || id.getPath().startsWith(builder.getRemaining())) {
+                                        builder.suggest(id.toString());
+                                    }
+                                });
+                                return builder.buildFuture();
+                            })
+                            .executes(ctx -> {
+                                ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+                                Identifier typeId = IdentifierArgumentType.getIdentifier(ctx, "entity_type");
+                                EntityType<?> entityType = Registries.ENTITY_TYPE.get(typeId);
+
+                                if (!Registries.ENTITY_TYPE.containsId(typeId)) {
+                                    ctx.getSource().sendError(Text.literal("Unknown entity type: " + typeId));
+                                    return 0;
+                                }
+
+                                Entity dummy = entityType.create(player.getWorld());
+                                if (dummy == null) {
+                                    ctx.getSource().sendError(Text.literal("Cannot create entity of type: " + typeId));
+                                    return 0;
+                                }
+                                dummy.discard();
+
+                                DisguiseData data = new DisguiseData(typeId, -1, null, Text.literal(typeId.getPath()));
+                                DisguiseManager.forceApplyDisguise(player, data);
+                                ctx.getSource().sendFeedback(() -> Text.literal("Disguised as " + typeId), false);
+                                return 1;
+                            }))
+                    .then(CommandManager.literal("clear")
+                            .executes(ctx -> {
+                                ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
+                                DisguiseManager.removeDisguise(player);
+                                ctx.getSource().sendFeedback(() -> Text.literal("Disguise removed"), false);
+                                return 1;
+                            })));
+        });
     }
 
     /**

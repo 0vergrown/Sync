@@ -56,6 +56,12 @@ public class DisguiseManager {
         syncSet(actor, data);
     }
 
+    public static void forceApplyDisguise(LivingEntity actor, DisguiseData data) {
+        if (actor.getWorld().isClient()) return;
+        DISGUISES.put(actor.getUuid(), data);
+        syncSet(actor, data);
+    }
+
     /** Remove the actor's current disguise, if any. */
     public static void removeDisguise(LivingEntity actor) {
         if (actor.getWorld().isClient()) return; // ignore client-side calls
@@ -129,9 +135,9 @@ public class DisguiseManager {
     }
 
     private static void broadcast(LivingEntity actor, PacketByteBuf buf) {
-        if (!(actor.getWorld() instanceof ServerWorld serverWorld)) return;
+        if (!(actor.getWorld() instanceof ServerWorld)) return;
 
-        for (ServerPlayerEntity player : PlayerLookup.tracking(serverWorld, actor.getBlockPos())) {
+        for (ServerPlayerEntity player : PlayerLookup.tracking(actor)) {
             ServerPlayNetworking.send(player, ModPackets.DISGUISE_UPDATE, new PacketByteBuf(buf.copy()));
         }
         if (actor instanceof ServerPlayerEntity self) {
