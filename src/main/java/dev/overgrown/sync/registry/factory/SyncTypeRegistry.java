@@ -5,6 +5,7 @@ import dev.overgrown.sync.factory.action.bientity.convert_entity.ConvertEntityAc
 import dev.overgrown.sync.factory.action.bientity.disguise.DisguiseAction;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
+import dev.overgrown.sync.factory.action.item.holder.HolderAction;
 import dev.overgrown.sync.factory.compatibility.aspectslib.SetEntityAspectsPower;
 import dev.overgrown.sync.factory.compatibility.aspectslib.condition.HasAspectCondition;
 import dev.overgrown.sync.factory.action.bientity.add_to_entity_set.AddToEntitySetAction;
@@ -35,6 +36,7 @@ import dev.overgrown.sync.factory.condition.entity.in_pose.InPoseCondition;
 import dev.overgrown.sync.factory.condition.entity.key_pressed.KeyPressedCondition;
 import dev.overgrown.sync.factory.condition.entity.player_model_type.PlayerModelTypeCondition;
 import dev.overgrown.sync.factory.condition.item.fuel.FuelCondition;
+import dev.overgrown.sync.factory.condition.item.holder.HolderCondition;
 import dev.overgrown.sync.factory.power.type.action_on_death.ActionOnDeathPower;
 import dev.overgrown.sync.factory.power.type.custom_projectile.CustomProjectilePower;
 import dev.overgrown.sync.factory.power.type.emissive.EmissivePower;
@@ -116,9 +118,13 @@ public class SyncTypeRegistry {
         // ========== BIENTITY CONDITION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBientityCondition(DisguisedBientityCondition.getFactory());
         ApoliRegistryHelper.registerBientityCondition(InEntitySetCondition.getFactory());
+        
+        // ========== ITEM ACTION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerItemAction(HolderAction.getFactory());
 
         // ========== ITEM CONDITION REGISTRATIONS ==========
         ApoliRegistryHelper.registerItemCondition(FuelCondition.getFactory());
+        ApoliRegistryHelper.registerItemCondition(HolderCondition.getFactory());
 
         if (Sync.HAS_ASPECTSLIB) {
             ApoliRegistryHelper.registerPowerFactory(SetEntityAspectsPower.createFactory());
