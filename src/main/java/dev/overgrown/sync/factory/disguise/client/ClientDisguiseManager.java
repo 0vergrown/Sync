@@ -8,6 +8,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,6 +63,21 @@ public class ClientDisguiseManager {
     @Nullable
     public static DisguiseData getDisguise(int entityNetId) {
         return DISGUISES.get(entityNetId);
+    }
+
+    /**
+     * Returns {@code true} if the actor (with network ID actorNetId) is disguised
+     * as the given target entity.
+     */
+    public static boolean isDisguisedAs(int actorNetId, Entity target) {
+        DisguiseData data = DISGUISES.get(actorNetId);
+        if (data == null) return false;
+
+        if (target instanceof PlayerEntity && data.getTargetPlayerUuid() != null) {
+            return data.getTargetPlayerUuid().equals(target.getUuid());
+        }
+        return data.getTargetEntityTypeId()
+                .equals(Registries.ENTITY_TYPE.getId(target.getType()));
     }
 
     /** Returns {@code true} if {@code entityNetId} is disguised specifically as player {@code uuid}. */

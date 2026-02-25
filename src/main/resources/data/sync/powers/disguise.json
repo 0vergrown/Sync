@@ -3,7 +3,7 @@
   "entity_action": {
     "type": "apoli:if_else",
     "condition": {
-      "type": "apoli:sneaking",
+      "type": "sync:disguised",
       "inverted": true
     },
     "if_action": {
