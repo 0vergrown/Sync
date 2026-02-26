@@ -1,5 +1,6 @@
 package dev.overgrown.sync;
 
+import dev.overgrown.sync.factory.power.type.action_on_sending_message.ActionOnSendingMessagePower;
 import dev.overgrown.sync.registry.entities.SyncEntityRegistry;
 import dev.overgrown.sync.factory.action.entity.teleportation.events.EntityCleanupHandler;
 import dev.overgrown.sync.factory.action.entity.grant_all_powers.GrantAllPowersAction;
@@ -12,8 +13,10 @@ import dev.overgrown.sync.networking.ModPackets;
 import dev.overgrown.sync.factory.condition.entity.key_pressed.utils.KeyPressManager;
 import dev.overgrown.sync.factory.condition.entity.player_model_type.utils.PlayerModelTypeManager;
 import io.github.apace100.apoli.component.PowerHolderComponent;
+import io.github.apace100.apoli.power.Prioritized;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import io.github.apace100.apoli.util.NamespaceAlias;
@@ -25,6 +28,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
@@ -64,6 +68,26 @@ public class Sync implements ModInitializer {
         // Register GrantAllPowersAction as a resource reload listener
         ResourceManagerHelper.get(ResourceType.SERVER_DATA)
                 .registerReloadListener(new GrantAllPowersAction());
+
+        // Action On Sending Message: Chat messages (player GUI, /say by player, etc.)
+        ServerMessageEvents.ALLOW_CHAT_MESSAGE.register((message, sender, params) -> {
+            String content = message.getSignedContent();
+            Identifier typeId = sender.getWorld()
+                    .getRegistryManager()
+                    .get(RegistryKeys.MESSAGE_TYPE)
+                    .getId(params.type());
+            return processMessagePowers(sender, content, typeId);
+        });
+
+        // Action On Sending Message: Command messages (/me, /say from non-player, etc.)
+        ServerMessageEvents.ALLOW_COMMAND_MESSAGE.register((message, source, params) -> {
+            if (!(source.getEntity() instanceof ServerPlayerEntity sender)) return true;
+            String content = message.getSignedContent();
+            Identifier typeId = source.getRegistryManager()
+                    .get(RegistryKeys.MESSAGE_TYPE)
+                    .getId(params.type());
+            return processMessagePowers(sender, content, typeId);
+        });
 
         // Register death event handler
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
@@ -169,5 +193,26 @@ public class Sync implements ModInitializer {
                 }
             });
         });
+    }
+
+    /**
+     * Evaluates all active {@link ActionOnSendingMessagePower}s on {@code player}
+     * in descending priority order.  Returns {@code false} (cancel) as soon as
+     * any power decides to block the message.
+     */
+    private static boolean processMessagePowers(ServerPlayerEntity player,
+                                                String content,
+                                                Identifier typeId) {
+        Prioritized.CallInstance<ActionOnSendingMessagePower> call = new Prioritized.CallInstance<>();
+        call.add(player, ActionOnSendingMessagePower.class);
+
+        for (int p = call.getMaxPriority(); p >= call.getMinPriority(); p--) {
+            for (ActionOnSendingMessagePower power : call.getPowers(p)) {
+                if (!power.onSendMessage(content, typeId)) {
+                    return false; // First cancellation wins; stop processing
+                }
+            }
+        }
+        return true;
     }
 }

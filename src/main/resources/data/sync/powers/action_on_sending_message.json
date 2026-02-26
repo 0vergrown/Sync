@@ -1,0 +1,21 @@
+{
+  "type": "sync:action_on_sending_message",
+  "message_type": "minecraft:chat",
+  "priority": 10,
+  "filters": [
+    {
+      "filter": "(?i)bsecret",
+      "before_action": {
+        "type": "apoli:execute_command",
+        "command": "say My message was silently cancelled!"
+      }
+    },
+    {
+      "filter": ".*",
+      "after_action": {
+        "type": "apoli:exhaust",
+        "amount": 0.1
+      }
+    }
+  ]
+}
