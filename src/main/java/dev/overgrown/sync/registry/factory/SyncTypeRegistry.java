@@ -3,6 +3,7 @@ package dev.overgrown.sync.registry.factory;
 import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.action.bientity.convert_entity.ConvertEntityAction;
 import dev.overgrown.sync.factory.action.bientity.disguise.DisguiseAction;
+import dev.overgrown.sync.factory.action.bientity.execute_command.ExecuteCommandAction;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
 import dev.overgrown.sync.factory.action.item.holder.HolderAction;
@@ -26,6 +27,7 @@ import dev.overgrown.sync.factory.action.entity.revoke_all_powers.RevokeAllPower
 import dev.overgrown.sync.factory.action.entity.teleportation.RandomTeleportAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.SaveLocationAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToLocationAction;
+import dev.overgrown.sync.factory.condition.bientity.command.CommandCondition;
 import dev.overgrown.sync.factory.condition.bientity.disguised.DisguisedBientityCondition;
 import dev.overgrown.sync.factory.condition.bientity.in_entity_set.InEntitySetCondition;
 import dev.overgrown.sync.factory.condition.entity.disguised.DisguisedEntityCondition;
@@ -113,9 +115,11 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerBientityAction(AddToEntitySetAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(ConvertEntityAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(DisguiseAction.getFactory());
+        ApoliRegistryHelper.registerBientityAction(ExecuteCommandAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(RemoveFromEntitySetAction.getFactory());
 
         // ========== BIENTITY CONDITION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerBientityCondition(CommandCondition.getFactory());
         ApoliRegistryHelper.registerBientityCondition(DisguisedBientityCondition.getFactory());
         ApoliRegistryHelper.registerBientityCondition(InEntitySetCondition.getFactory());
         

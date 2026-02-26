@@ -1,0 +1,21 @@
+{
+  "type":"apoli:action_on_entity_use",
+  "bientity_action":{
+    "type":"apoli:and",
+    "actions":[
+      {
+        "type":"sync:execute_command",
+        "command":"tellraw @s [\"Target:\",{\"selector\":\"%t\"}]"
+      },
+      {
+        "type":"sync:execute_command",
+        "command":"tellraw @s [\"Actor: \",{\"selector\":\"%a\"}]"
+      }
+    ]
+  },
+  "hands":[
+    "main_hand"
+  ],
+  "action_result":"success",
+  "priority":0
+}
