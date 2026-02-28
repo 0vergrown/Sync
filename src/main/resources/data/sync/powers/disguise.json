@@ -29,7 +29,7 @@
     "should_render": false
   },
   "key": {
-    "key": "key.saveToolbarActivator",
+    "key": "key.sync.custom",
     "continuous": false
   }
 }

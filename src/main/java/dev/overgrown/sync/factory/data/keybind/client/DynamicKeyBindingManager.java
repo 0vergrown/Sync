@@ -1,6 +1,5 @@
 package dev.overgrown.sync.factory.data.keybind.client;
 
-
 import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindDefinition;
 import dev.overgrown.sync.mixin.keybinding.GameOptionsAccessor;
@@ -9,6 +8,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -22,10 +25,6 @@ import java.util.*;
  *   <li>Ensures the category exists in {@code KeyBinding.CATEGORY_ORDER_MAP}.</li>
  *   <li>Constructs a {@link KeyBinding} and appends it to {@code options.allKeys}.</li>
  * </ol>
- *
- * <p><b>Unregistration</b> ({@link #unregisterAll}): called on server disconnect.
- * Our dynamic entries are removed from {@code options.allKeys} so they do not persist
- * into the next session.
  */
 public final class DynamicKeyBindingManager {
 
@@ -45,69 +44,67 @@ public final class DynamicKeyBindingManager {
     /**
      * Registers all supplied keybind definitions for the current server session.
      * Any previously registered session bindings are removed first.
-     *
-     * <p>Must be called on the render / client thread.
-     *
-     * @param definitions list of keybind definitions received from the server
+     * Must be called on the client thread.
      */
     public static void applyKeybinds(List<DataDrivenKeybindDefinition> definitions) {
-        unregisterAll(); // clear any leftover from a previous connection
+        unregisterAll();
 
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.options == null) {
-            Sync.LOGGER.warn("[Sync/Keybinds] GameOptions not yet initialised; cannot register dynamic keybinds.");
+            Sync.LOGGER.warn("[Sync/Keybinds] GameOptions not initialised; skipping dynamic keybind registration.");
             return;
         }
 
         for (DataDrivenKeybindDefinition def : definitions) {
             String translationKey = def.translationKey();
 
-            // --- Duplicate guard ------------------------------------------------
+            // Duplicate guard
             if (isAlreadyInAllKeys(translationKey, client.options.allKeys)) {
                 Sync.LOGGER.debug("[Sync/Keybinds] '{}' is already present in allKeys – skipping.", translationKey);
                 continue;
             }
 
-            // --- Parse default key ----------------------------------------------
+            // Parse default key
             InputUtil.Key defaultKey = parseKey(def.key(), def.id().toString());
 
-            // --- Ensure the category exists in KeyBinding's internal map --------
+            // Make sure the category exists in KeyBinding's internal map
             ensureCategoryExists(def.category());
 
-            // --- Create the KeyBinding ------------------------------------------
-            // Fix: use getCategory() — InputUtil.Key.getType() does not exist;
-            //      the method that returns the InputUtil.Type is getCategory().
+            // Create the KeyBinding
             KeyBinding binding = new KeyBinding(
                     translationKey,
-                    defaultKey.getCategory(),   // InputUtil.Type  (was incorrectly getType())
+                    defaultKey.getCategory(),
                     defaultKey.getCode(),
                     def.category()
             );
 
-            // --- Append to options.allKeys (field is final – use mixin accessor) -
+            // Restore any binding the player saved from a previous session before
+            // we expose the key to the Controls screen or the key-tracking loop.
+            restoreSavedBinding(binding, new java.io.File(client.runDirectory, "options.txt"));
+
+            // Append to allKeys (field is final and is written via mixin accessor).
             KeyBinding[] current  = client.options.allKeys;
             KeyBinding[] extended = Arrays.copyOf(current, current.length + 1);
             extended[current.length] = binding;
             ((GameOptionsAccessor) client.options).sync$setAllKeys(extended);
 
             SESSION_BINDINGS.add(binding);
-            if (def.name() != null) {
-                NAME_HINTS.put(translationKey, def.name());
-            }
+            if (def.name() != null) NAME_HINTS.put(translationKey, def.name());
 
             Sync.LOGGER.debug("[Sync/Keybinds] Registered '{}' (default: {}, category: {}).",
                     translationKey, def.key(), def.category());
         }
 
-        Sync.LOGGER.info("[Sync/Keybinds] {} dynamic keybind(s) active for this session.", SESSION_BINDINGS.size());
+        // Rebuild the key to binding lookup map so restored bindings are live.
+        KeyBinding.updateKeysByCode();
+
+        Sync.LOGGER.info("[Sync/Keybinds] {} dynamic keybind(s) active for this session.",
+                SESSION_BINDINGS.size());
     }
 
     /**
-     * Removes all session-registered {@link KeyBinding}s from {@code options.allKeys}
-     * and clears internal tracking state.
-     *
-     * <p>Must be called on the render / client thread (or before {@code GameOptions}
-     * is accessed on another thread).
+     * Removes all session keybinds from {@code allKeys} and clears tracking state.
+     * Must be called on the client thread.
      */
     public static void unregisterAll() {
         if (SESSION_BINDINGS.isEmpty()) return;
@@ -121,6 +118,8 @@ public final class DynamicKeyBindingManager {
                     .filter(kb -> !toRemove.contains(kb))
                     .toArray(KeyBinding[]::new);
             ((GameOptionsAccessor) client.options).sync$setAllKeys(filtered);
+
+            KeyBinding.updateKeysByCode();
         }
 
         SESSION_BINDINGS.clear();
@@ -144,6 +143,42 @@ public final class DynamicKeyBindingManager {
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+    /**
+     * Scans {@code optionsFile} for a line of the form
+     * {@code key_<translationKey>:<savedKey>} and, if found, applies the saved
+     * binding to {@code binding} via {@link KeyBinding#setBoundKey}.
+     *
+     * <p>This mirrors what {@code GameOptions.load()} does for built-in keybinds,
+     * allowing player rebinding to survive across sessions even though these keybinds
+     * are created after {@code GameOptions} has finished initializing.
+     */
+    private static void restoreSavedBinding(KeyBinding binding, File optionsFile) {
+        if (optionsFile == null || !optionsFile.exists()) return;
+
+        String prefix = "key_" + binding.getTranslationKey() + ":";
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(optionsFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.startsWith(prefix)) continue;
+
+                String savedKeyStr = line.substring(prefix.length()).trim();
+                try {
+                    InputUtil.Key savedKey = InputUtil.fromTranslationKey(savedKeyStr);
+                    binding.setBoundKey(savedKey);
+                    Sync.LOGGER.debug("[Sync/Keybinds] Restored saved binding for '{}': {}.",
+                            binding.getTranslationKey(), savedKeyStr);
+                } catch (Exception e) {
+                    Sync.LOGGER.warn("[Sync/Keybinds] Ignoring invalid saved binding '{}' for '{}': {}.",
+                            savedKeyStr, binding.getTranslationKey(), e.getMessage());
+                }
+                return;
+            }
+        } catch (IOException e) {
+            Sync.LOGGER.warn("[Sync/Keybinds] Could not read options.txt to restore binding for '{}': {}.",
+                    binding.getTranslationKey(), e.getMessage());
+        }
+    }
 
     private static boolean isAlreadyInAllKeys(String translationKey, KeyBinding[] allKeys) {
         for (KeyBinding kb : allKeys) {

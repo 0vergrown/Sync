@@ -11,18 +11,18 @@ public class ModPackets {
     public static final Identifier DISGUISE_UPDATE = Sync.identifier("disguise_update");
 
     /**
-     * S→C: sends the full list of data-driven keybind definitions to the client
+     * Server to Client: sends the full list of data-driven keybind definitions to the client
      * immediately after login so the client can register them in its controls screen.
      *
      * <p>Packet layout:
      * <pre>
      *   int   count
      *   for each definition:
-     *     Identifier  id          (namespace + path)
-     *     String      key         e.g. "key.keyboard.h"
-     *     String      category    e.g. "key.category.my_mod"
-     *     boolean     hasName
-     *     [String     name]       only present when hasName == true
+     *     Identifier: id (namespace + path)
+     *     String: key (e.g. "key.keyboard.h")
+     *     String: category (e.g. "key.category.my_mod")
+     *     boolean: hasName
+     *     [String: name (only present when {@code hasName == true})
      * </pre>
      */
     public static final Identifier KEYBIND_SYNC = Sync.identifier("keybind_sync");
