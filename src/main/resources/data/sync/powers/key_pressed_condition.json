@@ -4,16 +4,16 @@
     "type": "apoli:if_else",
     "condition": {
       "type": "sync:key_pressed",
-      "key": "key.use",
+      "key": "key.sync.custom",
       "continuous": true
     },
     "if_action": {
       "type": "apoli:execute_command",
-      "command": "tellraw @s {\"text\":\"You are holding right-click!\",\"color\":\"green\"}"
+      "command": "tellraw @s {\"text\":\"You are holding a custom keybind!\",\"color\":\"green\"}"
     },
     "else_action": {
       "type": "apoli:execute_command",
-      "command": "tellraw @s {\"text\":\"You are NOT holding right-click!\",\"color\":\"red\"}"
+      "command": "tellraw @s {\"text\":\"You are NOT holding a custom keybind!\",\"color\":\"red\"}"
     }
   },
   "interval": 20

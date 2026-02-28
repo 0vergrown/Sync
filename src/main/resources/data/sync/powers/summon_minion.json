@@ -34,7 +34,7 @@
     "should_render":false
   },
   "key":{
-    "key":"key.loadToolbarActivator",
+    "key":"key.sync.custom",
     "continuous":false
   }
 }

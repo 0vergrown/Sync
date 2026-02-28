@@ -1,4 +1,4 @@
-package dev.overgrown.sync.factory.disguise;
+package dev.overgrown.sync.factory.data.disguise;
 
 import dev.overgrown.sync.networking.ModPackets;
 import io.netty.buffer.Unpooled;

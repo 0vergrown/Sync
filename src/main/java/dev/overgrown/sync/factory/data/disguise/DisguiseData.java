@@ -1,4 +1,4 @@
-package dev.overgrown.sync.factory.disguise;
+package dev.overgrown.sync.factory.data.disguise;
 
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;

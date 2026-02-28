@@ -1,7 +1,7 @@
-package dev.overgrown.sync.factory.disguise.client;
+package dev.overgrown.sync.factory.data.disguise.client;
 
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.factory.disguise.DisguiseData;
+import dev.overgrown.sync.factory.data.disguise.DisguiseData;
 import dev.overgrown.sync.mixin.disguise.accessor.LimbAnimatorAccessor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Client-side counterpart to {@link dev.overgrown.sync.factory.disguise.DisguiseManager}.
+ * Client-side counterpart to {@link dev.overgrown.sync.factory.data.disguise.DisguiseManager}.
  * Keyed by the entity's *network* (integer) ID.
  */
 @Environment(EnvType.CLIENT)

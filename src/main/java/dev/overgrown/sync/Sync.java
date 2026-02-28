@@ -1,12 +1,14 @@
 package dev.overgrown.sync;
 
+import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindDefinition;
+import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindLoader;
 import dev.overgrown.sync.factory.power.type.action_on_sending_message.ActionOnSendingMessagePower;
 import dev.overgrown.sync.registry.entities.SyncEntityRegistry;
 import dev.overgrown.sync.factory.action.entity.teleportation.events.EntityCleanupHandler;
 import dev.overgrown.sync.factory.action.entity.grant_all_powers.GrantAllPowersAction;
 import dev.overgrown.sync.factory.action.entity.radial_menu.server.RadialMenuServer;
-import dev.overgrown.sync.factory.disguise.DisguiseData;
-import dev.overgrown.sync.factory.disguise.DisguiseManager;
+import dev.overgrown.sync.factory.data.disguise.DisguiseData;
+import dev.overgrown.sync.factory.data.disguise.DisguiseManager;
 import dev.overgrown.sync.factory.power.type.action_on_death.ActionOnDeathPower;
 import dev.overgrown.sync.registry.factory.SyncTypeRegistry;
 import dev.overgrown.sync.networking.ModPackets;
@@ -17,6 +19,7 @@ import io.github.apace100.apoli.power.Prioritized;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import io.github.apace100.apoli.util.NamespaceAlias;
@@ -38,6 +41,7 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -64,6 +68,10 @@ public class Sync implements ModInitializer {
 
         // Register entity cleanup handler
         EntityCleanupHandler.register();
+
+        // Data-driven keybinds
+        ResourceManagerHelper.get(ResourceType.SERVER_DATA)
+                .registerReloadListener(new DataDrivenKeybindLoader());
 
         // Register GrantAllPowersAction as a resource reload listener
         ResourceManagerHelper.get(ResourceType.SERVER_DATA)
@@ -122,6 +130,7 @@ public class Sync implements ModInitializer {
             // Send all active disguises to the newly joined player so they
             // immediately see the correct appearance of everyone around them.
             server.execute(() -> syncDisguisesToPlayer(handler.player, server));
+            syncKeybindsToPlayer(handler.player);
         });
 
         ServerPlayConnectionEvents.DISCONNECT.register(
@@ -214,5 +223,30 @@ public class Sync implements ModInitializer {
             }
         }
         return true;
+    }
+
+    /**
+     * Serializes all currently-loaded data-driven keybind definitions and sends
+     * them to {@code player} so the client can register the corresponding
+     * {@link net.minecraft.client.option.KeyBinding}s.
+     */
+    private static void syncKeybindsToPlayer(ServerPlayerEntity player) {
+        List<DataDrivenKeybindDefinition> defs = DataDrivenKeybindLoader.LOADED;
+
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeInt(defs.size());
+        for (DataDrivenKeybindDefinition def : defs) {
+            buf.writeIdentifier(def.id());
+            buf.writeString(def.key());
+            buf.writeString(def.category());
+            buf.writeBoolean(def.name() != null);
+            if (def.name() != null) {
+                buf.writeString(def.name());
+            }
+        }
+
+        ServerPlayNetworking.send(player, ModPackets.KEYBIND_SYNC, buf);
+        LOGGER.debug("[Sync/Keybinds] Sent {} keybind definition(s) to {}.",
+                defs.size(), player.getName().getString());
     }
 }

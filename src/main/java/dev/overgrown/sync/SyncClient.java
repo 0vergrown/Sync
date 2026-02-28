@@ -1,21 +1,27 @@
 package dev.overgrown.sync;
 
+import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindDefinition;
+import dev.overgrown.sync.factory.data.keybind.client.DynamicKeyBindingManager;
 import dev.overgrown.sync.registry.entities.SyncEntityModelLayerRegistry;
 import dev.overgrown.sync.registry.entities.SyncEntiyRendererRegistry;
 import dev.overgrown.sync.factory.action.entity.radial_menu.client.RadialMenuClient;
-import dev.overgrown.sync.factory.disguise.DisguiseData;
-import dev.overgrown.sync.factory.disguise.client.ClientDisguiseManager;
+import dev.overgrown.sync.factory.data.disguise.DisguiseData;
+import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
 import dev.overgrown.sync.networking.ModPackets;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SyncClient implements ClientModInitializer {
@@ -31,6 +37,29 @@ public class SyncClient implements ClientModInitializer {
 
         // Then register entity renderers
         SyncEntiyRendererRegistry.register();
+
+        // Data-driven keybind sync (Server to Client)
+        ClientPlayNetworking.registerGlobalReceiver(
+                ModPackets.KEYBIND_SYNC,
+                (client, handler, buf, responseSender) -> {
+                    int count = buf.readInt();
+                    List<DataDrivenKeybindDefinition> definitions = new ArrayList<>(count);
+                    for (int i = 0; i < count; i++) {
+                        Identifier id       = buf.readIdentifier();
+                        String key          = buf.readString();
+                        String category     = buf.readString();
+                        String name         = buf.readBoolean() ? buf.readString() : null;
+                        definitions.add(new DataDrivenKeybindDefinition(id, key, category, name));
+                    }
+                    // Apply on the main client thread so we can safely touch GameOptions
+                    client.execute(() -> DynamicKeyBindingManager.applyKeybinds(definitions));
+                }
+        );
+
+        // Unregister dynamic keybinds when leaving the server
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
+                client.execute(DynamicKeyBindingManager::unregisterAll)
+        );
 
         // Disguise packet handler (Server to Client)
         ClientPlayNetworking.registerGlobalReceiver(

@@ -1,7 +1,7 @@
 package dev.overgrown.sync.factory.action.bientity.disguise;
 
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.factory.disguise.DisguiseManager;
+import dev.overgrown.sync.factory.data.disguise.DisguiseManager;
 import io.github.apace100.apoli.power.factory.action.ActionFactory;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;

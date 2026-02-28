@@ -1,8 +1,8 @@
 package dev.overgrown.sync.mixin.disguise;
 
 import com.mojang.authlib.GameProfile;
-import dev.overgrown.sync.factory.disguise.DisguiseData;
-import dev.overgrown.sync.factory.disguise.client.ClientDisguiseManager;
+import dev.overgrown.sync.factory.data.disguise.DisguiseData;
+import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

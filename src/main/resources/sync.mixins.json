@@ -36,6 +36,8 @@
     "flip_model.GameRendererMixin",
     "flip_model.LivingEntityRendererMixin",
     "integration.connector.ClientTickEventMixin",
+    "keybinding.GameOptionsAccessor",
+    "keybinding.KeyBindingCategoryMapAccessor",
     "modify_label_render.EntityRendererMixin",
     "modify_model_parts.BipedEntityModelMixin",
     "modify_player_model.PlayerEntityRendererMixin",

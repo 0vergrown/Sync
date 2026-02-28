@@ -1,7 +1,7 @@
 package dev.overgrown.sync.mixin.disguise;
 
-import dev.overgrown.sync.factory.disguise.DisguiseData;
-import dev.overgrown.sync.factory.disguise.client.ClientDisguiseManager;
+import dev.overgrown.sync.factory.data.disguise.DisguiseData;
+import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;

@@ -1,8 +1,8 @@
 package dev.overgrown.sync.factory.condition.bientity.disguised;
 
 import dev.overgrown.sync.Sync;
-import dev.overgrown.sync.factory.disguise.DisguiseManager;
-import dev.overgrown.sync.factory.disguise.client.ClientDisguiseManager;
+import dev.overgrown.sync.factory.data.disguise.DisguiseManager;
+import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
 import io.github.apace100.apoli.power.factory.condition.ConditionFactory;
 import io.github.apace100.calio.data.SerializableData;
 import net.fabricmc.api.EnvType;
