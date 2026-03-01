@@ -4,8 +4,10 @@
     "type": "apoli:if_else",
     "condition": {
       "type": "sync:key_pressed",
-      "key": "key.sync.custom",
-      "continuous": true
+      "key": {
+        "key": "key.sync.custom",
+        "continuous": true
+      }
     },
     "if_action": {
       "type": "apoli:execute_command",

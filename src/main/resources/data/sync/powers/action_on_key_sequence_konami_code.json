@@ -1,0 +1,80 @@
+{
+  "type": "sync:action_on_key_sequence",
+  "success_action": {
+    "type": "apoli:execute_command",
+    "command": "me casted 'KONAMI CODE'!"
+  },
+  "fail_action": {
+    "type": "apoli:damage",
+    "source": {
+      "name": "generic"
+    },
+    "amount": 10
+  },
+  "cooldown": 200,
+  "hud_render": {
+    "should_render": true
+  },
+  "keys": [
+    {
+      "key": "key.jump",
+      "continuous": false,
+      "action": {
+        "type": "apoli:execute_command",
+        "command": "say UP"
+      }
+    },
+    {
+      "key": "key.sneak",
+      "continuous": false,
+      "action": {
+        "type": "apoli:execute_command",
+        "command": "say DOWN"
+      }
+    },
+    {
+      "key": "key.left",
+      "continuous": false,
+      "action": {
+        "type": "apoli:execute_command",
+        "command": "say LEFT"
+      }
+    },
+    {
+      "key": "key.right",
+      "continuous": false,
+      "action": {
+        "type": "apoli:execute_command",
+        "command": "say RIGHT"
+      }
+    },
+    {
+      "key": "key.attack",
+      "continuous": false,
+      "action": {
+        "type": "apoli:execute_command",
+        "command": "say A (Attack)"
+      }
+    },
+    {
+      "key": "key.use",
+      "continuous": false,
+      "action": {
+        "type": "apoli:execute_command",
+        "command": "say B (Use)"
+      }
+    }
+  ],
+  "key_sequence": [
+    "key.jump",
+    "key.jump",
+    "key.sneak",
+    "key.sneak",
+    "key.left",
+    "key.right",
+    "key.left",
+    "key.right",
+    "key.use",
+    "key.attack"
+  ]
+}
