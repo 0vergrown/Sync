@@ -4,6 +4,7 @@ import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.action.bientity.convert_entity.ConvertEntityAction;
 import dev.overgrown.sync.factory.action.bientity.disguise.DisguiseAction;
 import dev.overgrown.sync.factory.action.bientity.execute_command.ExecuteCommandAction;
+import dev.overgrown.sync.factory.action.entity.disguise_as.DisguiseAsAction;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
 import dev.overgrown.sync.factory.action.item.holder.HolderAction;
@@ -88,6 +89,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(CustomProjectileAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(DisguiseAsAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(GrantAllPowersAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
