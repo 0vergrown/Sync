@@ -64,7 +64,7 @@ repositories {
 		url "https://maven.terraformersmc.com/"
 	}
 	maven {
-		name = "figuramc"
+		name = "figuramcReleases"
 		url = uri("https://maven.figuramc.org/releases")
 	}
 
