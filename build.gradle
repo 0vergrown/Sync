@@ -63,6 +63,11 @@ repositories {
 	maven {
 		url "https://maven.terraformersmc.com/"
 	}
+	maven {
+		name = "figuramc"
+		url = uri("https://maven.figuramc.org/releases")
+	}
+
 }
 
 fabricApi {

@@ -16,6 +16,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.option.Perspective;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
@@ -27,6 +28,8 @@ import java.util.Map;
 public class SyncClient implements ClientModInitializer {
     private static final Map<String, Boolean> LAST_KEY_STATES = new HashMap<>();
     private static String lastModelType = null;
+    /** Tracks the last-sent perspective name to avoid redundant packets. */
+    private static String lastPerspective = null;
 
     @Override
     public void onInitializeClient() {
@@ -57,15 +60,17 @@ public class SyncClient implements ClientModInitializer {
         );
 
         // Unregister dynamic keybinds when leaving the server
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
-                client.execute(DynamicKeyBindingManager::unregisterAll)
-        );
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            client.execute(DynamicKeyBindingManager::unregisterAll);
+            // Reset perspective tracker so the next join sends the current value fresh.
+            lastPerspective = null;
+        });
 
         // Disguise packet handler (Server to Client)
         ClientPlayNetworking.registerGlobalReceiver(
                 ModPackets.DISGUISE_UPDATE,
                 (client, handler, buf, responseSender) -> {
-                    int entityNetId   = buf.readInt();
+                    int entityNetId = buf.readInt();
                     boolean hasDisguise = buf.readBoolean();
 
                     if (hasDisguise) {
@@ -104,7 +109,16 @@ public class SyncClient implements ClientModInitializer {
                 lastModelType = currentModelType;
             }
 
-            // Key Pressed Condition:
+            // Camera Perspective Detection
+            String currentPerspective = perspectiveToString(client.options.getPerspective());
+            if (!currentPerspective.equals(lastPerspective)) {
+                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+                buf.writeString(currentPerspective);
+                ClientPlayNetworking.send(ModPackets.PERSPECTIVE_UPDATE, buf);
+                lastPerspective = currentPerspective;
+            }
+
+            // Key Press Detection
             for (KeyBinding keyBinding : client.options.allKeys) {
                 String key = keyBinding.getTranslationKey();
                 boolean pressed = keyBinding.isPressed();
@@ -119,5 +133,15 @@ public class SyncClient implements ClientModInitializer {
                 }
             }
         });
+    }
+
+    // Helpers
+    /** Converts a {@link Perspective} enum value to the lower-snake-case string used in JSON. */
+    private static String perspectiveToString(Perspective perspective) {
+        return switch (perspective) {
+            case FIRST_PERSON      -> "first_person";
+            case THIRD_PERSON_BACK -> "third_person_back";
+            case THIRD_PERSON_FRONT -> "third_person_front";
+        };
     }
 }

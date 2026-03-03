@@ -28,6 +28,7 @@ import dev.overgrown.sync.factory.action.entity.revoke_all_powers.RevokeAllPower
 import dev.overgrown.sync.factory.action.entity.teleportation.RandomTeleportAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.SaveLocationAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToLocationAction;
+import dev.overgrown.sync.factory.condition.bientity.colliding.CollidingCondition;
 import dev.overgrown.sync.factory.condition.bientity.command.CommandCondition;
 import dev.overgrown.sync.factory.condition.bientity.disguised.DisguisedBientityCondition;
 import dev.overgrown.sync.factory.condition.bientity.in_entity_set.InEntitySetCondition;
@@ -37,6 +38,7 @@ import dev.overgrown.sync.factory.condition.entity.entity_set_size.EntitySetSize
 import dev.overgrown.sync.factory.condition.entity.has_command_tag.HasCommandTagCondition;
 import dev.overgrown.sync.factory.condition.entity.in_pose.InPoseCondition;
 import dev.overgrown.sync.factory.condition.entity.key_pressed.KeyPressedCondition;
+import dev.overgrown.sync.factory.condition.entity.perspective.PerspectiveCondition;
 import dev.overgrown.sync.factory.condition.entity.player_model_type.PlayerModelTypeCondition;
 import dev.overgrown.sync.factory.condition.item.fuel.FuelCondition;
 import dev.overgrown.sync.factory.condition.item.holder.HolderCondition;
@@ -115,6 +117,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityCondition(HasCommandTagCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(InPoseCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(KeyPressedCondition.getFactory());
+        ApoliRegistryHelper.registerEntityCondition(PerspectiveCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(PlayerModelTypeCondition.getFactory());
 
         // ========== BIENTITY ACTION REGISTRATIONS ==========
@@ -125,6 +128,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerBientityAction(RemoveFromEntitySetAction.getFactory());
 
         // ========== BIENTITY CONDITION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerBientityCondition(CollidingCondition.getFactory());
         ApoliRegistryHelper.registerBientityCondition(CommandCondition.getFactory());
         ApoliRegistryHelper.registerBientityCondition(DisguisedBientityCondition.getFactory());
         ApoliRegistryHelper.registerBientityCondition(InEntitySetCondition.getFactory());

@@ -1,0 +1,26 @@
+{
+  "type": "apoli:action_over_time",
+  "entity_action": {
+    "type": "apoli:area_of_effect",
+    "radius": 32.00,
+    "bientity_action": {
+      "type": "apoli:actor_action",
+      "action": {
+        "type": "apoli:execute_command",
+        "command": "tellraw @s {\"text\":\"You are colliding with the target!\",\"color\":\"green\"}"
+      }
+    },
+    "bientity_condition": {
+      "type": "sync:colliding"
+    },
+    "include_target": false
+  },
+  "interval": 20,
+  "condition": {
+    "type": "sync:perspective",
+    "perspectives": [
+      "third_person_back",
+      "third_person_front"
+    ]
+  }
+}

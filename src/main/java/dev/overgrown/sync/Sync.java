@@ -13,6 +13,7 @@ import dev.overgrown.sync.factory.power.type.action_on_death.ActionOnDeathPower;
 import dev.overgrown.sync.registry.factory.SyncTypeRegistry;
 import dev.overgrown.sync.networking.ModPackets;
 import dev.overgrown.sync.factory.condition.entity.key_pressed.utils.KeyPressManager;
+import dev.overgrown.sync.factory.condition.entity.perspective.utils.PerspectiveManager;
 import dev.overgrown.sync.factory.condition.entity.player_model_type.utils.PlayerModelTypeManager;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import io.github.apace100.apoli.power.Prioritized;
@@ -97,7 +98,7 @@ public class Sync implements ModInitializer {
             return processMessagePowers(sender, content, typeId);
         });
 
-        // Register death event handler
+        // Death event handler
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
             if (entity instanceof ServerPlayerEntity) {
                 PowerHolderComponent component = PowerHolderComponent.KEY.get(entity);
@@ -108,6 +109,7 @@ public class Sync implements ModInitializer {
             DisguiseManager.removePlayer(entity.getUuid());
         });
 
+        // Packet receivers
         ServerPlayNetworking.registerGlobalReceiver(
                 ModPackets.PLAYER_MODEL_TYPE_UPDATE,
                 (server, player, handler, buf, responseSender) -> {
@@ -125,6 +127,16 @@ public class Sync implements ModInitializer {
                 }
         );
 
+        // Receives the local player's camera perspective and stores it for
+        // use by PerspectiveEntityCondition.
+        ServerPlayNetworking.registerGlobalReceiver(
+                ModPackets.PERSPECTIVE_UPDATE,
+                (server, player, handler, buf, responseSender) -> {
+                    String perspective = buf.readString();
+                    server.execute(() -> PerspectiveManager.setPerspective(player, perspective));
+                }
+        );
+
         // Connect / Disconnect
         ServerPlayConnectionEvents.JOIN.register((handler, packetSender, server) -> {
             // Send all active disguises to the newly joined player so they
@@ -133,13 +145,13 @@ public class Sync implements ModInitializer {
             syncKeybindsToPlayer(handler.player);
         });
 
-        ServerPlayConnectionEvents.DISCONNECT.register(
-                (handler, server) -> {
-                    KeyPressManager.removePlayer(handler.player.getUuid());
-                    PlayerModelTypeManager.removePlayer(handler.player.getUuid());
-                }
-        );
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            KeyPressManager.removePlayer(handler.player.getUuid());
+            PlayerModelTypeManager.removePlayer(handler.player.getUuid());
+            PerspectiveManager.removePlayer(handler.player.getUuid());
+        });
 
+        // Commands
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("disguise")
                     .requires(source -> source.hasPermissionLevel(2))
