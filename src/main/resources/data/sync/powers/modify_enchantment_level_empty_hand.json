@@ -1,0 +1,8 @@
+{
+  "type": "sync:modify_enchantment_level",
+  "enchantment": "minecraft:silk_touch",
+  "modifier": {
+    "operation": "set_total",
+    "value": 1
+  }
+}

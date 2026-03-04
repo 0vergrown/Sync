@@ -41,6 +41,7 @@ import dev.overgrown.sync.factory.condition.entity.in_pose.InPoseCondition;
 import dev.overgrown.sync.factory.condition.entity.key_pressed.KeyPressedCondition;
 import dev.overgrown.sync.factory.condition.entity.perspective.PerspectiveCondition;
 import dev.overgrown.sync.factory.condition.entity.player_model_type.PlayerModelTypeCondition;
+import dev.overgrown.sync.factory.condition.entity.velocity.VelocityCondition;
 import dev.overgrown.sync.factory.condition.item.fuel.FuelCondition;
 import dev.overgrown.sync.factory.condition.item.holder.HolderCondition;
 import dev.overgrown.sync.factory.power.type.action_on_death.ActionOnDeathPower;
@@ -55,6 +56,7 @@ import dev.overgrown.sync.factory.power.type.edible_item.EdibleItemPower;
 import dev.overgrown.sync.factory.power.type.flip_model.FlipModelPower;
 import dev.overgrown.sync.factory.power.type.mobs_ignore.MobsIgnorePower;
 import dev.overgrown.sync.factory.power.type.modify_enchantment_damage_dealt.ModifyEnchantmentDamageDealtPower;
+import dev.overgrown.sync.factory.power.type.modify_enchantment_damage_taken.ModifyEnchantmentDamageTakenPower;
 import dev.overgrown.sync.factory.power.type.modify_enchantment_level.ModifyEnchantmentLevelPower;
 import dev.overgrown.sync.factory.power.type.modify_model_parts.ModifyModelPartsPower;
 import dev.overgrown.sync.factory.power.type.modify_player_model.ModifyPlayerModelPower;
@@ -81,6 +83,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(FlipModelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(MobsIgnorePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentDamageDealtPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentDamageTakenPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentLevelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyLabelRenderPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyModelPartsPower.getFactory());
@@ -121,6 +124,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityCondition(KeyPressedCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(PerspectiveCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(PlayerModelTypeCondition.getFactory());
+        ApoliRegistryHelper.registerEntityCondition(VelocityCondition.getFactory());
 
         // ========== BIENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBientityAction(AddToEntitySetAction.getFactory());

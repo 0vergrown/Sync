@@ -5,6 +5,7 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.option.Perspective;
 import net.minecraft.network.PacketByteBuf;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,18 +34,22 @@ public abstract class ClientTickEventMixin {
     @Unique
     private static String sync$lastModelType = null;
 
+    /** Tracks the last-sent perspective string to avoid redundant packets. */
+    @Unique
+    private static String sync$lastPerspective = null;
+
     @Inject(method = "tick()V", at = @At("HEAD"))
     private void sync$onClientTick(CallbackInfo ci) {
         if (this.player == null) return;
 
-        // Player Model Type Detection
+        // ----------------------------------------------------------------
+        // Player model type detection
+        // ----------------------------------------------------------------
         String currentModelType = this.player.getModel();
-
-        // Convert "default" to "wide" for consistency
+        // Normalize "default" -> "wide" for consistency with SyncClient.
         if (currentModelType.equals("default")) {
             currentModelType = "wide";
         }
-
         if (sync$lastModelType == null || !sync$lastModelType.equals(currentModelType)) {
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
             buf.writeString(currentModelType);
@@ -52,7 +57,20 @@ public abstract class ClientTickEventMixin {
             sync$lastModelType = currentModelType;
         }
 
-        // Key Pressed Condition
+        // ----------------------------------------------------------------
+        // Camera perspective detection
+        // ----------------------------------------------------------------
+        String currentPerspective = sync$perspectiveToString(this.options.getPerspective());
+        if (!currentPerspective.equals(sync$lastPerspective)) {
+            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+            buf.writeString(currentPerspective);
+            ClientPlayNetworking.send(ModPackets.PERSPECTIVE_UPDATE, buf);
+            sync$lastPerspective = currentPerspective;
+        }
+
+        // ----------------------------------------------------------------
+        // Key-press detection
+        // ----------------------------------------------------------------
         for (KeyBinding keyBinding : this.options.allKeys) {
             String key = keyBinding.getTranslationKey();
             boolean pressed = keyBinding.isPressed();
@@ -66,5 +84,22 @@ public abstract class ClientTickEventMixin {
                 sync$lastKeyStates.put(key, pressed);
             }
         }
+    }
+
+    /**
+     * Converts a {@link Perspective} enum value to the lower-snake-case string
+     * used by {@link dev.overgrown.sync.factory.condition.entity.perspective.PerspectiveCondition}
+     * and {@link dev.overgrown.sync.factory.condition.entity.perspective.utils.PerspectiveManager}.
+     *
+     * <p>Valid values: {@code "first_person"}, {@code "third_person_back"},
+     * {@code "third_person_front"}.</p>
+     */
+    @Unique
+    private static String sync$perspectiveToString(Perspective perspective) {
+        return switch (perspective) {
+            case FIRST_PERSON       -> "first_person";
+            case THIRD_PERSON_BACK  -> "third_person_back";
+            case THIRD_PERSON_FRONT -> "third_person_front";
+        };
     }
 }

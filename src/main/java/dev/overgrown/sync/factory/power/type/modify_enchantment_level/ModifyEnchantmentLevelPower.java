@@ -37,9 +37,11 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
     private static final ConcurrentHashMap<UUID, ConcurrentHashMap<ModifyEnchantmentLevelPower, Pair<Integer, Boolean>>> POWER_MODIFIER_CACHE = new ConcurrentHashMap<>();
 
     private final Enchantment enchantment;
-    private final Predicate<ItemStack> itemCondition;
+    // Package-private so the static helpers below can access it without reflection.
+    final Predicate<ItemStack> itemCondition;
 
-    public ModifyEnchantmentLevelPower(PowerType<?> type, LivingEntity entity, Enchantment enchantment, Predicate<ItemStack> itemCondition, Modifier modifier, List<Modifier> modifiers) {
+    public ModifyEnchantmentLevelPower(PowerType<?> type, LivingEntity entity, Enchantment enchantment,
+                                       Predicate<ItemStack> itemCondition, Modifier modifier, List<Modifier> modifiers) {
         super(type, entity);
         this.enchantment = enchantment;
         this.itemCondition = itemCondition;
@@ -69,7 +71,8 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
 
     @Override
     public void tick() {
-        // Link all item stacks in the entity's inventory to the entity
+        // Link all non-empty item stacks in every slot to this entity so the
+        // ItemStack mixin can always resolve the owning LivingEntity.
         for (int slot : ItemSlotArgumentTypeAccessor.getSlotMappings().values()) {
             StackReference stackReference = entity.getStackReference(slot);
             if (stackReference == StackReference.EMPTY) continue;
@@ -92,6 +95,7 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
         return itemCondition == null || itemCondition.test(self);
     }
 
+    // NBT helpers
     private static Optional<Integer> findEnchantIndex(Identifier id, NbtList enchantmentsNbt) {
         for (int index = 0; index < enchantmentsNbt.size(); ++index) {
             NbtCompound enchantmentNbt = enchantmentsNbt.getCompound(index);
@@ -120,12 +124,11 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
                 NbtCompound existingEnchantmentNbt = newEnchantmentsNbt.getCompound(enchantmentIndex.get());
                 int enchantmentLvl = existingEnchantmentNbt.getInt("lvl");
                 int newEnchantmentLvl = (int) ModifierUtil.applyModifiers(livingStackHolder, power.getModifiers(), enchantmentLvl);
-                existingEnchantmentNbt.putInt("lvl", Math.max(0, newEnchantmentLvl)); // Ensure non-negative
+                existingEnchantmentNbt.putInt("lvl", Math.max(0, newEnchantmentLvl));
                 newEnchantmentsNbt.set(enchantmentIndex.get(), existingEnchantmentNbt);
             } else {
-                int baseLevel = 0;
-                int newEnchantmentLvl = (int) ModifierUtil.applyModifiers(livingStackHolder, power.getModifiers(), baseLevel);
-                if (newEnchantmentLvl > 0) { // Only add if result is positive
+                int newEnchantmentLvl = (int) ModifierUtil.applyModifiers(livingStackHolder, power.getModifiers(), 0);
+                if (newEnchantmentLvl > 0) {
                     NbtCompound newEnchantmentNbt = new NbtCompound();
                     newEnchantmentNbt.putString("id", enchantmentId.toString());
                     newEnchantmentNbt.putInt("lvl", newEnchantmentLvl);
@@ -143,7 +146,6 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
         }
         ConcurrentHashMap<ItemStack, NbtList> itemEnchants = ENTITY_ITEM_ENCHANTS.get(stackHolder.getUuid());
 
-        // Handle empty stacks with entity link
         if (stack.isEmpty() && itemEnchants.containsKey(stack)) {
             return itemEnchants.get(stack);
         }
@@ -155,14 +157,52 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
         return itemEnchants.getOrDefault(stack, originalTag);
     }
 
+    /**
+     * Returns the effective equipment-level for the given enchantment on {@code livingEntity},
+     * accounting for all active {@link ModifyEnchantmentLevelPower}s.
+     *
+     * <h3>Two resolution paths</h3>
+     * <ol>
+     *   <li><strong>Item-based (Path 1)</strong>: Powers that carry an {@code item_condition}.
+     *       These are resolved through the per-item NBT pipeline (via the
+     *       {@link ItemStack#getEnchantments()} mixin) when iterating the entity's equipped
+     *       items.</li>
+     *   <li><strong>Virtual / entity-wide (Path 2)</strong>: Powers with <em>no</em>
+     *       {@code item_condition}.  Vanilla only iterates non-empty equipment slots, so a
+     *       player with empty hands would always see level 0.  These powers are evaluated
+     *       directly here so the enchantment is effective regardless of held items.</li>
+     * </ol>
+     */
     public static int getEquipmentLevel(Enchantment enchantment, LivingEntity livingEntity, boolean useModifications) {
         int equippedEnchantmentLevel = 0;
+
+        // Path 1: item-based resolution
         for (ItemStack stack : enchantment.getEquipment(livingEntity).values()) {
             int enchantmentLevel = getLevel(livingEntity, enchantment, stack, useModifications);
             if (enchantmentLevel > equippedEnchantmentLevel) {
                 equippedEnchantmentLevel = enchantmentLevel;
             }
         }
+
+        // Path 2: virtual / entity-wide resolution
+        // Only applies when modifications are enabled and the entity has registered powers.
+        if (useModifications && ENTITY_ITEM_ENCHANTS.containsKey(livingEntity.getUuid())) {
+            for (ModifyEnchantmentLevelPower power : PowerHolderComponent.KEY.get(livingEntity)
+                    .getPowers(ModifyEnchantmentLevelPower.class, true)) {
+
+                if (!power.isActive()) continue;
+                if (!power.enchantment.equals(enchantment)) continue;
+                // Powers with an item_condition are handled through Path 1 – skip them here.
+                if (power.itemCondition != null) continue;
+
+                // Apply the power's modifiers to a base of 0 to derive the virtual level.
+                int virtualLevel = (int) ModifierUtil.applyModifiers(livingEntity, power.getModifiers(), 0);
+                if (virtualLevel > equippedEnchantmentLevel) {
+                    equippedEnchantmentLevel = virtualLevel;
+                }
+            }
+        }
+
         return equippedEnchantmentLevel;
     }
 
@@ -203,25 +243,29 @@ public class ModifyEnchantmentLevelPower extends ValueModifyingPower {
         }).orElse(0);
     }
 
+    // Cache / dirty-tracking helpers
     private static boolean updateIfDifferent(ConcurrentHashMap<ModifyEnchantmentLevelPower, Pair<Integer, Boolean>> map, ModifyEnchantmentLevelPower power, int modifierValue, boolean conditionValue) {
         map.computeIfAbsent(power, (p) -> new Pair<>(0, false));
-        boolean value = false;
+        boolean changed = false;
         if (map.get(power).getLeft() != modifierValue) {
             map.get(power).setLeft(modifierValue);
-            value = true;
+            changed = true;
         }
         if (map.get(power).getRight() != conditionValue) {
             map.get(power).setRight(conditionValue);
-            value = true;
+            changed = true;
         }
-        return value;
+        return changed;
     }
 
     private static boolean shouldReapplyEnchantments(LivingEntity living, ItemStack self) {
         List<ModifyEnchantmentLevelPower> powers = PowerHolderComponent.KEY.get(living).getPowers(ModifyEnchantmentLevelPower.class, true);
         ConcurrentHashMap<ItemStack, NbtList> enchants = ENTITY_ITEM_ENCHANTS.get(living.getUuid());
         ConcurrentHashMap<ModifyEnchantmentLevelPower, Pair<Integer, Boolean>> cache = POWER_MODIFIER_CACHE.computeIfAbsent(living.getUuid(), uuid -> new ConcurrentHashMap<>());
-        return !enchants.containsKey(self) || powers.stream().anyMatch(power -> updateIfDifferent(cache, power, (int) ModifierUtil.applyModifiers(living, power.getModifiers(), 0), power.isActive() && power.checkItemCondition(self)));
+        return !enchants.containsKey(self) || powers.stream().anyMatch(power ->
+                updateIfDifferent(cache, power,
+                        (int) ModifierUtil.applyModifiers(living, power.getModifiers(), 0),
+                        power.isActive() && power.checkItemCondition(self)));
     }
 
     public static PowerFactory<?> getFactory() {
