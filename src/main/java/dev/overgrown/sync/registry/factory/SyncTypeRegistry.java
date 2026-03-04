@@ -8,6 +8,7 @@ import dev.overgrown.sync.factory.action.entity.disguise_as.DisguiseAsAction;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
 import dev.overgrown.sync.factory.action.item.holder.HolderAction;
+import dev.overgrown.sync.factory.action.meta.loop.LoopAction;
 import dev.overgrown.sync.factory.compatibility.aspectslib.SetEntityAspectsPower;
 import dev.overgrown.sync.factory.compatibility.aspectslib.condition.HasAspectCondition;
 import dev.overgrown.sync.factory.action.bientity.add_to_entity_set.AddToEntitySetAction;
@@ -62,6 +63,7 @@ import dev.overgrown.sync.factory.power.type.modify_label_render.ModifyLabelRend
 import dev.overgrown.sync.factory.power.type.prevent_sprinting_particles.PreventSprintingParticlesPower;
 import dev.overgrown.sync.factory.power.type.sprinting.SprintingPower;
 import dev.overgrown.sync.registry.factory.utils.ApoliRegistryHelper;
+import io.github.apace100.apoli.data.ApoliDataTypes;
 
 public class SyncTypeRegistry {
 
@@ -139,6 +141,9 @@ public class SyncTypeRegistry {
         // ========== ITEM CONDITION REGISTRATIONS ==========
         ApoliRegistryHelper.registerItemCondition(FuelCondition.getFactory());
         ApoliRegistryHelper.registerItemCondition(HolderCondition.getFactory());
+
+        // ========== META ACTION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerEntityAction(LoopAction.getFactory(ApoliDataTypes.ENTITY_ACTION));
 
         if (Sync.HAS_ASPECTSLIB) {
             ApoliRegistryHelper.registerPowerFactory(SetEntityAspectsPower.createFactory());
