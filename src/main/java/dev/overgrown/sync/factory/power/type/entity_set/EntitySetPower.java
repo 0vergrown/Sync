@@ -39,7 +39,10 @@ public class EntitySetPower extends Power {
     private boolean wasActive = false;
     private boolean removedTemps = false;
 
-    public EntitySetPower(PowerType<?> type, LivingEntity entity, Consumer<Pair<Entity, Entity>> actionOnAdd, Consumer<Pair<Entity, Entity>> actionOnRemove, int tickRate) {
+    public EntitySetPower(PowerType<?> type, LivingEntity entity,
+                          Consumer<Pair<Entity, Entity>> actionOnAdd,
+                          Consumer<Pair<Entity, Entity>> actionOnRemove,
+                          int tickRate) {
         super(type, entity);
         if (tickRate <= 0) {
             throw new IllegalArgumentException("Tick rate must be a positive integer");
@@ -69,7 +72,6 @@ public class EntitySetPower extends Power {
                 this.startTicks = entity.age % tickRate;
                 return;
             }
-
             if (entity.age % tickRate == startTicks) {
                 this.tickTempEntities();
             }
@@ -86,9 +88,7 @@ public class EntitySetPower extends Power {
 
         while (entryIterator.hasNext()) {
             Map.Entry<UUID, Long> entry = entryIterator.next();
-            if (time < entry.getValue()) {
-                continue;
-            }
+            if (time < entry.getValue()) continue;
 
             UUID uuid = entry.getKey();
             Entity tempEntity = this.getEntity(uuid);
@@ -103,20 +103,60 @@ public class EntitySetPower extends Power {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Validation helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Eagerly evicts any entity that is cached locally but has already been
+     * destroyed (killed / discarded) since the last server tick.  This is a
+     * cheap O(n) pass over the in-memory cache; it does <em>not</em> perform
+     * world lookups.  Call {@link #validateEntities()} when you also want to
+     * purge UUIDs that were never loaded into the cache.
+     *
+     * @return {@code true} if at least one entry was removed.
+     */
+    private boolean evictDestroyed() {
+        boolean changed = false;
+        Iterator<UUID> iter = entityUuids.iterator();
+        while (iter.hasNext()) {
+            UUID uuid = iter.next();
+            Entity cached = entities.get(uuid);
+            // Only evict if we have a cached reference that is definitively gone.
+            if (cached != null && cached.isRemoved()
+                    && cached.getRemovalReason() != null
+                    && cached.getRemovalReason().shouldDestroy()) {
+                iter.remove();
+                entities.remove(uuid);
+                tempUuids.remove(uuid);
+                tempEntities.remove(uuid);
+                if (actionOnRemove != null) {
+                    actionOnRemove.accept(new Pair<>(entity, cached));
+                }
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Walks every UUID in the set and removes entries whose entity can no
+     * longer be found in any loaded world.  This is the authoritative cleanup
+     * path; it is more expensive than {@link #evictDestroyed()} but covers
+     * UUIDs whose entity was unloaded before a reference was cached here.
+     *
+     * @return {@code true} if every remaining member could be located.
+     */
     public boolean validateEntities() {
         MinecraftServer server = entity.getServer();
-        if (server == null) {
-            return false;
-        }
+        if (server == null) return false;
 
         Iterator<UUID> uuidIterator = entityUuids.iterator();
         boolean valid = true;
 
         while (uuidIterator.hasNext()) {
             UUID uuid = uuidIterator.next();
-            if (getEntityFromAllWorlds(server, uuid) != null) {
-                continue;
-            }
+            if (getEntityFromAllWorlds(server, uuid) != null) continue;
 
             uuidIterator.remove();
             entities.remove(uuid);
@@ -132,12 +172,14 @@ public class EntitySetPower extends Power {
     private static Entity getEntityFromAllWorlds(MinecraftServer server, UUID uuid) {
         for (ServerWorld world : server.getWorlds()) {
             Entity entity = world.getEntity(uuid);
-            if (entity != null) {
-                return entity;
-            }
+            if (entity != null) return entity;
         }
         return null;
     }
+
+    // -------------------------------------------------------------------------
+    // Mutation API
+    // -------------------------------------------------------------------------
 
     public boolean add(Entity entity) {
         return add(entity, null);
@@ -153,7 +195,8 @@ public class EntitySetPower extends Power {
 
         if (time != null) {
             addedToSet |= tempUuids.add(uuid);
-            tempEntities.compute(uuid, (prevUuid, prevTime) -> entity.getWorld().getTime() + time);
+            tempEntities.compute(uuid, (prevUuid, prevTime) ->
+                    entity.getWorld().getTime() + time);
         }
 
         if (!entityUuids.contains(uuid)) {
@@ -172,9 +215,7 @@ public class EntitySetPower extends Power {
     }
 
     public boolean remove(@Nullable Entity entity, boolean executeRemoveAction) {
-        if (entity == null || entity.getWorld().isClient) {
-            return false;
-        }
+        if (entity == null || entity.getWorld().isClient) return false;
 
         UUID uuid = entity.getUuid();
         boolean result = entityUuids.remove(uuid)
@@ -189,14 +230,50 @@ public class EntitySetPower extends Power {
         return result;
     }
 
+    // -------------------------------------------------------------------------
+    // Query API
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns {@code true} if {@code entity} is a member of this set <em>and</em>
+     * is not already marked as destroyed.  This prevents stale entries from
+     * evaluating as present in the brief window between entity death and the
+     * next cleanup sweep.
+     */
     public boolean contains(Entity entity) {
-        if (entity == null) {
+        if (entity == null) return false;
+
+        UUID uuid = entity.getUuid();
+        if (!entityUuids.contains(uuid)) return false;
+
+        // If the entity is removed/killed, evict it immediately rather than
+        // reporting a false positive.
+        if (entity.isRemoved()
+                && entity.getRemovalReason() != null
+                && entity.getRemovalReason().shouldDestroy()) {
+            entityUuids.remove(uuid);
+            entities.remove(uuid);
+            tempUuids.remove(uuid);
+            tempEntities.remove(uuid);
+            if (actionOnRemove != null) {
+                actionOnRemove.accept(new Pair<>(this.entity, entity));
+            }
             return false;
         }
-        return entities.containsValue(entity) || entityUuids.contains(entity.getUuid());
+
+        return true;
     }
 
+    /**
+     * Returns the number of entities currently in the set, automatically
+     * evicting any cached entries that have already been destroyed.  This
+     * makes the count accurate in the same tick that an entity dies, without
+     * requiring a full world-scan.
+     */
     public int size() {
+        if (evictDestroyed()) {
+            PowerHolderComponent.syncPower(this.entity, this.type);
+        }
         return entityUuids.size();
     }
 
@@ -218,21 +295,40 @@ public class EntitySetPower extends Power {
         }
     }
 
+    /**
+     * Returns a snapshot of the UUID set for safe iteration.  Dead entries may
+     * still be present; callers should guard against {@code null} from
+     * {@link #getEntity(UUID)}.
+     */
     public Set<UUID> getIterationSet() {
         return new HashSet<>(entityUuids);
     }
 
     @Nullable
     public Entity getEntity(UUID uuid) {
-        if (!entityUuids.contains(uuid)) {
-            return null;
-        }
+        if (!entityUuids.contains(uuid)) return null;
 
         Entity entity = entities.get(uuid);
-        if (entity != null && !entity.isRemoved()) {
-            return entity;
+
+        // If the cached reference has been destroyed, evict and return null.
+        if (entity != null) {
+            if (entity.isRemoved()
+                    && entity.getRemovalReason() != null
+                    && entity.getRemovalReason().shouldDestroy()) {
+                entityUuids.remove(uuid);
+                entities.remove(uuid);
+                tempUuids.remove(uuid);
+                tempEntities.remove(uuid);
+                if (actionOnRemove != null) {
+                    actionOnRemove.accept(new Pair<>(this.entity, entity));
+                }
+                PowerHolderComponent.syncPower(this.entity, this.type);
+                return null;
+            }
+            if (!entity.isRemoved()) return entity;
         }
 
+        // Cache miss or soft-removed entity: look it up across all worlds.
         MinecraftServer server = this.entity.getServer();
         if (server != null) {
             entity = getEntityFromAllWorlds(server, uuid);
@@ -245,22 +341,22 @@ public class EntitySetPower extends Power {
         return null;
     }
 
+    // -------------------------------------------------------------------------
+    // NBT serialisation
+    // -------------------------------------------------------------------------
+
     @Override
     public NbtElement toTag() {
-
         NbtCompound rootNbt = new NbtCompound();
 
         NbtList entityUuidsNbt = new NbtList();
         NbtList tempUuidsNbt = new NbtList();
 
         for (UUID entityUuid : entityUuids) {
-            NbtIntArray entityUuidNbt = NbtHelper.fromUuid(entityUuid);
-            entityUuidsNbt.add(entityUuidNbt);
+            entityUuidsNbt.add(NbtHelper.fromUuid(entityUuid));
         }
-
         for (UUID tempUuid : tempUuids) {
-            NbtIntArray tempUuidNbt = NbtHelper.fromUuid(tempUuid);
-            tempUuidsNbt.add(tempUuidNbt);
+            tempUuidsNbt.add(NbtHelper.fromUuid(tempUuid));
         }
 
         rootNbt.put("Entities", entityUuidsNbt);
@@ -268,15 +364,11 @@ public class EntitySetPower extends Power {
         rootNbt.putBoolean("RemovedTemps", removedTemps);
 
         return rootNbt;
-
     }
 
     @Override
     public void fromTag(NbtElement tag) {
-
-        if (!(tag instanceof NbtCompound rootNbt)) {
-            return;
-        }
+        if (!(tag instanceof NbtCompound rootNbt)) return;
 
         tempUuids.clear();
         tempEntities.clear();
@@ -285,48 +377,58 @@ public class EntitySetPower extends Power {
 
         NbtList tempUuidsNbt = rootNbt.getList("TempEntities", NbtElement.INT_ARRAY_TYPE);
         for (NbtElement tempUuidNbt : tempUuidsNbt) {
-            UUID tempUuid = NbtHelper.toUuid(tempUuidNbt);
-            tempUuids.add(tempUuid);
+            tempUuids.add(NbtHelper.toUuid(tempUuidNbt));
         }
 
         NbtList entityUuidsNbt = rootNbt.getList("Entities", NbtElement.INT_ARRAY_TYPE);
         for (NbtElement entityUuidNbt : entityUuidsNbt) {
-            UUID entityUuid = NbtHelper.toUuid(entityUuidNbt);
-            entityUuids.add(entityUuid);
+            entityUuids.add(NbtHelper.toUuid(entityUuidNbt));
         }
 
         removedTemps = rootNbt.getBoolean("RemovedTemps");
-
     }
+
+    // -------------------------------------------------------------------------
+    // Static Fabric event integration callbacks – register these in your mod
+    // initializer via ServerEntityEvents.ENTITY_LOAD / ENTITY_UNLOAD.
+    // -------------------------------------------------------------------------
 
     public static void integrateLoadCallback(Entity loadedEntity, ServerWorld world) {
-        PowerHolderComponent.KEY.maybeGet(loadedEntity).ifPresent(component -> component.getPowers(EntitySetPower.class, true).stream()
-                .filter(Predicate.not(EntitySetPower::validateEntities))
-                .map(Power::getType)
-                .forEach(powerType -> PowerHolderComponent.syncPower(loadedEntity, powerType)));
+        PowerHolderComponent.KEY.maybeGet(loadedEntity).ifPresent(component ->
+                component.getPowers(EntitySetPower.class, true).stream()
+                        .filter(Predicate.not(EntitySetPower::validateEntities))
+                        .map(Power::getType)
+                        .forEach(powerType -> PowerHolderComponent.syncPower(loadedEntity, powerType)));
     }
 
+    /**
+     * Removes a permanently-destroyed entity from every set that contains it.
+     * Player deaths are excluded here because a dead player respawns rather
+     * than ceasing to exist; handle player-specific cleanup (e.g. disconnect)
+     * separately.
+     */
     public static void integrateUnloadCallback(Entity unloadedEntity, ServerWorld world) {
-
         Entity.RemovalReason removalReason = unloadedEntity.getRemovalReason();
-        if (removalReason == null || !removalReason.shouldDestroy() || unloadedEntity instanceof PlayerEntity) {
+        if (removalReason == null || !removalReason.shouldDestroy()
+                || unloadedEntity instanceof PlayerEntity) {
             return;
         }
 
         for (ServerWorld otherWorld : world.getServer().getWorlds()) {
-
             for (Entity entity : otherWorld.iterateEntities()) {
-
-                PowerHolderComponent.KEY.maybeGet(entity).ifPresent(component -> component.getPowers(EntitySetPower.class, true).stream()
-                        .filter(p -> p.remove(unloadedEntity, false))
-                        .map(Power::getType)
-                        .forEach(powerType -> PowerHolderComponent.syncPower(entity, powerType)));
-
+                PowerHolderComponent.KEY.maybeGet(entity).ifPresent(component ->
+                        component.getPowers(EntitySetPower.class, true).stream()
+                                .filter(p -> p.remove(unloadedEntity, false))
+                                .map(Power::getType)
+                                .forEach(powerType ->
+                                        PowerHolderComponent.syncPower(entity, powerType)));
             }
-
         }
-
     }
+
+    // -------------------------------------------------------------------------
+    // Factory
+    // -------------------------------------------------------------------------
 
     public static PowerFactory<EntitySetPower> getFactory() {
         return new PowerFactory<EntitySetPower>(
@@ -335,16 +437,13 @@ public class EntitySetPower extends Power {
                         .add("action_on_add", ApoliDataTypes.BIENTITY_ACTION, null)
                         .add("action_on_remove", ApoliDataTypes.BIENTITY_ACTION, null)
                         .add("tick_rate", SerializableDataTypes.INT, 1),
-                data -> (powerType, livingEntity) -> {
-                    int tickRate = data.getInt("tick_rate");
-                    return new EntitySetPower(
-                            powerType,
-                            livingEntity,
-                            data.get("action_on_add"),
-                            data.get("action_on_remove"),
-                            tickRate
-                    );
-                }
+                data -> (powerType, livingEntity) -> new EntitySetPower(
+                        powerType,
+                        livingEntity,
+                        data.get("action_on_add"),
+                        data.get("action_on_remove"),
+                        data.getInt("tick_rate")
+                )
         ).allowCondition();
     }
 }

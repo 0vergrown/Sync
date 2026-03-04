@@ -13,16 +13,17 @@ import net.minecraft.util.Pair;
 public class InEntitySetCondition {
 
     public static boolean condition(SerializableData.Instance data, Pair<Entity, Entity> actorAndTarget) {
-
-        PowerHolderComponent component = PowerHolderComponent.KEY.maybeGet(actorAndTarget.getLeft()).orElse(null);
+        PowerHolderComponent component =
+                PowerHolderComponent.KEY.maybeGet(actorAndTarget.getLeft()).orElse(null);
         PowerType<?> powerType = data.get("set");
 
-        if (component == null || powerType == null || !(component.getPower(powerType) instanceof EntitySetPower entitySetPower)) {
+        if (component == null
+                || powerType == null
+                || !(component.getPower(powerType) instanceof EntitySetPower entitySetPower)) {
             return false;
         }
 
         return entitySetPower.contains(actorAndTarget.getRight());
-
     }
 
     public static ConditionFactory<Pair<Entity, Entity>> getFactory() {

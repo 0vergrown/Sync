@@ -3,6 +3,7 @@ package dev.overgrown.sync;
 import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindDefinition;
 import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindLoader;
 import dev.overgrown.sync.factory.power.type.action_on_sending_message.ActionOnSendingMessagePower;
+import dev.overgrown.sync.factory.power.type.entity_set.EntitySetPower;
 import dev.overgrown.sync.registry.entities.SyncEntityRegistry;
 import dev.overgrown.sync.factory.action.entity.teleportation.events.EntityCleanupHandler;
 import dev.overgrown.sync.factory.action.entity.grant_all_powers.GrantAllPowersAction;
@@ -19,6 +20,7 @@ import io.github.apace100.apoli.component.PowerHolderComponent;
 import io.github.apace100.apoli.power.Prioritized;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -73,6 +75,21 @@ public class Sync implements ModInitializer {
         // Data-driven keybinds
         ResourceManagerHelper.get(ResourceType.SERVER_DATA)
                 .registerReloadListener(new DataDrivenKeybindLoader());
+
+        // -----------------------------------------------------------------------
+        // Entity Set cleanup: keep sets consistent when entities load / unload.
+        //
+        // ENTITY_LOAD  – re-validates sets after a server restart so stale UUIDs
+        //                (entities that were deleted while the server was offline)
+        //                are pruned before the first use.
+        //
+        // ENTITY_UNLOAD – removes a permanently-destroyed entity (killed/discarded)
+        //                 from every EntitySetPower that contains it, in the same
+        //                 tick the removal happens. This is the primary fix for
+        //                 entity_set_size still reporting dead entities.
+        // -----------------------------------------------------------------------
+        ServerEntityEvents.ENTITY_LOAD.register(EntitySetPower::integrateLoadCallback);
+        ServerEntityEvents.ENTITY_UNLOAD.register(EntitySetPower::integrateUnloadCallback);
 
         // Register GrantAllPowersAction as a resource reload listener
         ResourceManagerHelper.get(ResourceType.SERVER_DATA)

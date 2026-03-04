@@ -14,28 +14,27 @@ import net.minecraft.util.Pair;
 public class AddToEntitySetAction {
 
     public static void action(SerializableData.Instance data, Pair<Entity, Entity> actorAndTarget) {
+        Integer timeLimit = data.isPresent("time_limit") ? data.get("time_limit") : null;
 
-        Integer timeLimit = data.get("time_limit");
+        // A time_limit of 0 or less has no meaningful expiry semantics (reject early).
         if (timeLimit != null && timeLimit <= 0) {
-            // Handle invalid time_limit (e.g., log error, throw exception)
+            Sync.LOGGER.warn("[Sync/EntitySet] add_to_entity_set: time_limit must be > 0 (got {}), ignoring action.", timeLimit);
             return;
         }
 
         PowerHolderComponent component = PowerHolderComponent.KEY.getNullable(actorAndTarget.getLeft());
         PowerType<?> powerType = data.get("set");
 
-        if (component == null || powerType == null || !(component.getPower(powerType) instanceof EntitySetPower entitySetPower)) {
+        if (component == null
+                || powerType == null
+                || !(component.getPower(powerType) instanceof EntitySetPower entitySetPower)) {
             return;
         }
 
-        if (entitySetPower.add(actorAndTarget.getRight(), data.get("time_limit"))) {
-            PowerHolderComponent.syncPower(actorAndTarget.getLeft(), powerType);
-        }
-
+        // Single add call, pass the (possibly null) time limit directly.
         if (entitySetPower.add(actorAndTarget.getRight(), timeLimit)) {
             PowerHolderComponent.syncPower(actorAndTarget.getLeft(), powerType);
         }
-
     }
 
     public static ActionFactory<Pair<Entity, Entity>> getFactory() {

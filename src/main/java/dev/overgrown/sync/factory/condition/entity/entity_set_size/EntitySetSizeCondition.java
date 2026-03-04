@@ -14,11 +14,13 @@ import net.minecraft.entity.Entity;
 public class EntitySetSizeCondition {
 
     public static boolean condition(SerializableData.Instance data, Entity entity) {
-
-        PowerHolderComponent component = PowerHolderComponent.KEY.maybeGet(entity).orElse(null);
+        PowerHolderComponent component =
+                PowerHolderComponent.KEY.maybeGet(entity).orElse(null);
         PowerType<?> powerType = data.get("set");
 
-        if (component == null || powerType == null || !(component.getPower(powerType) instanceof EntitySetPower entitySetPower)) {
+        if (component == null
+                || powerType == null
+                || !(component.getPower(powerType) instanceof EntitySetPower entitySetPower)) {
             return false;
         }
 
@@ -26,7 +28,6 @@ public class EntitySetSizeCondition {
         int compareTo = data.get("compare_to");
 
         return comparison.compare(entitySetPower.size(), compareTo);
-
     }
 
     public static ConditionFactory<Entity> getFactory() {
