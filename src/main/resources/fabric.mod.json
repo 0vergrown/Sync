@@ -29,6 +29,9 @@
     ],
     "lambdynlights:initializer": [
       "dev.overgrown.sync.factory.power.type.emissive.compatibility.lambdynamiclights.DynamicLightsEntry"
+    ],
+    "jade": [
+      "dev.overgrown.sync.factory.compatibility.jade.SyncJadePlugin"
     ]
   },
   "mixins":[
@@ -42,7 +45,8 @@
     "apoli": "*"
   },
   "suggests":{
-    "connectormod": "*"
+    "connectormod": "*",
+    "jade": "*"
   },
   "custom": {
     "connector-depends": {

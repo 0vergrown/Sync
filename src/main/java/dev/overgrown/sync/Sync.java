@@ -52,6 +52,7 @@ public class Sync implements ModInitializer {
     public static final String MOD_ID = "sync";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static boolean HAS_ASPECTSLIB = false; // Flag to check if AspectsLib is present
+    public static boolean HAS_JADE = false; // Flag to check if Jade is present
 
     public static Identifier identifier(String path) {
         return new Identifier(Sync.MOD_ID, path);
@@ -62,6 +63,11 @@ public class Sync implements ModInitializer {
         HAS_ASPECTSLIB = FabricLoader.getInstance().isModLoaded("aspectslib");
         if (HAS_ASPECTSLIB) {
             LOGGER.info("AspectsLib detected - compatibility enabled");
+        }
+
+        HAS_JADE = FabricLoader.getInstance().isModLoaded("jade");
+        if (HAS_JADE) {
+            LOGGER.info("Jade detected - tooltip compat enabled");
         }
 
         NamespaceAlias.addAlias("apoli", MOD_ID);

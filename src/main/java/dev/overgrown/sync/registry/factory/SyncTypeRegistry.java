@@ -9,8 +9,8 @@ import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityActio
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
 import dev.overgrown.sync.factory.action.item.holder.HolderAction;
 import dev.overgrown.sync.factory.action.meta.loop.LoopAction;
-import dev.overgrown.sync.factory.compatibility.aspectslib.SetEntityAspectsPower;
-import dev.overgrown.sync.factory.compatibility.aspectslib.condition.HasAspectCondition;
+import dev.overgrown.sync.factory.compatibility.aspectslib.power.type.SetEntityAspectsPower;
+import dev.overgrown.sync.factory.compatibility.aspectslib.condition.entity.HasAspectCondition;
 import dev.overgrown.sync.factory.action.bientity.add_to_entity_set.AddToEntitySetAction;
 import dev.overgrown.sync.factory.action.bientity.remove_from_entity_set.RemoveFromEntitySetAction;
 import dev.overgrown.sync.factory.action.block.ghost_block.GhostBlockAction;
@@ -29,6 +29,7 @@ import dev.overgrown.sync.factory.action.entity.revoke_all_powers.RevokeAllPower
 import dev.overgrown.sync.factory.action.entity.teleportation.RandomTeleportAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.SaveLocationAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToLocationAction;
+import dev.overgrown.sync.factory.compatibility.jade.power.type.modify_jade_tooltip.ModifyJadeTooltipPower;
 import dev.overgrown.sync.factory.condition.bientity.colliding.CollidingCondition;
 import dev.overgrown.sync.factory.condition.bientity.command.CommandCondition;
 import dev.overgrown.sync.factory.condition.bientity.disguised.DisguisedBientityCondition;
@@ -62,6 +63,7 @@ import dev.overgrown.sync.factory.power.type.modify_model_parts.ModifyModelParts
 import dev.overgrown.sync.factory.power.type.modify_player_model.ModifyPlayerModelPower;
 import dev.overgrown.sync.factory.power.type.pose.PosePower;
 import dev.overgrown.sync.factory.power.type.modify_label_render.ModifyLabelRenderPower;
+import dev.overgrown.sync.factory.power.type.prevent_creative_flight.PreventCreativeFlightPower;
 import dev.overgrown.sync.factory.power.type.prevent_sprinting_particles.PreventSprintingParticlesPower;
 import dev.overgrown.sync.factory.power.type.sprinting.SprintingPower;
 import dev.overgrown.sync.registry.factory.utils.ApoliRegistryHelper;
@@ -89,6 +91,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(ModifyModelPartsPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyPlayerModelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PosePower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(PreventCreativeFlightPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PreventSprintingParticlesPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(SprintingPower.getFactory());
 
@@ -152,6 +155,10 @@ public class SyncTypeRegistry {
         if (Sync.HAS_ASPECTSLIB) {
             ApoliRegistryHelper.registerPowerFactory(SetEntityAspectsPower.createFactory());
             ApoliRegistryHelper.registerEntityCondition(HasAspectCondition.getFactory());
+        }
+
+        if (Sync.HAS_JADE) {
+            ApoliRegistryHelper.registerPowerFactory(ModifyJadeTooltipPower.getFactory());
         }
     }
 }

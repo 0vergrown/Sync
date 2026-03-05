@@ -1,4 +1,4 @@
-package dev.overgrown.sync.factory.compatibility.aspectslib;
+package dev.overgrown.sync.factory.compatibility.aspectslib.power.type;
 
 import dev.overgrown.aspectslib.api.IAspectAffinityEntity;
 import dev.overgrown.aspectslib.data.AspectData;
