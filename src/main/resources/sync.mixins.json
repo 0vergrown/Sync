@@ -5,6 +5,7 @@
   "mixins": [
     "edible_item.HungerManagerMixin",
     "edible_item.ItemStackMixin",
+    "grant_all_powers.PowerHolderComponentImplMixin",
     "integration.connector.ServerTickEventMixin",
     "mobs_ignore.AttackMixin",
     "mobs_ignore.HostileEntityMixin",
@@ -14,7 +15,8 @@
     "modify_enchantment_level.LivingEntityMixin",
     "pose.PlayerEntityMixin",
     "prevent_sprinting_particles.PreventSprintingParticlesMixin",
-    "sprinting.SprintingPowerMixin"
+    "sprinting.SprintingPowerMixin",
+    "suppress_power.PowerSuppressMixin"
   ],
   "injectors": {
     "defaultRequire": 1

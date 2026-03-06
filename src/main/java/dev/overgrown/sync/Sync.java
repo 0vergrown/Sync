@@ -1,5 +1,7 @@
 package dev.overgrown.sync;
 
+import dev.overgrown.sync.factory.action.bientity.suppress_power.utils.SuppressedPowerManager;
+import dev.overgrown.sync.factory.action.entity.grant_all_powers.SourcePowerRegistry;
 import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindDefinition;
 import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindLoader;
 import dev.overgrown.sync.factory.power.type.action_on_sending_message.ActionOnSendingMessagePower;
@@ -75,6 +77,10 @@ public class Sync implements ModInitializer {
         RadialMenuServer.register();
         SyncEntityRegistry.register();
 
+
+// 1. Register the SourcePowerRegistry clear hook (put early in onInitialize):
+        SourcePowerRegistry.registerClearHook();
+
         // Register entity cleanup handler
         EntityCleanupHandler.register();
 
@@ -130,6 +136,7 @@ public class Sync implements ModInitializer {
             }
             // Clean up disguise when an entity dies
             DisguiseManager.removePlayer(entity.getUuid());
+            SuppressedPowerManager.removeAll(entity.getUuid());
         });
 
         // Packet receivers
@@ -172,6 +179,7 @@ public class Sync implements ModInitializer {
             KeyPressManager.removePlayer(handler.player.getUuid());
             PlayerModelTypeManager.removePlayer(handler.player.getUuid());
             PerspectiveManager.removePlayer(handler.player.getUuid());
+            SuppressedPowerManager.removeAll(handler.player.getUuid());
         });
 
         // Commands

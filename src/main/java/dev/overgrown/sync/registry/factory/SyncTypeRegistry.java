@@ -4,6 +4,8 @@ import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.action.bientity.convert_entity.ConvertEntityAction;
 import dev.overgrown.sync.factory.action.bientity.disguise.DisguiseAction;
 import dev.overgrown.sync.factory.action.bientity.execute_command.ExecuteCommandAction;
+import dev.overgrown.sync.factory.action.bientity.liberate_power.LiberatePowerAction;
+import dev.overgrown.sync.factory.action.bientity.suppress_power.SuppressPowerAction;
 import dev.overgrown.sync.factory.action.entity.disguise_as.DisguiseAsAction;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
@@ -134,7 +136,9 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerBientityAction(ConvertEntityAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(DisguiseAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(ExecuteCommandAction.getFactory());
+        ApoliRegistryHelper.registerBientityAction(LiberatePowerAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(RemoveFromEntitySetAction.getFactory());
+        ApoliRegistryHelper.registerBientityAction(SuppressPowerAction.getFactory());
 
         // ========== BIENTITY CONDITION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBientityCondition(CollidingCondition.getFactory());

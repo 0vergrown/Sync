@@ -16,16 +16,6 @@ import snownee.jade.api.Identifiers;
 import snownee.jade.api.WailaPlugin;
 import snownee.jade.api.config.IPluginConfig;
 
-/**
- * Jade plugin for the Sync mod.
- *
- * <p>Register in fabric.mod.json:</p>
- * <pre>{@code
- * "entrypoints": {
- *   "jade": [ "dev.overgrown.sync.compat.jade.SyncJadePlugin" ]
- * }
- * }</pre>
- */
 @WailaPlugin
 public class SyncJadePlugin implements IWailaPlugin {
 
