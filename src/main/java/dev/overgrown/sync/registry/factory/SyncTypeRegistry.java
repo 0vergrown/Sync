@@ -6,9 +6,13 @@ import dev.overgrown.sync.factory.action.bientity.disguise.DisguiseAction;
 import dev.overgrown.sync.factory.action.bientity.execute_command.ExecuteCommandAction;
 import dev.overgrown.sync.factory.action.bientity.liberate_power.LiberatePowerAction;
 import dev.overgrown.sync.factory.action.bientity.suppress_power.SuppressPowerAction;
+import dev.overgrown.sync.factory.action.bientity.transfer.TransferAction;
+import dev.overgrown.sync.factory.action.entity.cycle_stolen_power.CycleStolenPowerAction;
 import dev.overgrown.sync.factory.action.entity.disguise_as.DisguiseAsAction;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
+import dev.overgrown.sync.factory.action.entity.toggle_transfer_mode.ToggleTransferModeAction;
+import dev.overgrown.sync.factory.action.entity.use_selected_stolen_power.UseSelectedStolenPowerAction;
 import dev.overgrown.sync.factory.action.item.holder.HolderAction;
 import dev.overgrown.sync.factory.action.meta.loop.LoopAction;
 import dev.overgrown.sync.factory.compatibility.aspectslib.power.type.SetEntityAspectsPower;
@@ -41,6 +45,7 @@ import dev.overgrown.sync.factory.condition.entity.entity_in_radius.EntityInRadi
 import dev.overgrown.sync.factory.condition.entity.entity_set_size.EntitySetSizeCondition;
 import dev.overgrown.sync.factory.condition.entity.has_command_tag.HasCommandTagCondition;
 import dev.overgrown.sync.factory.condition.entity.in_pose.InPoseCondition;
+import dev.overgrown.sync.factory.condition.entity.is_selected_stolen_power.IsSelectedStolenPowerCondition;
 import dev.overgrown.sync.factory.condition.entity.key_pressed.KeyPressedCondition;
 import dev.overgrown.sync.factory.condition.entity.perspective.PerspectiveCondition;
 import dev.overgrown.sync.factory.condition.entity.player_model_type.PlayerModelTypeCondition;
@@ -101,6 +106,9 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(CustomProjectileAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(CycleStolenPowerAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(ToggleTransferModeAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(UseSelectedStolenPowerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(DisguiseAsAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(GrantAllPowersAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
@@ -126,6 +134,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityCondition(EntitySetSizeCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(HasCommandTagCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(InPoseCondition.getFactory());
+        ApoliRegistryHelper.registerEntityCondition(IsSelectedStolenPowerCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(KeyPressedCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(PerspectiveCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(PlayerModelTypeCondition.getFactory());
@@ -139,6 +148,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerBientityAction(LiberatePowerAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(RemoveFromEntitySetAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(SuppressPowerAction.getFactory());
+        ApoliRegistryHelper.registerBientityAction(TransferAction.getFactory());
 
         // ========== BIENTITY CONDITION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBientityCondition(CollidingCondition.getFactory());

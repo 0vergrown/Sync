@@ -1,6 +1,8 @@
 package dev.overgrown.sync;
 
 import dev.overgrown.sync.factory.action.bientity.suppress_power.utils.SuppressedPowerManager;
+import dev.overgrown.sync.factory.action.bientity.transfer.StolenPowerSlotManager;
+import dev.overgrown.sync.factory.action.entity.toggle_transfer_mode.utils.TransferModeManager;
 import dev.overgrown.sync.factory.action.entity.grant_all_powers.SourcePowerRegistry;
 import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindDefinition;
 import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindLoader;
@@ -78,7 +80,7 @@ public class Sync implements ModInitializer {
         SyncEntityRegistry.register();
 
 
-// 1. Register the SourcePowerRegistry clear hook (put early in onInitialize):
+        // 1. Register the SourcePowerRegistry clear hook (put early in onInitialize):
         SourcePowerRegistry.registerClearHook();
 
         // Register entity cleanup handler
@@ -129,10 +131,12 @@ public class Sync implements ModInitializer {
 
         // Death event handler
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
-            if (entity instanceof ServerPlayerEntity) {
+            if (entity instanceof ServerPlayerEntity player) {
                 PowerHolderComponent component = PowerHolderComponent.KEY.get(entity);
                 component.getPowers(ActionOnDeathPower.class).forEach(power ->
                         power.onDeath(damageSource, entity.getMaxHealth())); // Use max health as damage amount
+                StolenPowerSlotManager.remove(player.getUuid());
+                TransferModeManager.remove(player.getUuid());
             }
             // Clean up disguise when an entity dies
             DisguiseManager.removePlayer(entity.getUuid());
@@ -180,6 +184,9 @@ public class Sync implements ModInitializer {
             PlayerModelTypeManager.removePlayer(handler.player.getUuid());
             PerspectiveManager.removePlayer(handler.player.getUuid());
             SuppressedPowerManager.removeAll(handler.player.getUuid());
+            UUID id = handler.player.getUuid();
+            StolenPowerSlotManager.remove(id);
+            TransferModeManager.remove(id);
         });
 
         // Commands
