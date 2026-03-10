@@ -24,11 +24,16 @@ public class UseSelectedStolenPowerAction {
         if (powers.isEmpty()) return;
 
         for (PowerType<?> pt : powers) {
-            Power power = component.getPower(pt);
+            Power power = getPowerUnchecked(component, pt);
             if (power instanceof ActiveCooldownPower acp) {
                 acp.onUse();
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Power> T getPowerUnchecked(PowerHolderComponent component, PowerType<?> pt) {
+        return component.getPower((PowerType<T>) pt);
     }
 
     public static ActionFactory<Entity> getFactory() {

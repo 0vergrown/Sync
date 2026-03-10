@@ -4,6 +4,7 @@ import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.action.entity.toggle_transfer_mode.utils.TransferModeManager;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import io.github.apace100.apoli.data.ApoliDataTypes;
+import io.github.apace100.apoli.power.Power;
 import io.github.apace100.apoli.power.PowerType;
 import io.github.apace100.apoli.power.factory.action.ActionFactory;
 import io.github.apace100.calio.data.SerializableData;
@@ -66,8 +67,8 @@ public class TransferAction {
             }
         } else {
             Set<Identifier> seenSources = new LinkedHashSet<>();
-            for (PowerType<?> pt : new ArrayList<>(targetComp.getPowers())) {
-                for (Identifier src : targetComp.getSources(pt)) {
+            for (Power p : new ArrayList<>(targetComp.getPowers())) {
+                for (Identifier src : targetComp.getSources(p.getType())) {
                     if (!src.equals(transferSource)) {
                         seenSources.add(src);
                     }
