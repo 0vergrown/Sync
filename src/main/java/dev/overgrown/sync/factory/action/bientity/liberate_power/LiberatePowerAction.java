@@ -46,15 +46,12 @@ public class LiberatePowerAction {
         Entity actor  = entities.getLeft();
         Entity target = entities.getRight();
 
-        // Fast-path: if nothing is suppressed on this entity, skip entirely.
-        Set<Identifier> currentlySuppressed =
-                SuppressedPowerManager.getSuppressedPowers(target.getUuid());
+        // Fast-path: nothing suppressed on this entity.
+        Set<Identifier> currentlySuppressed = SuppressedPowerManager.getSuppressedPowers(target.getUuid());
         if (currentlySuppressed.isEmpty()) return;
 
-        PowerHolderComponent component =
-                PowerHolderComponent.KEY.maybeGet(target).orElse(null);
+        PowerHolderComponent component = PowerHolderComponent.KEY.maybeGet(target).orElse(null);
         if (component == null) {
-            // Component gone – wipe orphaned suppression state.
             SuppressedPowerManager.removeAll(target.getUuid());
             return;
         }
@@ -96,14 +93,22 @@ public class LiberatePowerAction {
         ActionFactory<Pair<Entity, Entity>>.Instance bientityAction =
                 data.isPresent("bientity_action") ? data.get("bientity_action") : null;
 
-        // ── Iterate suppressed powers and lift matching ones ───────────────────
+        // ── Iterate the component's actual power types (mirrors SuppressPowerAction) ──
+        //
+        // This avoids PowerTypeRegistry.get() lookups and ensures getSources() receives
+        // the same PowerType instance the component holds, matching Transfer's approach.
 
-        // We only need to examine powers that are actually suppressed right now.
-        // Iterate over a snapshot to avoid ConcurrentModificationException.
-        Set<Identifier> snapshot = new HashSet<>(currentlySuppressed);
+        // Track which suppressed IDs we visited so we can clean up stale ones after.
+        Set<Identifier> visited = new HashSet<>();
         int liberatedCount = 0;
 
-        for (Identifier powerId : snapshot) {
+        for (PowerType<?> powerType : component.getPowerTypes(true)) {
+            Identifier powerId = powerType.getIdentifier();
+
+            // Only consider powers that are currently suppressed.
+            if (!currentlySuppressed.contains(powerId)) continue;
+            visited.add(powerId);
+
             if (ignoredPowers.contains(powerId)) continue;
 
             boolean shouldLiberate;
@@ -114,40 +119,31 @@ public class LiberatePowerAction {
                 shouldLiberate = false;
 
                 // 1. Match by explicit power ID.
-                if (!shouldLiberate && powerFilter.contains(powerId)) {
+                if (powerFilter.contains(powerId)) {
                     shouldLiberate = true;
                 }
 
-                // 2. Match by power factory type.
+                // 2. Match by power factory type (e.g. "origins:active_self").
                 if (!shouldLiberate && !typeFilter.isEmpty()) {
-                    // We need a PowerType to inspect its factory.
-                    // PowerTypeRegistry lookup can fail for removed powers – guard it.
                     try {
-                        PowerType<?> pt = io.github.apace100.apoli.power.PowerTypeRegistry.get(powerId);
-                        Identifier factoryId = pt.getFactory().getFactory().getSerializerId();
+                        Identifier factoryId =
+                                powerType.getFactory().getFactory().getSerializerId();
                         if (typeFilter.contains(factoryId)) {
                             shouldLiberate = true;
                         }
                     } catch (Exception ignored) {
-                        // Power no longer in registry – liberate it anyway to avoid
-                        // leaving stale suppression entries.
-                        shouldLiberate = true;
+                        // PowerTypeReference not yet resolved – skip the type filter.
                     }
                 }
 
-                // 3. Match by grant source (requires the component).
+                // 3. Match by grant source – uses the component-held PowerType directly,
+                //    same pattern as TransferAction and SuppressPowerAction.
                 if (!shouldLiberate && !sourceFilter.isEmpty()) {
-                    try {
-                        PowerType<?> pt =
-                                io.github.apace100.apoli.power.PowerTypeRegistry.get(powerId);
-                        for (Identifier src : component.getSources(pt)) {
-                            if (sourceFilter.contains(src)) {
-                                shouldLiberate = true;
-                                break;
-                            }
+                    for (Identifier src : component.getSources(powerType)) {
+                        if (sourceFilter.contains(src)) {
+                            shouldLiberate = true;
+                            break;
                         }
-                    } catch (Exception ignored) {
-                        // Power gone from registry – fall through.
                     }
                 }
             }
@@ -159,6 +155,22 @@ public class LiberatePowerAction {
 
             if (bientityAction != null) {
                 bientityAction.accept(entities);
+            }
+        }
+
+        // ── Clean up stale suppression entries (power removed from component) ──
+        //
+        // Any suppressed ID not visited above belongs to a power that is no longer
+        // in the component. Liberate unconditionally if no filters, or if the ID
+        // matches an explicit powerFilter entry (since we can't check type/source
+        // for a missing power).
+        Set<Identifier> stale = new HashSet<>(currentlySuppressed);
+        stale.removeAll(visited);
+        for (Identifier staleId : stale) {
+            if (ignoredPowers.contains(staleId)) continue;
+            if (!hasFilters || powerFilter.contains(staleId)) {
+                SuppressedPowerManager.liberate(target.getUuid(), staleId);
+                liberatedCount++;
             }
         }
 

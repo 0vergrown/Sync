@@ -9,6 +9,7 @@ import dev.overgrown.sync.factory.action.bientity.suppress_power.SuppressPowerAc
 import dev.overgrown.sync.factory.action.bientity.transfer.TransferAction;
 import dev.overgrown.sync.factory.action.entity.cycle_stolen_power.CycleStolenPowerAction;
 import dev.overgrown.sync.factory.action.entity.disguise_as.DisguiseAsAction;
+import dev.overgrown.sync.factory.action.entity.raycast.RaycastAction;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
 import dev.overgrown.sync.factory.action.entity.toggle_transfer_mode.ToggleTransferModeAction;
@@ -49,6 +50,7 @@ import dev.overgrown.sync.factory.condition.entity.is_selected_stolen_power.IsSe
 import dev.overgrown.sync.factory.condition.entity.key_pressed.KeyPressedCondition;
 import dev.overgrown.sync.factory.condition.entity.perspective.PerspectiveCondition;
 import dev.overgrown.sync.factory.condition.entity.player_model_type.PlayerModelTypeCondition;
+import dev.overgrown.sync.factory.condition.entity.raycast.RaycastCondition;
 import dev.overgrown.sync.factory.condition.entity.velocity.VelocityCondition;
 import dev.overgrown.sync.factory.condition.item.fuel.FuelCondition;
 import dev.overgrown.sync.factory.condition.item.holder.HolderCondition;
@@ -103,26 +105,27 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(SprintingPower.getFactory());
 
         // ========== ENTITY ACTION REGISTRATIONS ==========
-        ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(CustomProjectileAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(CycleStolenPowerAction.getFactory());
-        ApoliRegistryHelper.registerEntityAction(ToggleTransferModeAction.getFactory());
-        ApoliRegistryHelper.registerEntityAction(UseSelectedStolenPowerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(DisguiseAsAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(GrantAllPowersAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
-        ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(RaycastAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RemoveDisguiseAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RemovePowerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RevokeAllPowersAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(SetNoGravityAction.getFactory());
-        ApoliRegistryHelper.registerEntityAction(SaveLocationAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(SetSummonMaxLifeAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(SummonCloneAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(SummonMinionAction.getFactory());
-        ApoliRegistryHelper.registerEntityAction(TeleportToLocationAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(RandomTeleportAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(SaveLocationAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(TeleportToSpawnAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(TeleportToLocationAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(ToggleTransferModeAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(UseSelectedStolenPowerAction.getFactory());
 
         // ========== BLOCK ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerBlockAction(SpawnEntityBlockAction.getFactory());
@@ -138,6 +141,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityCondition(KeyPressedCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(PerspectiveCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(PlayerModelTypeCondition.getFactory());
+        ApoliRegistryHelper.registerEntityCondition(RaycastCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(VelocityCondition.getFactory());
 
         // ========== BIENTITY ACTION REGISTRATIONS ==========
