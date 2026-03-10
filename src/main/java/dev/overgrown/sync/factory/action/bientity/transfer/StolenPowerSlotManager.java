@@ -1,7 +1,6 @@
 package dev.overgrown.sync.factory.action.bientity.transfer;
 
 import dev.overgrown.sync.Sync;
-import io.github.apace100.apoli.component.PowerHolderComponent;
 import io.github.apace100.apoli.power.MultiplePowerType;
 import io.github.apace100.apoli.power.PowerType;
 import net.minecraft.entity.Entity;
@@ -23,23 +22,22 @@ public final class StolenPowerSlotManager {
     private static final Map<UUID, Integer> SELECTED_INDEX = new ConcurrentHashMap<>();
 
     public static void registerSteal(UUID actorUUID, Identifier originalSource,
-                                     Identifier transferSource, List<PowerType<?>> powers) {
-        if (powers.isEmpty()) return;
-        if (originalSource.equals(transferSource)) return;
+                                     List<PowerType<?>> powers) {
+        List<PowerType<?>> topLevel = filterTopLevel(powers);
+        if (topLevel.isEmpty()) return;
 
         LinkedHashMap<Identifier, List<PowerType<?>>> packages =
                 STOLEN_PACKAGES.computeIfAbsent(actorUUID, k -> new LinkedHashMap<>());
 
         synchronized (packages) {
-            packages.merge(originalSource, new ArrayList<>(powers), (existing, incoming) -> {
+            packages.merge(originalSource, new ArrayList<>(topLevel), (existing, incoming) -> {
                 Set<PowerType<?>> seen = new LinkedHashSet<>(existing);
                 seen.addAll(incoming);
                 return new ArrayList<>(seen);
             });
         }
 
-        Sync.LOGGER.debug("[Sync/SlotManager] Registered {} power(s) under '{}' for {}.",
-                powers.size(), originalSource, actorUUID);
+        SELECTED_INDEX.putIfAbsent(actorUUID, 0);
     }
 
     public static void deregisterSource(UUID actorUUID, Identifier originalSource) {
@@ -50,36 +48,19 @@ public final class StolenPowerSlotManager {
             packages.remove(originalSource);
             if (packages.isEmpty()) {
                 STOLEN_PACKAGES.remove(actorUUID);
-            }
-        }
-
-        LinkedHashMap<Identifier, List<PowerType<?>>> remaining = STOLEN_PACKAGES.get(actorUUID);
-        if (remaining == null) {
-            SELECTED_INDEX.remove(actorUUID);
-        } else {
-            int size;
-            synchronized (remaining) { size = remaining.size(); }
-            if (size == 0) {
                 SELECTED_INDEX.remove(actorUUID);
-            } else {
-                int current = SELECTED_INDEX.getOrDefault(actorUUID, 0);
-                SELECTED_INDEX.put(actorUUID, clamp(current, size));
+                return;
             }
         }
 
-        Sync.LOGGER.debug("[Sync/SlotManager] Deregistered '{}' for {}.", originalSource, actorUUID);
+        clampIndex(actorUUID);
     }
 
-    public static Identifier getSelectedSource(Entity entity, Identifier transferSource) {
-        pruneDeadPackages(entity, transferSource);
+    public static Identifier getSelectedSource(Entity entity) {
         List<Identifier> sources = getStolenSources(entity);
         if (sources.isEmpty()) return null;
         int index = clamp(SELECTED_INDEX.getOrDefault(entity.getUuid(), 0), sources.size());
         return sources.get(index);
-    }
-
-    public static Identifier getSelectedSource(Entity entity) {
-        return getSelectedSource(entity, DEFAULT_SOURCE);
     }
 
     public static List<PowerType<?>> getSelectedPackagePowers(Entity entity) {
@@ -117,58 +98,7 @@ public final class StolenPowerSlotManager {
         }
     }
 
-    public static void pruneDeadPackages(Entity entity, Identifier transferSource) {
-        LinkedHashMap<Identifier, List<PowerType<?>>> packages =
-                STOLEN_PACKAGES.get(entity.getUuid());
-        if (packages == null) return;
-
-        PowerHolderComponent component = PowerHolderComponent.KEY.maybeGet(entity).orElse(null);
-        if (component == null) return;
-
-        boolean changed = false;
-        synchronized (packages) {
-            Iterator<Map.Entry<Identifier, List<PowerType<?>>>> iter =
-                    packages.entrySet().iterator();
-            while (iter.hasNext()) {
-                Map.Entry<Identifier, List<PowerType<?>>> entry = iter.next();
-                boolean anyLive = false;
-                for (PowerType<?> pt : entry.getValue()) {
-                    if (component.hasPower(pt, transferSource)) {
-                        anyLive = true;
-                        break;
-                    }
-                }
-                if (!anyLive) {
-                    Sync.LOGGER.debug("[Sync/SlotManager] Pruned dead package '{}' for {}.",
-                            entry.getKey(), entity.getUuid());
-                    iter.remove();
-                    changed = true;
-                }
-            }
-            if (packages.isEmpty()) {
-                STOLEN_PACKAGES.remove(entity.getUuid());
-            }
-        }
-        if (changed) {
-            LinkedHashMap<Identifier, List<PowerType<?>>> remaining =
-                    STOLEN_PACKAGES.get(entity.getUuid());
-            if (remaining == null) {
-                SELECTED_INDEX.remove(entity.getUuid());
-            } else {
-                int size;
-                synchronized (remaining) { size = remaining.size(); }
-                if (size == 0) {
-                    SELECTED_INDEX.remove(entity.getUuid());
-                } else {
-                    int current = SELECTED_INDEX.getOrDefault(entity.getUuid(), 0);
-                    SELECTED_INDEX.put(entity.getUuid(), clamp(current, size));
-                }
-            }
-        }
-    }
-
-    public static void cycle(Entity entity, Identifier transferSource, int delta) {
-        pruneDeadPackages(entity, transferSource);
+    public static void cycle(Entity entity, int delta) {
         List<Identifier> sources = getStolenSources(entity);
         if (sources.isEmpty()) {
             SELECTED_INDEX.remove(entity.getUuid());
@@ -179,39 +109,20 @@ public final class StolenPowerSlotManager {
         }
 
         int current = clamp(SELECTED_INDEX.getOrDefault(entity.getUuid(), 0), sources.size());
-        int next    = Math.floorMod(current + delta, sources.size());
+        int next = Math.floorMod(current + delta, sources.size());
         SELECTED_INDEX.put(entity.getUuid(), next);
 
         Identifier selected = sources.get(next);
         if (entity instanceof ServerPlayerEntity player) {
             player.sendMessage(
-                    Text.literal("[")
-                            .append(Text.literal((next + 1) + "/" + sources.size()))
-                            .append(Text.literal("] "))
-                            .append(Text.literal(selected.toString())),
+                    Text.literal("[" + (next + 1) + "/" + sources.size() + "] " + selected),
                     true);
         }
-
-        Sync.LOGGER.debug("[Sync/SlotManager] {} → package {}/{} ('{}').",
-                entity.getEntityName(), next + 1, sources.size(), selected);
     }
 
-    public static void cycle(Entity entity, int delta) {
-        cycle(entity, DEFAULT_SOURCE, delta);
-    }
-
-    public static PowerType<?> getSelectedPowerInPackage(Entity entity) {
-        List<PowerType<?>> powers = getSelectedPackagePowers(entity);
-        return powers.isEmpty() ? null : powers.get(0);
-    }
-
-    public static boolean isPowerInSelectedPackage(Entity entity, PowerType<?> powerType,
-                                                   Identifier transferSource) {
-        boolean heldAsStolen = PowerHolderComponent.KEY.maybeGet(entity)
-                .map(c -> c.hasPower(powerType, transferSource))
-                .orElse(false);
-        if (!heldAsStolen) return true;
-        return getSelectedPackagePowers(entity).contains(powerType);
+    public static boolean isSourceSelected(Entity entity, Identifier originalSource) {
+        Identifier sel = getSelectedSource(entity);
+        return sel != null && sel.equals(originalSource);
     }
 
     public static void remove(UUID uuid) {
@@ -233,6 +144,22 @@ public final class StolenPowerSlotManager {
             if (!subIds.contains(pt.getIdentifier())) result.add(pt);
         }
         return result;
+    }
+
+    private static void clampIndex(UUID uuid) {
+        LinkedHashMap<Identifier, List<PowerType<?>>> packages = STOLEN_PACKAGES.get(uuid);
+        if (packages == null) {
+            SELECTED_INDEX.remove(uuid);
+            return;
+        }
+        int size;
+        synchronized (packages) { size = packages.size(); }
+        if (size == 0) {
+            SELECTED_INDEX.remove(uuid);
+        } else {
+            int current = SELECTED_INDEX.getOrDefault(uuid, 0);
+            SELECTED_INDEX.put(uuid, clamp(current, size));
+        }
     }
 
     private static int clamp(int index, int size) {
