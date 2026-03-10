@@ -8,9 +8,12 @@ classes/
 # eclipse
 
 *.launch
-
+origins-fabric-1.20.x-dev
 # idea
-
+Minecraft-Source-1.20.1
+apoli-1.20
+apoli-1.20.x-dev
+.claude
 .idea/
 *.iml
 *.ipr

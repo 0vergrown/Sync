@@ -10,6 +10,8 @@ import io.github.apace100.apoli.power.factory.action.ActionFactory;
 import io.github.apace100.calio.data.SerializableData;
 import net.minecraft.entity.Entity;
 
+import java.util.List;
+
 public class UseSelectedStolenPowerAction {
 
     public static void action(SerializableData.Instance data, Entity entity) {
@@ -18,27 +20,14 @@ public class UseSelectedStolenPowerAction {
         PowerHolderComponent component = PowerHolderComponent.KEY.maybeGet(entity).orElse(null);
         if (component == null) return;
 
-        PowerType<?> selected = StolenPowerSlotManager.getSelectedPowerInPackage(entity);
-        if (selected == null) {
-            Sync.LOGGER.debug("[Sync/UseSelected] {} has no selected stolen package or it is empty.",
-                    entity.getEntityName());
-            return;
-        }
+        List<PowerType<?>> powers = StolenPowerSlotManager.getSelectedPackagePowers(entity);
+        if (powers.isEmpty()) return;
 
-        Power power = component.getPower(selected);
-        if (power == null) {
-            Sync.LOGGER.debug("[Sync/UseSelected] {} holds {} in slot but getPower returned null.",
-                    entity.getEntityName(), selected.getIdentifier());
-            return;
-        }
-
-        if (power instanceof ActiveCooldownPower acp) {
-            acp.onUse();
-            Sync.LOGGER.debug("[Sync/UseSelected] {} used {} via slot activation.",
-                    entity.getEntityName(), selected.getIdentifier());
-        } else {
-            Sync.LOGGER.debug("[Sync/UseSelected] Selected power {} on {} is not an ActiveCooldownPower ({}); skipping.",
-                    selected.getIdentifier(), entity.getEntityName(), power.getClass().getSimpleName());
+        for (PowerType<?> pt : powers) {
+            Power power = component.getPower(pt);
+            if (power instanceof ActiveCooldownPower acp) {
+                acp.onUse();
+            }
         }
     }
 
