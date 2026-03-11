@@ -7,6 +7,7 @@ import dev.overgrown.sync.factory.action.bientity.execute_command.ExecuteCommand
 import dev.overgrown.sync.factory.action.bientity.liberate_power.LiberatePowerAction;
 import dev.overgrown.sync.factory.action.bientity.suppress_power.SuppressPowerAction;
 import dev.overgrown.sync.factory.action.bientity.transfer.TransferAction;
+import dev.overgrown.sync.factory.action.entity.attach_rope.AttachRopeAction;
 import dev.overgrown.sync.factory.action.entity.cycle_stolen_power.CycleStolenPowerAction;
 import dev.overgrown.sync.factory.action.entity.disguise_as.DisguiseAsAction;
 import dev.overgrown.sync.factory.action.entity.raycast.RaycastAction;
@@ -41,6 +42,7 @@ import dev.overgrown.sync.factory.condition.bientity.colliding.CollidingConditio
 import dev.overgrown.sync.factory.condition.bientity.command.CommandCondition;
 import dev.overgrown.sync.factory.condition.bientity.disguised.DisguisedBientityCondition;
 import dev.overgrown.sync.factory.condition.bientity.in_entity_set.InEntitySetCondition;
+import dev.overgrown.sync.factory.condition.entity.attached_to_rope.AttachedToRopeCondition;
 import dev.overgrown.sync.factory.condition.entity.disguised.DisguisedEntityCondition;
 import dev.overgrown.sync.factory.condition.entity.entity_in_radius.EntityInRadiusCondition;
 import dev.overgrown.sync.factory.condition.entity.entity_set_size.EntitySetSizeCondition;
@@ -106,6 +108,7 @@ public class SyncTypeRegistry {
 
         // ========== ENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(AttachRopeAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(CustomProjectileAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(CycleStolenPowerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(DisguiseAsAction.getFactory());
@@ -132,6 +135,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerBlockAction(GhostBlockAction.getFactory());
 
         // ========== ENTITY CONDITION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerEntityCondition(AttachedToRopeCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(DisguisedEntityCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(EntityInRadiusCondition.getFactory());
         ApoliRegistryHelper.registerEntityCondition(EntitySetSizeCondition.getFactory());

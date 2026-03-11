@@ -8,6 +8,7 @@ import dev.overgrown.sync.factory.action.entity.radial_menu.client.RadialMenuCli
 import dev.overgrown.sync.factory.data.disguise.DisguiseData;
 import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
 import dev.overgrown.sync.networking.ModPackets;
+import dev.overgrown.sync.rope.client.RopeClientInit;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
@@ -33,6 +34,8 @@ public class SyncClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        RopeClientInit.init();
+
         RadialMenuClient.register();
 
         // Register model layers FIRST

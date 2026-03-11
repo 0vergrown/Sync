@@ -20,6 +20,7 @@ import dev.overgrown.sync.networking.ModPackets;
 import dev.overgrown.sync.factory.condition.entity.key_pressed.utils.KeyPressManager;
 import dev.overgrown.sync.factory.condition.entity.perspective.utils.PerspectiveManager;
 import dev.overgrown.sync.factory.condition.entity.player_model_type.utils.PlayerModelTypeManager;
+import dev.overgrown.sync.rope.common.RopeInit;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import io.github.apace100.apoli.power.Prioritized;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -78,6 +79,8 @@ public class Sync implements ModInitializer {
         SyncTypeRegistry.register();
         RadialMenuServer.register();
         SyncEntityRegistry.register();
+
+        RopeInit.init();
 
 
         // 1. Register the SourcePowerRegistry clear hook (put early in onInitialize):

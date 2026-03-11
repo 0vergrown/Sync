@@ -15,6 +15,7 @@
     "modify_enchantment_level.LivingEntityMixin",
     "pose.PlayerEntityMixin",
     "prevent_sprinting_particles.PreventSprintingParticlesMixin",
+    "rope.PlayerEntityMixin",
     "sprinting.SprintingPowerMixin",
     "suppress_power.PowerSuppressMixin"
   ],
