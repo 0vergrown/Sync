@@ -66,16 +66,17 @@ import dev.overgrown.sync.factory.power.type.entity_set.EntitySetPower;
 import dev.overgrown.sync.factory.power.type.entity_texture_overlay.EntityTextureOverlayPower;
 import dev.overgrown.sync.factory.power.type.edible_item.EdibleItemPower;
 import dev.overgrown.sync.factory.power.type.flip_model.FlipModelPower;
-import dev.overgrown.sync.factory.power.type.mobs_ignore.MobsIgnorePower;
 import dev.overgrown.sync.factory.power.type.modify_enchantment_damage_dealt.ModifyEnchantmentDamageDealtPower;
 import dev.overgrown.sync.factory.power.type.modify_enchantment_damage_taken.ModifyEnchantmentDamageTakenPower;
 import dev.overgrown.sync.factory.power.type.modify_enchantment_level.ModifyEnchantmentLevelPower;
+import dev.overgrown.sync.factory.power.type.modify_entity_behavior.ModifyEntityBehaviorPower;
 import dev.overgrown.sync.factory.power.type.modify_model_parts.ModifyModelPartsPower;
 import dev.overgrown.sync.factory.power.type.modify_player_model.ModifyPlayerModelPower;
 import dev.overgrown.sync.factory.power.type.pose.PosePower;
 import dev.overgrown.sync.factory.power.type.modify_label_render.ModifyLabelRenderPower;
 import dev.overgrown.sync.factory.power.type.prevent_creative_flight.PreventCreativeFlightPower;
 import dev.overgrown.sync.factory.power.type.prevent_sprinting_particles.PreventSprintingParticlesPower;
+import dev.overgrown.sync.factory.power.type.prevent_taming.PreventTamingPower;
 import dev.overgrown.sync.factory.power.type.sprinting.SprintingPower;
 import dev.overgrown.sync.registry.factory.utils.ApoliRegistryHelper;
 import io.github.apace100.apoli.data.ApoliDataTypes;
@@ -94,16 +95,17 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(EntitySetPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(EntityTextureOverlayPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(FlipModelPower.getFactory());
-        ApoliRegistryHelper.registerPowerFactory(MobsIgnorePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentDamageDealtPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentDamageTakenPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyEnchantmentLevelPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(ModifyEntityBehaviorPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyLabelRenderPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyModelPartsPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(ModifyPlayerModelPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PosePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PreventCreativeFlightPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PreventSprintingParticlesPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(PreventTamingPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(SprintingPower.getFactory());
 
         // ========== ENTITY ACTION REGISTRATIONS ==========
