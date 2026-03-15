@@ -2,6 +2,9 @@ package dev.overgrown.sync.factory.action.entity.summons.entities.clone.renderer
 
 import dev.overgrown.sync.factory.action.entity.summons.entities.clone.CloneEntity;
 import dev.overgrown.sync.factory.action.entity.summons.entities.clone.model.CloneEntityModel;
+import dev.overgrown.sync.factory.action.entity.summons.entities.clone.renderer.feature.CloneTextureOverlayFeatureRenderer;
+import dev.overgrown.sync.factory.power.type.entity_texture_overlay.EntityTextureOverlayPower;
+import dev.overgrown.sync.factory.power.type.entity_texture_overlay.utils.RenderingUtils;
 import dev.overgrown.sync.registry.entities.SyncEntityModelLayerRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -15,48 +18,83 @@ import net.minecraft.client.render.entity.feature.StuckArrowsFeatureRenderer;
 import net.minecraft.client.render.entity.feature.StuckStingersFeatureRenderer;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
+
+import java.util.List;
 
 @Environment(EnvType.CLIENT)
 public class CloneEntityRenderer<T extends CloneEntity> extends BipedEntityRenderer<T, CloneEntityModel<T>> {
     private static final Identifier DEFAULT_STEVE = new Identifier("minecraft", "textures/entity/steve.png");
 
-    public CloneEntityRenderer (Context context, boolean slimArms) {
-        super(context, new CloneEntityModel<>(context.getPart(slimArms ? SyncEntityModelLayerRegistry.CLONE_SLIM_MODEL_LAYER : SyncEntityModelLayerRegistry.CLONE_MODEL_LAYER), slimArms), 0.5f);
+    public CloneEntityRenderer(Context context, boolean slimArms) {
+        super(context,
+                new CloneEntityModel<>(context.getPart(
+                        slimArms ? SyncEntityModelLayerRegistry.CLONE_SLIM_MODEL_LAYER
+                                : SyncEntityModelLayerRegistry.CLONE_MODEL_LAYER), slimArms),
+                0.5f);
 
-        BipedEntityModel<T> inner = new BipedEntityModel<>(context.getPart(slimArms ? SyncEntityModelLayerRegistry.CLONE_SLIM_INNER_LAYER : SyncEntityModelLayerRegistry.CLONE_INNER_LAYER));
-        BipedEntityModel<T> outer = new BipedEntityModel<>(context.getPart(slimArms ? SyncEntityModelLayerRegistry.CLONE_SLIM_OUTER_LAYER : SyncEntityModelLayerRegistry.CLONE_OUTER_LAYER));
+        BipedEntityModel<T> inner = new BipedEntityModel<>(context.getPart(
+                slimArms ? SyncEntityModelLayerRegistry.CLONE_SLIM_INNER_LAYER
+                        : SyncEntityModelLayerRegistry.CLONE_INNER_LAYER));
+        BipedEntityModel<T> outer = new BipedEntityModel<>(context.getPart(
+                slimArms ? SyncEntityModelLayerRegistry.CLONE_SLIM_OUTER_LAYER
+                        : SyncEntityModelLayerRegistry.CLONE_OUTER_LAYER));
+
         this.addFeature(new ArmorFeatureRenderer<>(this, inner, outer, context.getModelManager()));
         this.addFeature(new StuckArrowsFeatureRenderer<>(context, this));
         this.addFeature(new StuckStingersFeatureRenderer<>(this));
+        // Mirrors the owner's EntityTextureOverlayPower onto the clone
+        this.addFeature(new CloneTextureOverlayFeatureRenderer<>(this));
     }
 
     @Override
     public Identifier getTexture(T clone) {
         if (!clone.isOwned()) return DEFAULT_STEVE;
 
-        // Safe null checks
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.getNetworkHandler() == null) return DEFAULT_STEVE;
 
+        // If the owner has a texture-replacement overlay (non-overlay mode),
+        // show that texture instead of the normal skin so the clone looks right.
+        if (client.world != null) {
+            PlayerEntity owner = client.world.getPlayerByUuid(clone.getOwnerUuid());
+            if (owner != null) {
+                List<EntityTextureOverlayPower> powers = RenderingUtils.getTextureOverlays(owner);
+                if (!powers.isEmpty()) {
+                    EntityTextureOverlayPower power = powers.get(0);
+                    // Only intercept replace-mode; overlay-mode is drawn by the feature renderer
+                    if (power.isActive() && !power.shouldRenderAsOverlay()) {
+                        PlayerListEntry entry = client.getNetworkHandler()
+                                .getPlayerListEntry(clone.getOwnerUuid());
+                        boolean slim = entry != null && entry.getModel().equals("slim");
+                        return slim ? power.getSlimTextureLocation()
+                                : power.getWideTextureLocation();
+                    }
+                }
+            }
+        }
+
+        // Fall back to the owner's normal skin
         PlayerListEntry entry = client.getNetworkHandler().getPlayerListEntry(clone.getOwnerUuid());
         return entry != null ? entry.getSkinTexture() : DEFAULT_STEVE;
     }
 
     @Override
-    public void render (T clone, float yaw, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light) {
+    public void render(T clone, float yaw, float tickDelta, MatrixStack matrixStack,
+                       VertexConsumerProvider vertexConsumerProvider, int light) {
         if (clone.isSitting()) {
             matrixStack.push();
             matrixStack.translate(0, -0.5, 0);
             super.render(clone, yaw, tickDelta, matrixStack, vertexConsumerProvider, light);
             matrixStack.pop();
+        } else {
+            super.render(clone, yaw, tickDelta, matrixStack, vertexConsumerProvider, light);
         }
-        else super.render(clone, yaw, tickDelta, matrixStack, vertexConsumerProvider, light);
     }
 
     @Override
-    protected void scale (T clone, MatrixStack matrices, float amount) {
-        final float AMOUNT = 0.9375f;
-        matrices.scale(AMOUNT, AMOUNT, AMOUNT);
+    protected void scale(T clone, MatrixStack matrices, float amount) {
+        matrices.scale(0.9375f, 0.9375f, 0.9375f);
     }
 }
