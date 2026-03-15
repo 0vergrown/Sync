@@ -12,16 +12,18 @@ import net.minecraft.entity.Entity;
 public class DisguisedEntityCondition {
 
     public static boolean condition(SerializableData.Instance data, Entity entity) {
-        // Server-side check
+        if (entity == null) return false;
+
+        // Server-side: check the authoritative disguise registry.
         if (!entity.getWorld().isClient()) {
             return DisguiseManager.isDisguised(entity.getUuid());
         }
-        // Client-side: use client manager, but only if we're actually on the client.
-        // The class will only be loaded when this code path executes on a client.
+
+        // Client-side: delegate to the client-side mirror.
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             return ClientDisguiseManager.isDisguised(entity.getId());
         }
-        // Fallback (should never happen)
+
         return false;
     }
 

@@ -14,8 +14,20 @@
       "shape_type": "visual",
       "fluid_handling": "any",
       "bientity_action": {
-        "type": "sync:disguise",
-        "overwrite": false
+        "type": "apoli:and",
+        "actions": [
+          {
+            "type": "sync:disguise",
+            "overwrite": false
+          },
+          {
+            "type": "sync:explode",
+            "power": 1.00,
+            "destruction_type": "break",
+            "create_fire": true,
+            "at_target": true
+          }
+        ]
       },
       "command_step": 1.00,
       "command_along_ray_only_on_hit": false

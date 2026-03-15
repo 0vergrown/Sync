@@ -4,6 +4,7 @@ import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.action.bientity.convert_entity.ConvertEntityAction;
 import dev.overgrown.sync.factory.action.bientity.disguise.DisguiseAction;
 import dev.overgrown.sync.factory.action.bientity.execute_command.ExecuteCommandAction;
+import dev.overgrown.sync.factory.action.bientity.explode.ExplodeBiEntityAction;
 import dev.overgrown.sync.factory.action.bientity.liberate_power.LiberatePowerAction;
 import dev.overgrown.sync.factory.action.bientity.suppress_power.SuppressPowerAction;
 import dev.overgrown.sync.factory.action.bientity.transfer.TransferAction;
@@ -153,6 +154,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerBientityAction(ConvertEntityAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(DisguiseAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(ExecuteCommandAction.getFactory());
+        ApoliRegistryHelper.registerBientityAction(ExplodeBiEntityAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(LiberatePowerAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(RemoveFromEntitySetAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(SuppressPowerAction.getFactory());
