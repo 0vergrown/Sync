@@ -17,7 +17,9 @@ public abstract class ModifyDamageByBodyPartMixin {
      */
     @ModifyVariable(
             method = "damage",
-            at = @At("HEAD"),
+            at = @At(
+                    "HEAD"
+            ),
             ordinal = 0,
             argsOnly = true
     )

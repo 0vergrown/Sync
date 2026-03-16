@@ -23,7 +23,7 @@ public class BodyPartDamageModifierPower extends Power {
 
     private final List<BodyPartModifierEntry> entries;
     /**
-     * Optional damage condition – mirrors how ModifyDamageTakenPower works.
+     * Optional damage condition: Mirrors how ModifyDamageTakenPower works.
      * If present, the entire power only fires when this condition passes.
      */
     private final ConditionFactory<Pair<DamageSource, Float>>.Instance damageCondition;
@@ -76,11 +76,10 @@ public class BodyPartDamageModifierPower extends Power {
         double height = Math.max(entity.getHeight(), 0.001);
         double yNorm = Math.max(0.0, Math.min(1.0, dy / height));
 
-        // No xNorm info available for melee – classify as torso/head/legs only
+        // No xNorm info available for melee (classify as torso/head/legs only)
         return BodyRegion.classify(0.0, yNorm);
     }
 
-    // ---- Factory ----
     public static PowerFactory<BodyPartDamageModifierPower> getFactory() {
         PowerFactory<BodyPartDamageModifierPower> factory = new PowerFactory<>(
                 Sync.identifier("body_part_damage_modifier"),

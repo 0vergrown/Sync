@@ -15,7 +15,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(PersistentProjectileEntity.class)
 public class ProjectileBodyHitMixin {
 
-    @Inject(method = "onEntityHit", at = @At("HEAD"))
+    @Inject(
+            method = "onEntityHit",
+            at = @At(
+                    "HEAD"
+            )
+    )
     private void sync$recordHit(EntityHitResult result, CallbackInfo ci) {
         if (result == null) return;
         Entity hit = result.getEntity();

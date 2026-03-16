@@ -3,7 +3,7 @@ package dev.overgrown.sync.factory.power.type.body_part_damage_modifier.utils;
 /**
  * Logical body regions used by the body_part_damage_modifier power.
  * Mapping mirrors the BHS projectile hit classifier but is independent of BHS.
- *
+ * <p>
  * yNorm bands (0 = feet, 1 = head):
  *   FEET   0.00 – 0.18
  *   LEGS   0.18 – 0.50
@@ -15,11 +15,11 @@ public enum BodyRegion {
     TORSO,
     LEFT_ARM,
     RIGHT_ARM,
-    LEGS,       // covers both legs for simplicity
-    FEET,       // covers both feet
-    ANY;        // matches all regions (wildcard)
+    LEGS, // covers both legs for simplicity
+    FEET, // covers both feet
+    ANY; // matches all regions (wildcard)
 
-    /** Classify a normalised hit position into a BodyRegion. */
+    /** Classify a normalized hit position into a BodyRegion. */
     public static BodyRegion classify(double xNorm, double yNorm) {
         if (yNorm < 0.18) return FEET;
         if (yNorm < 0.50) return LEGS;
