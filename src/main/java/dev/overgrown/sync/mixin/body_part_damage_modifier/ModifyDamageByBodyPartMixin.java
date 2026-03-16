@@ -11,10 +11,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(LivingEntity.class)
 public abstract class ModifyDamageByBodyPartMixin {
 
-    /**
-     * Runs just before vanilla armor / absorption math so our multipliers
-     * affect the raw incoming damage — consistent with how ModifyDamageTakenPower works.
-     */
+    // Runs just before vanilla armor / absorption math so our multipliers affect the raw incoming damage
     @ModifyVariable(
             method = "damage",
             at = @At(

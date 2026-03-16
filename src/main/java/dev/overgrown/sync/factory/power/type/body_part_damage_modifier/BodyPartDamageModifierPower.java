@@ -2,7 +2,6 @@ package dev.overgrown.sync.factory.power.type.body_part_damage_modifier;
 
 import dev.overgrown.sync.Sync;
 import dev.overgrown.sync.factory.power.type.body_part_damage_modifier.utils.BodyPartModifierEntry;
-import dev.overgrown.sync.factory.power.type.body_part_damage_modifier.utils.BodyRegion;
 import dev.overgrown.sync.factory.power.type.body_part_damage_modifier.utils.HitLocationTracker;
 import io.github.apace100.apoli.data.ApoliDataTypes;
 import io.github.apace100.apoli.power.Power;
@@ -51,13 +50,13 @@ public class BodyPartDamageModifierPower extends Power {
 
         // Determine hit region
         Vec3d norm = HitLocationTracker.getAndClear(entity);
-        BodyRegion region = (norm != null)
-                ? BodyRegion.classify(norm.x, norm.y)
-                : estimateRegionFromAttacker(source);
+        double xNorm = norm != null ? norm.x : 0.0;
+        double yNorm = norm != null ? norm.y : estimateYNorm(source);
+        double zNorm = norm != null ? norm.z : 0.0;
 
         double result = amount;
         for (BodyPartModifierEntry entry : entries) {
-            if (entry.getRegion() == BodyRegion.ANY || entry.getRegion() == region) {
+            if (entry.getRegion().contains(xNorm, yNorm, zNorm)) {
                 result = ModifierUtil.applyModifiers(entity, entry.getModifiers(), result);
             }
         }
@@ -68,16 +67,12 @@ public class BodyPartDamageModifierPower extends Power {
      * Rough fallback when no projectile hit was recorded:
      * use the vertical gap between attacker and victim to guess the region.
      */
-    private BodyRegion estimateRegionFromAttacker(DamageSource source) {
+    private double estimateYNorm(DamageSource source) {
         Entity attacker = source.getAttacker();
-        if (attacker == null) return BodyRegion.TORSO;
-
+        if (attacker == null) return 0.6; // default to torso
         double dy = attacker.getEyeY() - entity.getY();
         double height = Math.max(entity.getHeight(), 0.001);
-        double yNorm = Math.max(0.0, Math.min(1.0, dy / height));
-
-        // No xNorm info available for melee (classify as torso/head/legs only)
-        return BodyRegion.classify(0.0, yNorm);
+        return Math.max(0.0, Math.min(1.0, dy / height));
     }
 
     public static PowerFactory<BodyPartDamageModifierPower> getFactory() {
