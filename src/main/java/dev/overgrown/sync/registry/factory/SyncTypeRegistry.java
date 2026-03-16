@@ -9,6 +9,8 @@ import dev.overgrown.sync.factory.action.bientity.liberate_power.LiberatePowerAc
 import dev.overgrown.sync.factory.action.bientity.suppress_power.SuppressPowerAction;
 import dev.overgrown.sync.factory.action.bientity.transfer.TransferAction;
 import dev.overgrown.sync.factory.action.entity.attach_rope.AttachRopeAction;
+import dev.overgrown.sync.factory.action.entity.change_selected_slot.ChangeSelectedSlotAction;
+import dev.overgrown.sync.factory.action.entity.change_slot.ChangeSlotAction;
 import dev.overgrown.sync.factory.action.entity.cycle_stolen_power.CycleStolenPowerAction;
 import dev.overgrown.sync.factory.action.entity.disguise_as.DisguiseAsAction;
 import dev.overgrown.sync.factory.action.entity.raycast.RaycastAction;
@@ -71,12 +73,14 @@ import dev.overgrown.sync.factory.power.type.mobs_ignore.MobsIgnorePower;
 import dev.overgrown.sync.factory.power.type.modify_enchantment_damage_dealt.ModifyEnchantmentDamageDealtPower;
 import dev.overgrown.sync.factory.power.type.modify_enchantment_damage_taken.ModifyEnchantmentDamageTakenPower;
 import dev.overgrown.sync.factory.power.type.modify_enchantment_level.ModifyEnchantmentLevelPower;
+import dev.overgrown.sync.factory.power.type.modify_hitbox.ModifyHitboxPower;
 import dev.overgrown.sync.factory.power.type.modify_model_parts.ModifyModelPartsPower;
 import dev.overgrown.sync.factory.power.type.modify_player_model.ModifyPlayerModelPower;
 import dev.overgrown.sync.factory.power.type.pose.PosePower;
 import dev.overgrown.sync.factory.power.type.modify_label_render.ModifyLabelRenderPower;
 import dev.overgrown.sync.factory.power.type.prevent_creative_flight.PreventCreativeFlightPower;
 import dev.overgrown.sync.factory.power.type.prevent_sprinting_particles.PreventSprintingParticlesPower;
+import dev.overgrown.sync.factory.power.type.prevent_teleport.PreventTeleportPower;
 import dev.overgrown.sync.factory.power.type.sprinting.SprintingPower;
 import dev.overgrown.sync.registry.factory.utils.ApoliRegistryHelper;
 import io.github.apace100.apoli.data.ApoliDataTypes;
@@ -105,11 +109,14 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerPowerFactory(PosePower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PreventCreativeFlightPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(PreventSprintingParticlesPower.getFactory());
+        ApoliRegistryHelper.registerPowerFactory(PreventTeleportPower.getFactory());
         ApoliRegistryHelper.registerPowerFactory(SprintingPower.getFactory());
 
         // ========== ENTITY ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityAction(ActionOnEntitySetAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(AttachRopeAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(ChangeSelectedSlotAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(ChangeSlotAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(CustomProjectileAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(CycleStolenPowerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(DisguiseAsAction.getFactory());
