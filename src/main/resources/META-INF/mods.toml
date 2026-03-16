@@ -7,7 +7,7 @@ license="MIT"
 
 [[mods]]
 modId="sync"
-version="1.11.0"
+version="1.11.3"
 displayName="Sync"
 authors="overgrown"
 description='''Sync is an Apoli (Origins) addon that backports newer features to old versions of the game and more!'''
