@@ -50,34 +50,42 @@ public class CloneEntityRenderer<T extends CloneEntity> extends BipedEntityRende
 
     @Override
     public Identifier getTexture(T clone) {
+        if (clone.hasAnyCustomTexture()) {
+            boolean slim = resolveSlim(clone);
+            Identifier custom = clone.getCustomTexture(slim);
+            if (custom != null) return custom;
+        }
+
         if (!clone.isOwned()) return DEFAULT_STEVE;
 
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.getNetworkHandler() == null) return DEFAULT_STEVE;
 
-        // If the owner has a texture-replacement overlay (non-overlay mode),
-        // show that texture instead of the normal skin so the clone looks right.
         if (client.world != null) {
             PlayerEntity owner = client.world.getPlayerByUuid(clone.getOwnerUuid());
             if (owner != null) {
                 List<EntityTextureOverlayPower> powers = RenderingUtils.getTextureOverlays(owner);
                 if (!powers.isEmpty()) {
                     EntityTextureOverlayPower power = powers.get(0);
-                    // Only intercept replace-mode; overlay-mode is drawn by the feature renderer
                     if (power.isActive() && !power.shouldRenderAsOverlay()) {
                         PlayerListEntry entry = client.getNetworkHandler()
                                 .getPlayerListEntry(clone.getOwnerUuid());
                         boolean slim = entry != null && entry.getModel().equals("slim");
-                        return slim ? power.getSlimTextureLocation()
-                                : power.getWideTextureLocation();
+                        return slim ? power.getSlimTextureLocation() : power.getWideTextureLocation();
                     }
                 }
             }
         }
 
-        // Fall back to the owner's normal skin
         PlayerListEntry entry = client.getNetworkHandler().getPlayerListEntry(clone.getOwnerUuid());
         return entry != null ? entry.getSkinTexture() : DEFAULT_STEVE;
+    }
+
+    private boolean resolveSlim(T clone) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.getNetworkHandler() == null) return false;
+        PlayerListEntry entry = client.getNetworkHandler().getPlayerListEntry(clone.getOwnerUuid());
+        return entry != null && entry.getModel().equals("slim");
     }
 
     @Override

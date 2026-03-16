@@ -16,20 +16,27 @@ import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
 public class SummonCloneAction {
-    public static void action (SerializableData.Instance data, Entity entity) {
+    public static void action(SerializableData.Instance data, Entity entity) {
         if (entity instanceof PlayerEntity player) {
             final boolean canSit = data.getBoolean("can_sit");
             final boolean canAttack = data.getBoolean("can_attack");
             final boolean followOwner = data.getBoolean("follow_owner");
             final boolean inheritsEquipment = data.getBoolean("inherit_equipment");
             final boolean inheritsEnchantments = data.getBoolean("inherit_enchantments");
+            final Identifier wideTexture = data.get("wide_texture");
+            final Identifier slimTexture = data.get("slim_texture");
             final Consumer<Pair<Entity, Entity>> bientityAction = data.get("bientity_action");
 
             CloneEntity clone = summon(player, canSit, followOwner, canAttack, inheritsEquipment, inheritsEnchantments);
-            if (bientityAction != null && clone != null) bientityAction.accept(new Pair<>(player, clone));
+            if (clone != null) {
+                if (wideTexture != null) clone.setCustomWideTexture(wideTexture);
+                if (slimTexture != null) clone.setCustomSlimTexture(slimTexture);
+                if (bientityAction != null) bientityAction.accept(new Pair<>(player, clone));
+            }
         } else {
             Sync.LOGGER.warn("Attempted to summon clone of invalid entity. Only Players are compatible with this action type.");
         }
@@ -79,6 +86,8 @@ public class SummonCloneAction {
                         .add("follow_owner", SerializableDataTypes.BOOLEAN, true)
                         .add("inherit_equipment", SerializableDataTypes.BOOLEAN, true)
                         .add("inherit_enchantments", SerializableDataTypes.BOOLEAN, true)
+                        .add("wide_texture", SerializableDataTypes.IDENTIFIER, null)
+                        .add("slim_texture", SerializableDataTypes.IDENTIFIER, null)
                         .add("bientity_action", ApoliDataTypes.BIENTITY_ACTION, null),
                 SummonCloneAction::action
         );

@@ -1,7 +1,0 @@
-{
-  "type": "sync:prevent_creative_flight",
-  "entity_action": {
-    "type": "apoli:execute_command",
-    "command": "playsound minecraft:entity.bat.hurt master @s"
-  }
-}

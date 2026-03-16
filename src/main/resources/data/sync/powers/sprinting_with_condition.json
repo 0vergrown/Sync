@@ -1,7 +1,0 @@
-{
-  "type": "sync:sprinting",
-  "requires_input": false,
-  "condition": {
-    "type": "apoli:on_fire"
-  }
-}

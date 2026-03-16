@@ -1,6 +1,0 @@
-{
-  "type": "sync:energy_swirl",
-  "texture_location": "sync:textures/overlay/custom_energy.png",
-  "size": 0.9,
-  "speed": 0.01
-}

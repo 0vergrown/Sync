@@ -1,8 +1,0 @@
-{
-  "type": "sync:mobs_ignore",
-  "mob_condition": {
-    "type": "apoli:entity_type",
-    "entity_type": "minecraft:skeleton"
-  },
-  "provokable": true
-}

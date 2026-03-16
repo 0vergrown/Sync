@@ -8,6 +8,7 @@ import dev.overgrown.sync.factory.action.entity.summons.utils.ExtraTameable;
 import dev.overgrown.sync.factory.action.entity.summons.utils.Temporary;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.CrossbowUser;
@@ -73,6 +74,10 @@ public class CloneEntity extends HostileEntity implements ExtraTameable, Crossbo
     private static final TrackedData<Optional<UUID>> OWNER_UUID = DataTracker.registerData(CloneEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
     private static final TrackedData<Boolean> SITTING = DataTracker.registerData(CloneEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> CHARGING = DataTracker.registerData(CloneEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<String> CUSTOM_WIDE_TEXTURE_NAMESPACE = DataTracker.registerData(CloneEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<String> CUSTOM_WIDE_TEXTURE_PATH = DataTracker.registerData(CloneEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<String> CUSTOM_SLIM_TEXTURE_NAMESPACE = DataTracker.registerData(CloneEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<String> CUSTOM_SLIM_TEXTURE_PATH = DataTracker.registerData(CloneEntity.class, TrackedDataHandlerRegistry.STRING);
 
     public CloneEntity (EntityType<? extends CloneEntity> entityType, World world) {
         super(entityType, world);
@@ -103,6 +108,10 @@ public class CloneEntity extends HostileEntity implements ExtraTameable, Crossbo
         this.dataTracker.startTracking(OWNER_UUID, Optional.empty());
         this.dataTracker.startTracking(SITTING, false);
         this.dataTracker.startTracking(CHARGING, false);
+        this.dataTracker.startTracking(CUSTOM_WIDE_TEXTURE_NAMESPACE, "");
+        this.dataTracker.startTracking(CUSTOM_WIDE_TEXTURE_PATH, "");
+        this.dataTracker.startTracking(CUSTOM_SLIM_TEXTURE_NAMESPACE, "");
+        this.dataTracker.startTracking(CUSTOM_SLIM_TEXTURE_PATH, "");
     }
 
     @Override
@@ -258,10 +267,78 @@ public class CloneEntity extends HostileEntity implements ExtraTameable, Crossbo
         else this.goalSelector.add(WEAPON_GOAL_PRIORITY, MELEE_ATTACK);
     }
 
+    public void setCustomWideTexture(@Nullable Identifier texture) {
+        this.dataTracker.set(CUSTOM_WIDE_TEXTURE_NAMESPACE, texture != null ? texture.getNamespace() : "");
+        this.dataTracker.set(CUSTOM_WIDE_TEXTURE_PATH,      texture != null ? texture.getPath()      : "");
+    }
+
+    public void setCustomSlimTexture(@Nullable Identifier texture) {
+        this.dataTracker.set(CUSTOM_SLIM_TEXTURE_NAMESPACE, texture != null ? texture.getNamespace() : "");
+        this.dataTracker.set(CUSTOM_SLIM_TEXTURE_PATH,      texture != null ? texture.getPath()      : "");
+    }
+
+    public boolean hasCustomWideTexture() {
+        return !this.dataTracker.get(CUSTOM_WIDE_TEXTURE_PATH).isEmpty();
+    }
+
+    public boolean hasCustomSlimTexture() {
+        return !this.dataTracker.get(CUSTOM_SLIM_TEXTURE_PATH).isEmpty();
+    }
+
+    public boolean hasAnyCustomTexture() {
+        return hasCustomWideTexture() || hasCustomSlimTexture();
+    }
+
+    public Identifier getCustomWideTexture() {
+        return new Identifier(
+                this.dataTracker.get(CUSTOM_WIDE_TEXTURE_NAMESPACE),
+                this.dataTracker.get(CUSTOM_WIDE_TEXTURE_PATH)
+        );
+    }
+
+    public Identifier getCustomSlimTexture() {
+        return new Identifier(
+                this.dataTracker.get(CUSTOM_SLIM_TEXTURE_NAMESPACE),
+                this.dataTracker.get(CUSTOM_SLIM_TEXTURE_PATH)
+        );
+    }
+
+    /**
+     * Returns the best-matching custom texture for the given arm model.
+     * If only one variant is set, it is used as fallback for the other.
+     */
+    public Identifier getCustomTexture(boolean slim) {
+        if (slim) {
+            if (hasCustomSlimTexture()) return getCustomSlimTexture();
+            if (hasCustomWideTexture()) return getCustomWideTexture();
+        } else {
+            if (hasCustomWideTexture()) return getCustomWideTexture();
+            if (hasCustomSlimTexture()) return getCustomSlimTexture();
+        }
+        return null;
+    }
+
     @Override
     public void readCustomDataFromNbt (NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
         this.updateWeaponGoals();
+
+        if (nbt.contains("CustomWideTexture")) {
+            NbtCompound tex = nbt.getCompound("CustomWideTexture");
+            String ns = tex.getString("Namespace"), path = tex.getString("Path");
+            if (!ns.isEmpty() && !path.isEmpty()) {
+                Identifier id = Identifier.tryParse(ns + ":" + path);
+                if (id != null) this.setCustomWideTexture(id);
+            }
+        }
+        if (nbt.contains("CustomSlimTexture")) {
+            NbtCompound tex = nbt.getCompound("CustomSlimTexture");
+            String ns = tex.getString("Namespace"), path = tex.getString("Path");
+            if (!ns.isEmpty() && !path.isEmpty()) {
+                Identifier id = Identifier.tryParse(ns + ":" + path);
+                if (id != null) this.setCustomSlimTexture(id);
+            }
+        }
 
         UUID uuid;
         if (nbt.containsUuid("Owner")) {
@@ -278,6 +355,19 @@ public class CloneEntity extends HostileEntity implements ExtraTameable, Crossbo
     @Override
     public void writeCustomDataToNbt (NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
+
+        if (this.hasCustomWideTexture()) {
+            NbtCompound tex = new NbtCompound();
+            tex.putString("Namespace", this.getCustomWideTexture().getNamespace());
+            tex.putString("Path",      this.getCustomWideTexture().getPath());
+            nbt.put("CustomWideTexture", tex);
+        }
+        if (this.hasCustomSlimTexture()) {
+            NbtCompound tex = new NbtCompound();
+            tex.putString("Namespace", this.getCustomSlimTexture().getNamespace());
+            tex.putString("Path",      this.getCustomSlimTexture().getPath());
+            nbt.put("CustomSlimTexture", tex);
+        }
 
         if (this.isOwned()) nbt.putUuid("Owner", this.getOwnerUuid());
     }

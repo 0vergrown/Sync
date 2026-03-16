@@ -1,6 +1,0 @@
-{
-  "type": "sync:entity_texture_overlay",
-  "wide_texture_location": "minecraft:textures/block/glowstone.png",
-  "slim_texture_location": "minecraft:textures/block/glowstone.png",
-  "show_first_person": false
-}
