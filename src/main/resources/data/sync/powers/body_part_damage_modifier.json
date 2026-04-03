@@ -1,0 +1,65 @@
+{
+  "type": "sync:body_part_damage_modifier",
+  "show_hit_location": true,
+  "modifiers": [
+    {
+      "body_part": "head",
+      "modifier": {
+        "operation": "multiply_total_multiplicative",
+        "value": 10
+      }
+    },
+    {
+      "body_part": "torso",
+      "modifier": {
+        "operation": "multiply_total_multiplicative",
+        "value": -1
+      }
+    },
+    {
+      "body_part": "legs",
+      "modifiers": [
+        {
+          "operation": "multiply_total_multiplicative",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "body_part": "right_arm",
+      "modifiers": [
+        {
+          "operation": "multiply_total_multiplicative",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "body_part": "left_arm",
+      "modifiers": [
+        {
+          "operation": "multiply_total_multiplicative",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "body_part": "chest",
+      "modifiers": [
+        {
+          "operation": "multiply_total_multiplicative",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "body_part": "back",
+      "modifiers": [
+        {
+          "operation": "multiply_total_multiplicative",
+          "value": -1
+        }
+      ]
+    }
+  ]
+}

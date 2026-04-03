@@ -18,8 +18,13 @@ public class BodyPartModifierEntry {
         this.modifiers = modifiers;
     }
 
-    public BodyRegion  getRegion()    { return region;    }
-    public List<Modifier> getModifiers() { return modifiers; }
+    public BodyRegion getRegion() {
+        return region;
+    }
+
+    public List<Modifier> getModifiers() {
+        return modifiers;
+    }
 
     // Serialisation
     public static final SerializableDataType<BodyPartModifierEntry> DATA_TYPE =

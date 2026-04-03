@@ -3,6 +3,7 @@
   "package": "dev.overgrown.sync.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "body_part_damage_modifier.MeleeAttackBodyHitMixin",
     "body_part_damage_modifier.ModifyDamageByBodyPartMixin",
     "body_part_damage_modifier.ProjectileBodyHitMixin",
     "edible_item.HungerManagerMixin",

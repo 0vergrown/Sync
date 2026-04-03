@@ -8,12 +8,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
+import java.util.List;
+
 @Mixin(LivingEntity.class)
 public abstract class ModifyDamageByBodyPartMixin {
 
-    // Runs just before vanilla armor / absorption math so our multipliers affect the raw incoming damage
     @ModifyVariable(
-            method = "damage",
+            method = "damage(Lnet/minecraft/entity/damage/DamageSource;F)Z",
             at = @At(
                     "HEAD"
             ),
@@ -24,8 +25,9 @@ public abstract class ModifyDamageByBodyPartMixin {
         LivingEntity self = (LivingEntity) (Object) this;
         if (self.getWorld().isClient) return amount;
 
-        for (BodyPartDamageModifierPower power :
-                PowerHolderComponent.getPowers(self, BodyPartDamageModifierPower.class)) {
+        List<BodyPartDamageModifierPower> powers =
+                PowerHolderComponent.getPowers(self, BodyPartDamageModifierPower.class);
+        for (BodyPartDamageModifierPower power : powers) {
             amount = power.apply(amount, source);
         }
         return amount;
