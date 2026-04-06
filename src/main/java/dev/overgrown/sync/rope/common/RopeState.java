@@ -19,7 +19,6 @@ public class RopeState {
     public Identifier texture;
 
     // Physics state
-    public double slack = 0.0;
     public int playerFlightTicks = 0;
 
     public RopeState(Vec3d anchor, UUID owner, double length, float maxLength, Identifier texture) {

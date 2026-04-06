@@ -20,7 +20,7 @@ public class AttachRopeAction {
                 new SerializableData()
                         .add("max_length", SerializableDataTypes.FLOAT, 30f)
                         .add("texture", SerializableDataTypes.IDENTIFIER,
-                                new Identifier("sync", "textures/entity/rope.png")),
+                                new Identifier("sync", "textures/rope/rope.png")),
                 (data, entity) -> {
                     if (!(entity instanceof ServerPlayerEntity player)) return;
 

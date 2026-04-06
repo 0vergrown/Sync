@@ -3,24 +3,39 @@ package dev.overgrown.sync.rope.common;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static dev.overgrown.sync.rope.common.RopeConstants.*;
+
 public class RopeManager {
 
     private static final Map<UUID, RopeState> ropes = new HashMap<>();
 
+    // ------ Rope Management Functions ------
+
     public static void attach(ServerPlayerEntity player, Vec3d anchor, float maxLength, Identifier texture) {
         UUID uuid = player.getUuid();
-        double length = player.getPos().distanceTo(anchor);
+        double length = player.getBoundingBox().getCenter().distanceTo(anchor);
         length = Math.min(length, maxLength);
         RopeState state = new RopeState(anchor, uuid, length, maxLength, texture);
         ropes.put(uuid, state);
+
+        // If player is flying, shorten rope to "pull" forwards, boosting elytra flight
+        if (player.isFallFlying()) {
+            if (player.isSneaking()) {
+                player.stopFallFlying();
+            } else {
+                state.length = MathHelper.clamp(state.length - ELYTRA_LENGTH_MOD, MIN_ROPE_LENGTH, maxLength);
+            }
+        }
 
         // Broadcast ROPE_CREATE to all players
         PacketByteBuf buf = PacketByteBufs.create();
@@ -28,7 +43,7 @@ public class RopeManager {
         buf.writeDouble(anchor.x);
         buf.writeDouble(anchor.y);
         buf.writeDouble(anchor.z);
-        buf.writeDouble(length);
+        buf.writeDouble(state.length);
         buf.writeFloat(maxLength);
         buf.writeIdentifier(texture);
         for (ServerPlayerEntity p : player.getServer().getPlayerManager().getPlayerList()) {
@@ -55,75 +70,105 @@ public class RopeManager {
         return ropes.containsKey(uuid);
     }
 
-    public static void tick(ServerPlayerEntity player) {
-        UUID uuid = player.getUuid();
-        RopeState state = ropes.get(uuid);
-        if (state == null) return;
+    // ------ Player Physics Functions ------
 
-        Vec3d playerPos = player.getPos().add(0, player.getEyeHeight(player.getPose()) * 0.9, 0);
-        Vec3d anchor = state.anchor;
-        Vec3d delta = playerPos.subtract(anchor);
+    private static void applyLeashConstraint(ServerPlayerEntity player, RopeState rope) {
+        Vec3d anchor = rope.anchor;
+        Vec3d pos = player.getBoundingBox().getCenter();
+        Vec3d delta = pos.subtract(anchor);
         double dist = delta.length();
 
-        if (dist < 0.001) return;
+        // Rope not taut, no need for physics
+        if (dist <= rope.length) return;
 
+        // Reduce fall damage if currently supported by rope from above
+        if (rope.anchor.y > player.getY())
+            player.fallDistance = Math.max(0, player.fallDistance - 1.0f);
+
+        // Calculate direction
         Vec3d dir = delta.normalize();
+        double excess = dist - rope.length;
 
-        // Radial damping — cancel outward velocity when past rope length
-        if (dist > state.length) {
-            Vec3d vel = player.getVelocity();
-            double radialVel = vel.dotProduct(dir);
-            if (radialVel > 0) {
-                Vec3d damped = vel.subtract(dir.multiply(radialVel * RopeConstants.RADIAL_DAMPING));
-                player.setVelocity(damped);
-            }
-
-            // Spring pull back
-            double excess = dist - state.length;
-            double pullRate = (state.slack > 0) ? RopeConstants.LEASH_STIFFNESS * RopeConstants.SLACK_PULL_RATE_MULT : RopeConstants.LEASH_STIFFNESS;
-            Vec3d spring = dir.multiply(-excess * pullRate * RopeConstants.SPRING_SCALING);
-            player.addVelocity(spring.x, spring.y, spring.z);
-        }
-
-        // Swing boost — boost horizontal velocity perpendicular to rope
+        // Split velocity into radial (out from rope) and tangential (perpendicular)
         Vec3d vel = player.getVelocity();
-        Vec3d horizontalDir = new Vec3d(dir.x, 0, dir.z).normalize();
-        Vec3d perp = new Vec3d(-horizontalDir.z, 0, horizontalDir.x);
-        double swingComponent = vel.dotProduct(perp);
-        if (Math.abs(swingComponent) < RopeConstants.MAX_SWING_SPEED) {
-            player.addVelocity(
-                    perp.x * swingComponent * (RopeConstants.SWING_BOOST - 1),
-                    0,
-                    perp.z * swingComponent * (RopeConstants.SWING_BOOST - 1)
-            );
-        }
+        double radial = vel.dotProduct(dir);
 
-        // Elytra boost: allow brief glide while attached
-        if (player.isFallFlying()) {
-            state.playerFlightTicks++;
-            if (state.playerFlightTicks > RopeConstants.ELYTRA_TIME_LIMIT) {
-                state.length = Math.max(state.length - RopeConstants.ELYTRA_LENGTH_MOD, RopeConstants.MIN_ROPE_LENGTH);
-                sendVerletLength(player);
-            }
-        } else {
-            state.playerFlightTicks = 0;
-        }
+        Vec3d radialVel = dir.multiply(radial);
+        Vec3d tangentialVel = vel.subtract(radialVel);
 
-        state.slack = Math.max(0, state.length - dist);
+        // Damp radial (outwards) velocity
+        if (radial > 0)
+            radialVel = radialVel.multiply(RADIAL_DAMPING);
+
+        // Inject tangential velocity for more powerful swings while player sprints
+        if (player.isSprinting() && tangentialVel.length() < MAX_SWING_SPEED)
+            tangentialVel = tangentialVel.normalize().multiply(tangentialVel.length() * SWING_BOOST);
+
+        player.setVelocity(tangentialVel.add(radialVel));
+
+        // Spring, slightly reduced on return only
+        double springScale = radial < 0 ? SPRING_SCALING : 1.0;
+        Vec3d correction = dir.multiply(-excess * LEASH_STIFFNESS * springScale);
+        player.addVelocity(correction.x, correction.y, correction.z);
+
+        player.velocityModified = true;
     }
+
+    // ------ Player Controls Functions ------
 
     public static void handleChangeLength(ServerPlayerEntity player, double delta) {
         RopeState state = ropes.get(player.getUuid());
         if (state == null) return;
-        state.length = Math.max(RopeConstants.MIN_ROPE_LENGTH, Math.min(state.maxLength, state.length + delta));
+
+        // If rope is slack, increase pull rate
+        double dist = player.getBoundingBox().getCenter().subtract(state.anchor).length();
+        if (delta < 0 && dist < 0.95 * state.length)
+            delta *= SLACK_PULL_RATE_MULT;
+
+        // Apply requested change (w/ rope length limits)
+        state.length = MathHelper.clamp(state.length + delta, MIN_ROPE_LENGTH, state.maxLength);
+
+        // Send update to client
         sendVerletLength(player);
     }
 
     public static void handleSwing(ServerPlayerEntity player, Vec3d inputDir) {
         RopeState state = ropes.get(player.getUuid());
-        if (state == null || inputDir.lengthSquared() < 0.001) return;
-        Vec3d norm = inputDir.normalize();
-        player.addVelocity(norm.x * 0.1, 0, norm.z * 0.1);
+        if (state == null) return;
+
+        // Use only the horizontal component of the player's look direction
+        // so looking up at the anchor doesn't pull the player toward it
+        double yawRad = Math.toRadians(player.getYaw());
+        Vec3d forward = new Vec3d(-Math.sin(yawRad), 0, Math.cos(yawRad));
+        Vec3d right = new Vec3d(forward.z, 0, -forward.x);
+
+        // Combine WASD input into horizontal velocity
+        Vec3d localMomentum = forward.multiply(inputDir.z).add(right.multiply(inputDir.x));
+
+        double swingForce = 0.02;
+        player.addVelocity(localMomentum.x * swingForce, 0, localMomentum.z * swingForce);
+        player.velocityModified = true;
+    }
+
+    // ------ Tick Function ------
+
+    public static void tick(MinecraftServer server) {
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            RopeState rope = ropes.get(player.getUuid());
+            if (rope == null) continue;
+
+            // Handle elytra restrictions: detach after time limit
+            if (player.isFallFlying()) {
+                rope.playerFlightTicks += 1;
+                if (rope.playerFlightTicks >= ELYTRA_TIME_LIMIT)
+                    detach(player);
+            } else {
+                rope.playerFlightTicks = 0;
+            }
+
+            // Apply player physics, separate from Verlet rope visual
+            applyLeashConstraint(player, rope);
+        }
     }
 
     private static void sendVerletLength(ServerPlayerEntity player) {

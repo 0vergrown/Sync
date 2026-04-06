@@ -2,7 +2,6 @@ package dev.overgrown.sync.rope.common;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.UUID;
@@ -11,11 +10,7 @@ public class RopeInit {
 
     public static void init() {
         // Server tick: physics for all players with ropes
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                RopeManager.tick(player);
-            }
-        });
+        ServerTickEvents.END_SERVER_TICK.register(RopeManager::tick);
 
         // C2S: player requesting rope length change (jump/sneak)
         ServerPlayNetworking.registerGlobalReceiver(RopePackets.ROPE_CHANGE_LENGTH,

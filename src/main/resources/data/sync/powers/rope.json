@@ -1,0 +1,11 @@
+{
+  "type": "apoli:active_self",
+  "entity_action": {
+    "type": "sync:attach_rope",
+    "max_length": 30,
+    "texture": "sync:textures/rope/vine.png"
+  },
+  "key": {
+    "key": "key.saveToolbarActivator"
+  }
+}
