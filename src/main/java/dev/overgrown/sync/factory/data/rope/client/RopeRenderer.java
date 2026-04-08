@@ -1,14 +1,13 @@
-package dev.overgrown.sync.rope.client;
+package dev.overgrown.sync.factory.data.rope.client;
 
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import static dev.overgrown.sync.rope.common.RopeConstants.*;
+import static dev.overgrown.sync.factory.data.rope.common.RopeConstants.*;
 
 public class RopeRenderer {
 

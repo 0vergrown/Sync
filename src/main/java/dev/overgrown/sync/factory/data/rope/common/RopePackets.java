@@ -1,4 +1,4 @@
-package dev.overgrown.sync.rope.common;
+package dev.overgrown.sync.factory.data.rope.common;
 
 import dev.overgrown.sync.Sync;
 import net.minecraft.util.Identifier;

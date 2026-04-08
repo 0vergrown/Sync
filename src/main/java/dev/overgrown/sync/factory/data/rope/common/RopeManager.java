@@ -1,4 +1,4 @@
-package dev.overgrown.sync.rope.common;
+package dev.overgrown.sync.factory.data.rope.common;
 
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static dev.overgrown.sync.rope.common.RopeConstants.*;
+import static dev.overgrown.sync.factory.data.rope.common.RopeConstants.*;
 
 public class RopeManager {
 
@@ -136,17 +136,27 @@ public class RopeManager {
         RopeState state = ropes.get(player.getUuid());
         if (state == null) return;
 
-        // Use only the horizontal component of the player's look direction
-        // so looking up at the anchor doesn't pull the player toward it
-        double yawRad = Math.toRadians(player.getYaw());
-        Vec3d forward = new Vec3d(-Math.sin(yawRad), 0, Math.cos(yawRad));
-        Vec3d right = new Vec3d(forward.z, 0, -forward.x);
+        // Use full 3D look direction (pitch + yaw) so the player can aim swings
+        // up/down — looking down while pressing forward adds downward momentum,
+        // making pendulum-style pumping possible.
+        Vec3d forward = Vec3d.fromPolar(player.getPitch(), player.getYaw());
+        Vec3d right = forward.crossProduct(new Vec3d(0, 1, 0));
+        if (right.lengthSquared() < 1e-6) {
+            // Looking straight up/down — fall back to yaw-only
+            double yawRad = Math.toRadians(player.getYaw());
+            right = new Vec3d(Math.cos(yawRad), 0, Math.sin(yawRad));
+        } else {
+            right = right.normalize();
+        }
 
-        // Combine WASD input into horizontal velocity
+        // Combine WASD input into world-space velocity
         Vec3d localMomentum = forward.multiply(inputDir.z).add(right.multiply(inputDir.x));
 
-        double swingForce = 0.02;
-        player.addVelocity(localMomentum.x * swingForce, 0, localMomentum.z * swingForce);
+        player.addVelocity(
+                localMomentum.x * SWING_FORCE,
+                localMomentum.y * SWING_FORCE,
+                localMomentum.z * SWING_FORCE
+        );
         player.velocityModified = true;
     }
 

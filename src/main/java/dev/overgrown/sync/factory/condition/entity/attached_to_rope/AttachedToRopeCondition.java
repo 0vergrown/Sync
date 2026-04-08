@@ -1,6 +1,6 @@
 package dev.overgrown.sync.factory.condition.entity.attached_to_rope;
 
-import dev.overgrown.sync.rope.common.RopeManager;
+import dev.overgrown.sync.factory.data.rope.common.RopeManager;
 import io.github.apace100.apoli.power.factory.condition.ConditionFactory;
 import io.github.apace100.calio.data.SerializableData;
 import net.minecraft.entity.Entity;

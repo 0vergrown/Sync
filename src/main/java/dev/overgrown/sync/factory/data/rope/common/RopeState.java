@@ -1,4 +1,4 @@
-package dev.overgrown.sync.rope.common;
+package dev.overgrown.sync.factory.data.rope.common;
 
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;

@@ -1,8 +1,8 @@
 package dev.overgrown.sync.mixin.rope;
 
-import dev.overgrown.sync.rope.common.RopeManager;
-import dev.overgrown.sync.rope.common.RopeConstants;
-import dev.overgrown.sync.rope.common.RopeState;
+import dev.overgrown.sync.factory.data.rope.common.RopeManager;
+import dev.overgrown.sync.factory.data.rope.common.RopeConstants;
+import dev.overgrown.sync.factory.data.rope.common.RopeState;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

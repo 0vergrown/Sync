@@ -1,4 +1,4 @@
-package dev.overgrown.sync.rope.common;
+package dev.overgrown.sync.factory.data.rope.common;
 
 import net.minecraft.util.math.Vec3d;
 
@@ -18,6 +18,9 @@ public class RopeConstants {
     public static final float MAX_SWING_SPEED = 0.7f;
     public static final float ELYTRA_LENGTH_MOD = 5;
     public static final int ELYTRA_TIME_LIMIT = 10;
+
+    // WASD swing input force
+    public static final float SWING_FORCE = 0.045f;
 
     // Rope Physics Constants
     public static final Vec3d GRAVITY = new Vec3d(0, -0.08, 0);

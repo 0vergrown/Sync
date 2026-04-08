@@ -23,19 +23,25 @@ public class ActionOnSendingMessagePower extends Power implements Prioritized<Ac
             SerializableDataType.compound(
                     MessageConsumer.class,
                     new SerializableData()
-                            .add("filter",        SerializableDataTypes.STRING)
+                            .add("filter", SerializableDataTypes.STRING)
                             .add("before_action", ApoliDataTypes.ENTITY_ACTION, null)
-                            .add("after_action",  ApoliDataTypes.ENTITY_ACTION, null),
+                            .add("after_action", ApoliDataTypes.ENTITY_ACTION, null)
+                            .add("replacement", SerializableDataTypes.STRING, null)
+                            .add("prevent", SerializableDataTypes.BOOLEAN, false),
                     data -> new MessageConsumer(
                             data.getString("filter"),
                             data.isPresent("before_action") ? data.get("before_action") : null,
-                            data.isPresent("after_action")  ? data.get("after_action")  : null
+                            data.isPresent("after_action") ? data.get("after_action")  : null,
+                            data.isPresent("replacement") ? data.getString("replacement") : null,
+                            data.getBoolean("prevent")
                     ),
                     (sd, mc) -> {
                         SerializableData.Instance inst = sd.new Instance();
-                        inst.set("filter",        mc.getRawPattern());
+                        inst.set("filter", mc.getRawPattern());
                         inst.set("before_action", mc.getBeforeAction());
-                        inst.set("after_action",  mc.getAfterAction());
+                        inst.set("after_action", mc.getAfterAction());
+                        inst.set("replacement", mc.getReplacement());
+                        inst.set("prevent", mc.shouldPrevent());
                         return inst;
                     }
             );
@@ -45,9 +51,7 @@ public class ActionOnSendingMessagePower extends Power implements Prioritized<Ac
 
     @Nullable
     private final Identifier messageTypeId;
-
     private final List<MessageConsumer> consumers;
-
     private final int priority;
 
     public ActionOnSendingMessagePower(PowerType<?> type,
@@ -57,8 +61,8 @@ public class ActionOnSendingMessagePower extends Power implements Prioritized<Ac
                                        int priority) {
         super(type, entity);
         this.messageTypeId = messageTypeId;
-        this.consumers     = consumers;
-        this.priority      = priority;
+        this.consumers = consumers;
+        this.priority = priority;
     }
 
     @Override
@@ -66,38 +70,99 @@ public class ActionOnSendingMessagePower extends Power implements Prioritized<Ac
         return priority;
     }
 
-    public boolean onSendMessage(String messageContent, @Nullable Identifier actualTypeId) {
-        if (!isActive()) return true;
+    /**
+     * Processes a sent message against this power's filters.
+     *
+     * @param messageContent the message text
+     * @param actualTypeId the message type identifier (e.g. {@code minecraft:chat})
+     * @return a {@link Result} describing whether the message is allowed and any text modifications
+     */
+    public Result processMessage(String messageContent, @Nullable Identifier actualTypeId) {
+        if (!isActive()) return Result.ALLOW;
 
         // Skip if the message type does not match the configured filter
         if (messageTypeId != null && !messageTypeId.equals(actualTypeId)) {
-            return true;
+            return Result.ALLOW;
         }
 
-        // No consumers? Then power applies globally to the matched type, but has no filter rules to evaluate and nothing to cancel.
+        // No consumers mean the power condition was met but there are no filters to check
         if (consumers.isEmpty()) {
-            return true;
+            return Result.ALLOW;
         }
 
+        String currentMessage = messageContent;
+        boolean anyMatched = false;
+        boolean prevented = false;
+
         for (MessageConsumer consumer : consumers) {
-            if (consumer.matches(messageContent)) {
-                // Filter matched? Then run before_action, then cancel
-                if (consumer.getBeforeAction() != null) {
-                    consumer.getBeforeAction().accept(entity);
-                }
-                return false; // Message canceled; stop evaluating further consumers
+            if (!consumer.matches(currentMessage)) continue;
+
+            anyMatched = true;
+
+            // Run before_action
+            if (consumer.getBeforeAction() != null) {
+                consumer.getBeforeAction().accept(entity);
             }
-        }
 
-        // No consumer matched -> message is allowed; run after_actions for every
-        // consumer that did NOT match (they all didn't match at this point)
-        for (MessageConsumer consumer : consumers) {
+            // Apply replacement if configured
+            currentMessage = consumer.applyReplacement(currentMessage);
+
+            // Check prevention
+            if (consumer.shouldPrevent()) {
+                prevented = true;
+            }
+
+            // Run after_action
             if (consumer.getAfterAction() != null) {
                 consumer.getAfterAction().accept(entity);
             }
+
+            // If prevented, stop processing further filters in this power
+            if (prevented) break;
         }
 
-        return true;
+        if (prevented) {
+            return Result.prevent();
+        }
+
+        if (anyMatched && !currentMessage.equals(messageContent)) {
+            return Result.modify(currentMessage);
+        }
+
+        return Result.ALLOW;
+    }
+
+    /**
+     * The result of processing a message through this power.
+     */
+    public static final class Result {
+        public static final Result ALLOW = new Result(false, null);
+
+        private final boolean prevented;
+        @Nullable
+        private final String modifiedMessage;
+
+        private Result(boolean prevented, @Nullable String modifiedMessage) {
+            this.prevented = prevented;
+            this.modifiedMessage = modifiedMessage;
+        }
+
+        public static Result prevent() {
+            return new Result(true, null);
+        }
+
+        public static Result modify(String newMessage) {
+            return new Result(false, newMessage);
+        }
+
+        public boolean isPrevented() {
+            return prevented;
+        }
+
+        @Nullable
+        public String getModifiedMessage() {
+            return modifiedMessage;
+        }
     }
 
     public static PowerFactory<ActionOnSendingMessagePower> getFactory() {
@@ -105,9 +170,9 @@ public class ActionOnSendingMessagePower extends Power implements Prioritized<Ac
                 Sync.identifier("action_on_sending_message"),
                 new SerializableData()
                         .add("message_type", SerializableDataTypes.IDENTIFIER, null)
-                        .add("filter",       MESSAGE_CONSUMER_TYPE,  null)
-                        .add("filters",      MESSAGE_CONSUMERS_TYPE, null)
-                        .add("priority",     SerializableDataTypes.INT, 0),
+                        .add("filter", MESSAGE_CONSUMER_TYPE,  null)
+                        .add("filters", MESSAGE_CONSUMERS_TYPE, null)
+                        .add("priority", SerializableDataTypes.INT, 0),
                 data -> (powerType, entity) -> {
                     Identifier messageTypeId = data.isPresent("message_type")
                             ? data.getId("message_type") : null;

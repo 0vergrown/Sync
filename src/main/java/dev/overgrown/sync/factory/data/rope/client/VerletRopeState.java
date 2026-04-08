@@ -1,6 +1,5 @@
-package dev.overgrown.sync.rope.client;
+package dev.overgrown.sync.factory.data.rope.client;
 
-import dev.overgrown.sync.rope.common.RopeConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static dev.overgrown.sync.rope.common.RopeConstants.*;
+import static dev.overgrown.sync.factory.data.rope.common.RopeConstants.*;
 
 public class VerletRopeState {
 

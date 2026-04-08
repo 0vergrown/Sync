@@ -1,7 +1,6 @@
-package dev.overgrown.sync.rope.client;
+package dev.overgrown.sync.factory.data.rope.client;
 
-import dev.overgrown.sync.rope.common.RopeConstants;
-import dev.overgrown.sync.rope.common.RopePackets;
+import dev.overgrown.sync.factory.data.rope.common.RopePackets;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
@@ -19,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static dev.overgrown.sync.rope.common.RopeConstants.*;
+import static dev.overgrown.sync.factory.data.rope.common.RopeConstants.*;
 
 public class RopeClientManager {
 
@@ -172,10 +171,10 @@ public class RopeClientManager {
                 // Apply length changes via jump/sneak
                 changeRopeLength(localRope, client);
 
-                // Apply swing inputs via WASD - only if player is physically supported by rope
-                Vec3d clientPos = localPlayer.getBoundingBox().getCenter();
-                double dist = clientPos.subtract(localRope.anchor).length();
-                if (localRope.anchor.y > clientPos.y && dist >= localRope.length * 0.98)
+                // Apply swing inputs via WASD whenever the player is off the ground.
+                // The rope constraint handles the physics — no need to gate on
+                // tautness or anchor height, which was preventing most swing input.
+                if (!localPlayer.isOnGround())
                     swing(client);
             }
         }

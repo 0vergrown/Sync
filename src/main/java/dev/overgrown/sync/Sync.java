@@ -20,7 +20,7 @@ import dev.overgrown.sync.networking.ModPackets;
 import dev.overgrown.sync.factory.condition.entity.key_pressed.utils.KeyPressManager;
 import dev.overgrown.sync.factory.condition.entity.perspective.utils.PerspectiveManager;
 import dev.overgrown.sync.factory.condition.entity.player_model_type.utils.PlayerModelTypeManager;
-import dev.overgrown.sync.rope.common.RopeInit;
+import dev.overgrown.sync.factory.data.rope.common.RopeInit;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import io.github.apace100.apoli.power.Prioritized;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -259,8 +259,13 @@ public class Sync implements ModInitializer {
 
     /**
      * Evaluates all active {@link ActionOnSendingMessagePower}s on {@code player}
-     * in descending priority order.  Returns {@code false} (cancel) as soon as
-     * any power decides to block the message.
+     * in descending priority order.  Handles three behaviours:
+     * <ul>
+     *   <li><b>Actions</b> — before/after entity actions run when filters match</li>
+     *   <li><b>Prevention</b> — if any filter has {@code prevent: true}, the message is blocked</li>
+     *   <li><b>Modification</b> — if any filter has a {@code replacement}, the matched text is
+     *       substituted and the modified message is broadcast in place of the original</li>
+     * </ul>
      */
     private static boolean processMessagePowers(ServerPlayerEntity player,
                                                 String content,
@@ -268,13 +273,37 @@ public class Sync implements ModInitializer {
         Prioritized.CallInstance<ActionOnSendingMessagePower> call = new Prioritized.CallInstance<>();
         call.add(player, ActionOnSendingMessagePower.class);
 
+        String currentMessage = content;
+        boolean prevented = false;
+
         for (int p = call.getMaxPriority(); p >= call.getMinPriority(); p--) {
             for (ActionOnSendingMessagePower power : call.getPowers(p)) {
-                if (!power.onSendMessage(content, typeId)) {
-                    return false; // First cancellation wins; stop processing
+                ActionOnSendingMessagePower.Result result = power.processMessage(currentMessage, typeId);
+
+                if (result.isPrevented()) {
+                    prevented = true;
+                    break;
+                }
+
+                if (result.getModifiedMessage() != null) {
+                    currentMessage = result.getModifiedMessage();
                 }
             }
+            if (prevented) break;
         }
+
+        if (prevented) {
+            return false;
+        }
+
+        // If any power modified the message, cancel the original and broadcast the modified version
+        if (!currentMessage.equals(content)) {
+            Text formatted = Text.translatable("chat.type.text",
+                    player.getDisplayName(), Text.literal(currentMessage));
+            player.server.getPlayerManager().broadcast(formatted, false);
+            return false; // Cancel the original unmodified message
+        }
+
         return true;
     }
 

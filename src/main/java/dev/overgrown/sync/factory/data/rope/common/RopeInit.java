@@ -1,4 +1,4 @@
-package dev.overgrown.sync.rope.common;
+package dev.overgrown.sync.factory.data.rope.common;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;

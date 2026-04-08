@@ -1,6 +1,6 @@
-package dev.overgrown.sync.rope.client;
+package dev.overgrown.sync.factory.data.rope.client;
 
-import dev.overgrown.sync.rope.common.RopePackets;
+import dev.overgrown.sync.factory.data.rope.common.RopePackets;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;

@@ -1,6 +1,6 @@
 package dev.overgrown.sync.factory.action.entity.attach_rope;
 
-import dev.overgrown.sync.rope.common.RopeManager;
+import dev.overgrown.sync.factory.data.rope.common.RopeManager;
 import io.github.apace100.apoli.power.factory.action.ActionFactory;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;

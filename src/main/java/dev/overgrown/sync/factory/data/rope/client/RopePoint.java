@@ -1,4 +1,4 @@
-package dev.overgrown.sync.rope.client;
+package dev.overgrown.sync.factory.data.rope.client;
 
 import net.minecraft.util.math.Vec3d;
 
