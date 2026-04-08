@@ -1,7 +1,7 @@
 package dev.overgrown.sync.factory.data.disguise;
 
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,16 +16,17 @@ public class DisguiseData {
     private final int targetEntityNetId;
     @Nullable
     private final UUID targetPlayerUuid; // non-null only when disguised as a player
-    private final Text targetDisplayName;
+    @Nullable
+    private final NbtCompound targetNbt;
 
     public DisguiseData(Identifier targetEntityTypeId,
                         int targetEntityNetId,
                         @Nullable UUID targetPlayerUuid,
-                        Text targetDisplayName) {
+                        @Nullable NbtCompound targetNbt) {
         this.targetEntityTypeId = targetEntityTypeId;
         this.targetEntityNetId = targetEntityNetId;
         this.targetPlayerUuid = targetPlayerUuid;
-        this.targetDisplayName = targetDisplayName;
+        this.targetNbt = targetNbt;
     }
 
     public Identifier getTargetEntityTypeId() {
@@ -41,8 +42,9 @@ public class DisguiseData {
         return targetPlayerUuid;
     }
 
-    public Text getTargetDisplayName() {
-        return targetDisplayName;
+    @Nullable
+    public NbtCompound getTargetNbt() {
+        return targetNbt;
     }
 
     /** True when the disguise target is a player (skin-swap path). */
@@ -58,14 +60,17 @@ public class DisguiseData {
         if (targetPlayerUuid != null) {
             buf.writeUuid(targetPlayerUuid);
         }
-        buf.writeText(targetDisplayName);
+        buf.writeBoolean(targetNbt != null);
+        if (targetNbt != null) {
+            buf.writeNbt(targetNbt);
+        }
     }
 
     public static DisguiseData read(PacketByteBuf buf) {
         Identifier typeId  = buf.readIdentifier();
         int         netId  = buf.readInt();
         UUID playerUuid    = buf.readBoolean() ? buf.readUuid() : null;
-        Text name          = buf.readText();
-        return new DisguiseData(typeId, netId, playerUuid, name);
+        NbtCompound nbt    = buf.readBoolean() ? buf.readNbt() : null;
+        return new DisguiseData(typeId, netId, playerUuid, nbt);
     }
 }

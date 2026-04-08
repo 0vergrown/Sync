@@ -222,7 +222,7 @@ public class Sync implements ModInitializer {
                                 }
                                 dummy.discard();
 
-                                DisguiseData data = new DisguiseData(typeId, -1, null, Text.literal(typeId.getPath()));
+                                DisguiseData data = new DisguiseData(typeId, -1, null, null);
                                 DisguiseManager.forceApplyDisguise(player, data);
                                 ctx.getSource().sendFeedback(() -> Text.literal("Disguised as " + typeId), false);
                                 return 1;

@@ -7,11 +7,11 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -41,15 +41,15 @@ public class DisguiseManager {
         }
 
         UUID playerUuid = (target instanceof PlayerEntity) ? target.getUuid() : null;
-        Text displayName = target.getCustomName() != null
-                ? target.getCustomName()
-                : target.getName();
+
+        NbtCompound nbt = new NbtCompound();
+        target.writeNbt(nbt);
 
         DisguiseData data = new DisguiseData(
                 Registries.ENTITY_TYPE.getId(target.getType()),
                 target.getId(),
                 playerUuid,
-                displayName
+                nbt
         );
 
         DISGUISES.put(actor.getUuid(), data);

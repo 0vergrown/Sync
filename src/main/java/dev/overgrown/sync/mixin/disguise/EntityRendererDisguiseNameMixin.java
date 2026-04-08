@@ -6,6 +6,9 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -41,7 +44,12 @@ public abstract class EntityRendererDisguiseNameMixin<T extends Entity> {
 
         DisguiseData disguise = ClientDisguiseManager.getDisguise(entity.getId());
         if (disguise != null) {
-            return disguise.getTargetDisplayName();
+            NbtCompound nbt = disguise.getTargetNbt();
+            if (nbt != null && nbt.contains("CustomName")) {
+                return Text.Serializer.fromJson(nbt.getString("CustomName"));
+            }
+            EntityType<?> entityType = Registries.ENTITY_TYPE.get(disguise.getTargetEntityTypeId());
+            return Text.translatable(entityType.getTranslationKey());
         }
         return originalText;
     }

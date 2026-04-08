@@ -9,6 +9,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import org.jetbrains.annotations.Nullable;
 
@@ -137,6 +138,14 @@ public class ClientDisguiseManager {
             Entity dummy = entityType.create(client.world);
             if (dummy != null) {
                 dummy.setId(-entityNetId - 1);
+
+                NbtCompound nbt = data.getTargetNbt();
+                if (nbt != null) {
+                    NbtCompound merged = dummy.writeNbt(new NbtCompound());
+                    merged.copyFrom(nbt);
+                    dummy.readNbt(merged);
+                }
+
                 DUMMY_ENTITIES.put(entityNetId, dummy);
             } else {
                 Sync.LOGGER.warn("[Sync] Disguise dummy creation returned null for type: {}", data.getTargetEntityTypeId());

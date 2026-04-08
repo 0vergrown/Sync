@@ -8,10 +8,9 @@ import io.github.apace100.apoli.power.factory.action.ActionFactory;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class DisguiseAsAction {
@@ -39,13 +38,9 @@ public class DisguiseAsAction {
             return;
         }
 
-        EntityType<?> entityType = Registries.ENTITY_TYPE.get(typeId);
+        NbtCompound nbt = data.isPresent("nbt") ? data.get("nbt") : null;
 
-        Text displayName = data.isPresent("display_name")
-                ? data.get("display_name")
-                : Text.translatable(entityType.getTranslationKey());
-
-        DisguiseManager.forceApplyDisguise(living, new DisguiseData(typeId, -1, null, displayName));
+        DisguiseManager.forceApplyDisguise(living, new DisguiseData(typeId, -1, null, nbt));
 
         if (data.isPresent("after_action")) {
             ((ActionFactory<Entity>.Instance) data.get("after_action")).accept(entity);
@@ -57,7 +52,7 @@ public class DisguiseAsAction {
                 Sync.identifier("disguise_as"),
                 new SerializableData()
                         .add("entity_type", SerializableDataTypes.IDENTIFIER)
-                        .add("display_name", SerializableDataTypes.TEXT, null)
+                        .add("nbt", SerializableDataTypes.NBT, null)
                         .add("overwrite", SerializableDataTypes.BOOLEAN, true)
                         .add("before_action", ApoliDataTypes.ENTITY_ACTION, null)
                         .add("after_action", ApoliDataTypes.ENTITY_ACTION, null),
