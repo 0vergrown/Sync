@@ -3,6 +3,7 @@ package dev.overgrown.sync.mixin.disguise;
 import com.mojang.authlib.GameProfile;
 import dev.overgrown.sync.factory.data.disguise.DisguiseData;
 import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
+import dev.overgrown.sync.factory.data.disguise.client.OfflinePlayerSkinCache;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -44,9 +45,17 @@ public abstract class PlayerListEntryDisguiseMixin {
             cancellable = true
     )
     public void sync$getDisguisedSkinTexture(CallbackInfoReturnable<Identifier> cir) {
+        // Fast path: target player is online – delegate to their real PlayerListEntry.
         PlayerListEntry targetEntry = findTargetEntry();
         if (targetEntry != null) {
             cir.setReturnValue(targetEntry.getSkinTexture());
+            return;
+        }
+
+        // Fallback: target player is offline – use the async-loaded skin from OfflinePlayerSkinCache.
+        Identifier offlineSkin = findOfflineSkin();
+        if (offlineSkin != null) {
+            cir.setReturnValue(offlineSkin);
         }
     }
 
@@ -60,6 +69,28 @@ public abstract class PlayerListEntryDisguiseMixin {
     }
 
     // Helpers
+
+    /**
+     * When the disguise target is an offline player (not in the tab list),
+     * returns the skin {@link Identifier} that was pre-loaded by
+     * {@link OfflinePlayerSkinCache}, or {@code null} if it has not been
+     * loaded yet or no offline-player disguise is active.
+     */
+    @Unique
+    @Nullable
+    private Identifier findOfflineSkin() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world == null || client.getNetworkHandler() == null) return null;
+
+        PlayerEntity player = client.world.getPlayerByUuid(this.profile.getId());
+        if (player == null) return null;
+
+        DisguiseData disguise = ClientDisguiseManager.getDisguise(player.getId());
+        if (disguise == null || !disguise.isPlayerDisguise()) return null;
+
+        return OfflinePlayerSkinCache.getSkin(disguise.getTargetPlayerUuid());
+    }
+
     /**
      * Looks up the {@link PlayerListEntry} for the player that the owner of
      * <em>this</em> entry is currently disguised as, or {@code null} if no

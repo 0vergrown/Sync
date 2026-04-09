@@ -42,18 +42,28 @@ public class ClientDisguiseManager {
             createDummy(entityNetId, data);
         } else {
             DUMMY_ENTITIES.remove(entityNetId);
+            // For offline-player disguises the targetNbt carries encoded skin properties.
+            // Kick off async skin loading so the skin is available for rendering.
+            if (data.getTargetNbt() != null && data.getTargetNbt().contains("sync$skin_value")) {
+                OfflinePlayerSkinCache.register(data.getTargetPlayerUuid(), data.getTargetNbt());
+            }
         }
     }
 
     public static void removeDisguise(int entityNetId) {
-        DISGUISES.remove(entityNetId);
+        DisguiseData removed = DISGUISES.remove(entityNetId);
         DUMMY_ENTITIES.remove(entityNetId);
+        // Evict the offline skin entry, if any, so we don't accumulate stale textures.
+        if (removed != null && removed.isPlayerDisguise()) {
+            OfflinePlayerSkinCache.invalidate(removed.getTargetPlayerUuid());
+        }
     }
 
     /** Called when the client disconnects / world is unloaded. */
     public static void clear() {
         DISGUISES.clear();
         DUMMY_ENTITIES.clear();
+        OfflinePlayerSkinCache.clear();
     }
 
     // Query
