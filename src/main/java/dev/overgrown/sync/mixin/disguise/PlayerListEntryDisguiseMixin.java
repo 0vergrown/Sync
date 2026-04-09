@@ -65,6 +65,13 @@ public abstract class PlayerListEntryDisguiseMixin {
         PlayerListEntry targetEntry = findTargetEntry();
         if (targetEntry != null) {
             cir.setReturnValue(targetEntry.getModel());
+            return;
+        }
+
+        // Offline player: use model type cached from the skin texture metadata.
+        String offlineModel = findOfflineModel();
+        if (offlineModel != null) {
+            cir.setReturnValue(offlineModel);
         }
     }
 
@@ -89,6 +96,25 @@ public abstract class PlayerListEntryDisguiseMixin {
         if (disguise == null || !disguise.isPlayerDisguise()) return null;
 
         return OfflinePlayerSkinCache.getSkin(disguise.getTargetPlayerUuid());
+    }
+
+    /**
+     * Returns the model type ({@code "slim"} or {@code "default"}) for an offline
+     * player disguise, or {@code null} if no offline-player disguise is active.
+     */
+    @Unique
+    @Nullable
+    private String findOfflineModel() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world == null || client.getNetworkHandler() == null) return null;
+
+        PlayerEntity player = client.world.getPlayerByUuid(this.profile.getId());
+        if (player == null) return null;
+
+        DisguiseData disguise = ClientDisguiseManager.getDisguise(player.getId());
+        if (disguise == null || !disguise.isPlayerDisguise()) return null;
+
+        return OfflinePlayerSkinCache.getModel(disguise.getTargetPlayerUuid());
     }
 
     /**

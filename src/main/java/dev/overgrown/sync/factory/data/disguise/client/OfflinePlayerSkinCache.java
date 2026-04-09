@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OfflinePlayerSkinCache {
 
     private static final Map<UUID, Identifier> SKIN_TEXTURES = new ConcurrentHashMap<>();
+    private static final Map<UUID, String> SKIN_MODELS = new ConcurrentHashMap<>();
 
     /**
      * Reconstructs a {@link GameProfile} from the encoded skin properties stored in
@@ -43,6 +44,10 @@ public class OfflinePlayerSkinCache {
         String signature = profileNbt.contains("sync$skin_signature")
                 ? profileNbt.getString("sync$skin_signature")
                 : null;
+
+        if (profileNbt.contains("sync$skin_model")) {
+            SKIN_MODELS.put(uuid, profileNbt.getString("sync$skin_model"));
+        }
 
         // Build a minimal profile that only carries the textures property.
         // The username "_sync_offline_" is a placeholder; it is never displayed.
@@ -69,13 +74,21 @@ public class OfflinePlayerSkinCache {
         return SKIN_TEXTURES.get(uuid);
     }
 
+    /** Returns the cached model type ({@code "slim"} or {@code "default"}), or {@code null} if unknown. */
+    @Nullable
+    public static String getModel(UUID uuid) {
+        return SKIN_MODELS.get(uuid);
+    }
+
     /** Called when a disguise targeting {@code uuid} is removed. */
     public static void invalidate(UUID uuid) {
         SKIN_TEXTURES.remove(uuid);
+        SKIN_MODELS.remove(uuid);
     }
 
     /** Called on world unload / disconnect to wipe all cached textures. */
     public static void clear() {
         SKIN_TEXTURES.clear();
+        SKIN_MODELS.clear();
     }
 }
