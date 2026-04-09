@@ -13,6 +13,7 @@ import dev.overgrown.sync.factory.action.entity.change_selected_slot.ChangeSelec
 import dev.overgrown.sync.factory.action.entity.change_slot.ChangeSlotAction;
 import dev.overgrown.sync.factory.action.entity.cycle_stolen_power.CycleStolenPowerAction;
 import dev.overgrown.sync.factory.action.entity.disguise_as.DisguiseAsAction;
+import dev.overgrown.sync.factory.action.entity.disguise_as_player.DisguiseAsPlayerAction;
 import dev.overgrown.sync.factory.action.entity.raycast.RaycastAction;
 import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityAction;
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
@@ -121,6 +122,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityAction(CustomProjectileAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(CycleStolenPowerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(DisguiseAsAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(DisguiseAsPlayerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(GrantAllPowersAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
