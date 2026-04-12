@@ -1,21 +1,31 @@
 package dev.overgrown.sync.factory.power.type.body_part_damage_modifier.utils;
 
+import io.github.apace100.apoli.data.ApoliDataTypes;
 import io.github.apace100.apoli.util.modifier.Modifier;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataType;
 import io.github.apace100.calio.data.SerializableDataTypes;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.Pair;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class BodyPartModifierEntry {
 
     private final BodyRegion region;
     private final List<Modifier> modifiers;
+    @Nullable
+    private final Consumer<Pair<Entity, Entity>> bientityAction;
 
-    public BodyPartModifierEntry(BodyRegion region, List<Modifier> modifiers) {
-        this.region    = region;
+    public BodyPartModifierEntry(BodyRegion region,
+                                 List<Modifier> modifiers,
+                                 @Nullable Consumer<Pair<Entity, Entity>> bientityAction) {
+        this.region = region;
         this.modifiers = modifiers;
+        this.bientityAction = bientityAction;
     }
 
     public BodyRegion getRegion() {
@@ -24,6 +34,11 @@ public class BodyPartModifierEntry {
 
     public List<Modifier> getModifiers() {
         return modifiers;
+    }
+
+    @Nullable
+    public Consumer<Pair<Entity, Entity>> getBientityAction() {
+        return bientityAction;
     }
 
     // Serialisation
@@ -42,7 +57,9 @@ public class BodyPartModifierEntry {
                             .add("z_max", SerializableDataTypes.DOUBLE, 1.0)
                             // Modifiers
                             .add("modifier",  Modifier.DATA_TYPE, null)
-                            .add("modifiers", Modifier.LIST_TYPE, null),
+                            .add("modifiers", Modifier.LIST_TYPE, null)
+                            // Bi-entity action (optional, fires with attacker -> target)
+                            .add("bientity_action", ApoliDataTypes.BIENTITY_ACTION, null),
                     data -> {
                         BodyRegion region;
 
@@ -70,7 +87,11 @@ public class BodyPartModifierEntry {
                         List<Modifier> mods = new ArrayList<>();
                         data.<Modifier>ifPresent("modifier",  mods::add);
                         data.<List<Modifier>>ifPresent("modifiers", mods::addAll);
-                        return new BodyPartModifierEntry(region, mods);
+
+                        Consumer<Pair<Entity, Entity>> action = data.isPresent("bientity_action")
+                                ? data.get("bientity_action") : null;
+
+                        return new BodyPartModifierEntry(region, mods, action);
                     },
                     (data, entry) -> {
                         SerializableData.Instance inst = data.new Instance();
@@ -83,6 +104,7 @@ public class BodyPartModifierEntry {
                         inst.set("z_max", entry.region.maxZ);
                         inst.set("modifier",  null);
                         inst.set("modifiers", entry.modifiers);
+                        inst.set("bientity_action", entry.bientityAction);
                         return inst;
                     }
             );

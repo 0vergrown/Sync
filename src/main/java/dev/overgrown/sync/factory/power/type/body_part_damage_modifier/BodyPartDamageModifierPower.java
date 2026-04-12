@@ -11,6 +11,7 @@ import io.github.apace100.apoli.power.factory.condition.ConditionFactory;
 import io.github.apace100.apoli.util.modifier.ModifierUtil;
 import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataTypes;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
@@ -60,9 +61,13 @@ public class BodyPartDamageModifierPower extends Power {
 
         double result = amount;
         String matchedZone = null;
+        Entity attacker = source != null ? source.getAttacker() : null;
         for (BodyPartModifierEntry entry : entries) {
             if (entry.getRegion().contains(xNorm, yNorm, zNorm)) {
                 result = ModifierUtil.applyModifiers(entity, entry.getModifiers(), result);
+                if (entry.getBientityAction() != null && attacker != null) {
+                    entry.getBientityAction().accept(new Pair<>(attacker, entity));
+                }
                 if (showHitLocation && matchedZone == null) {
                     matchedZone = classifyZone(xNorm, yNorm, zNorm);
                 }
@@ -79,9 +84,9 @@ public class BodyPartDamageModifierPower extends Power {
                 spe.sendMessage(Text.literal(msg), false);
             }
             // Also send to the attacker so the person swinging/shooting can see it
-            if (source != null && source.getAttacker() instanceof ServerPlayerEntity attacker
-                    && attacker != entity) {
-                attacker.sendMessage(Text.literal(msg), false);
+            if (attacker instanceof ServerPlayerEntity attackerPlayer
+                    && attackerPlayer != entity) {
+                attackerPlayer.sendMessage(Text.literal(msg), false);
             }
         }
 

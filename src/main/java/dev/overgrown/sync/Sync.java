@@ -7,6 +7,7 @@ import dev.overgrown.sync.factory.action.entity.grant_all_powers.SourcePowerRegi
 import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindDefinition;
 import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindLoader;
 import dev.overgrown.sync.factory.power.type.action_on_sending_message.ActionOnSendingMessagePower;
+import dev.overgrown.sync.factory.power.type.action_on_sending_message.utils.TranslationKeyResolver;
 import dev.overgrown.sync.factory.power.type.entity_set.EntitySetPower;
 import dev.overgrown.sync.registry.entities.SyncEntityRegistry;
 import dev.overgrown.sync.factory.action.entity.teleportation.events.EntityCleanupHandler;
@@ -74,6 +75,10 @@ public class Sync implements ModInitializer {
         if (HAS_JADE) {
             LOGGER.info("Jade detected - tooltip compat enabled");
         }
+
+        // Index every translation key across all loaded language files so that
+        // #{key} placeholders in message filters can be expanded at parse time.
+        TranslationKeyResolver.load();
 
         NamespaceAlias.addAlias("apoli", MOD_ID);
         SyncTypeRegistry.register();

@@ -2,6 +2,7 @@ package dev.overgrown.sync;
 
 import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindDefinition;
 import dev.overgrown.sync.factory.data.keybind.client.DynamicKeyBindingManager;
+import dev.overgrown.sync.factory.power.type.action_on_sending_message.utils.TranslationKeyResolver;
 import dev.overgrown.sync.registry.entities.SyncEntityModelLayerRegistry;
 import dev.overgrown.sync.registry.entities.SyncEntiyRendererRegistry;
 import dev.overgrown.sync.factory.action.entity.radial_menu.client.RadialMenuClient;
@@ -15,10 +16,14 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
@@ -34,6 +39,22 @@ public class SyncClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // Load all language files (every locale, every mod + Minecraft) via the
+        // client ResourceManager so that #{translation.key} placeholders in
+        // message filters resolve to every known language.
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES)
+                .registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+                    @Override
+                    public Identifier getFabricId() {
+                        return Sync.identifier("translation_key_resolver");
+                    }
+
+                    @Override
+                    public void reload(ResourceManager manager) {
+                        TranslationKeyResolver.loadFromResourceManager(manager);
+                    }
+                });
+
         RopeClientInit.init();
 
         RadialMenuClient.register();

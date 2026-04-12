@@ -37,11 +37,12 @@ public class MessageConsumer {
                            @Nullable String replacement,
                            boolean prevent) {
         this.rawPattern = rawPattern;
+        String expanded = TranslationKeyResolver.expandPattern(rawPattern);
         Pattern p;
         try {
-            p = Pattern.compile(rawPattern);
+            p = Pattern.compile(expanded);
         } catch (PatternSyntaxException e) {
-            p = Pattern.compile(Pattern.quote(rawPattern));
+            p = Pattern.compile(Pattern.quote(expanded));
         }
         this.compiled = p;
         this.beforeAction = beforeAction;
