@@ -36,6 +36,15 @@ public abstract class PlayerListEntryDisguiseMixin {
     @Shadow
     protected abstract void loadTextures();
 
+    /**
+     * Guards against infinite recursion when two (or more) players are disguised
+     * as each other. Without this, {@code A.getModel() -> B.getModel() -> A.getModel() -> …}
+     * causes a {@link StackOverflowError}. When the guard is active, the nested call
+     * returns the target's <em>original</em> skin/model instead of chaining further.
+     */
+    @Unique
+    private static final ThreadLocal<Boolean> sync$resolving = ThreadLocal.withInitial(() -> false);
+
     // Skin texture
     @Inject(
             method = "getSkinTexture",
@@ -45,33 +54,47 @@ public abstract class PlayerListEntryDisguiseMixin {
             cancellable = true
     )
     public void sync$getDisguisedSkinTexture(CallbackInfoReturnable<Identifier> cir) {
-        // Fast path: target player is online – delegate to their real PlayerListEntry.
-        PlayerListEntry targetEntry = findTargetEntry();
-        if (targetEntry != null) {
-            cir.setReturnValue(targetEntry.getSkinTexture());
-            return;
-        }
+        if (sync$resolving.get()) return;
 
-        // Fallback: target player is offline – use the async-loaded skin from OfflinePlayerSkinCache.
-        Identifier offlineSkin = findOfflineSkin();
-        if (offlineSkin != null) {
-            cir.setReturnValue(offlineSkin);
+        sync$resolving.set(true);
+        try {
+            // Fast path: target player is online - delegate to their real PlayerListEntry.
+            PlayerListEntry targetEntry = findTargetEntry();
+            if (targetEntry != null) {
+                cir.setReturnValue(targetEntry.getSkinTexture());
+                return;
+            }
+
+            // Fallback: target player is offline - use the async-loaded skin from OfflinePlayerSkinCache.
+            Identifier offlineSkin = findOfflineSkin();
+            if (offlineSkin != null) {
+                cir.setReturnValue(offlineSkin);
+            }
+        } finally {
+            sync$resolving.set(false);
         }
     }
 
     // Arm model (slim vs. wide)
     @Inject(method = "getModel", at = @At("HEAD"), cancellable = true)
     public void sync$getDisguisedModel(CallbackInfoReturnable<String> cir) {
-        PlayerListEntry targetEntry = findTargetEntry();
-        if (targetEntry != null) {
-            cir.setReturnValue(targetEntry.getModel());
-            return;
-        }
+        if (sync$resolving.get()) return;
 
-        // Offline player: use model type cached from the skin texture metadata.
-        String offlineModel = findOfflineModel();
-        if (offlineModel != null) {
-            cir.setReturnValue(offlineModel);
+        sync$resolving.set(true);
+        try {
+            PlayerListEntry targetEntry = findTargetEntry();
+            if (targetEntry != null) {
+                cir.setReturnValue(targetEntry.getModel());
+                return;
+            }
+
+            // Offline player: use model type cached from the skin texture metadata.
+            String offlineModel = findOfflineModel();
+            if (offlineModel != null) {
+                cir.setReturnValue(offlineModel);
+            }
+        } finally {
+            sync$resolving.set(false);
         }
     }
 

@@ -45,6 +45,11 @@ public class DisguiseManager {
         NbtCompound nbt = new NbtCompound();
         target.writeNbt(nbt);
 
+        // Store player name so the client can display the correct nametag
+        if (target instanceof PlayerEntity) {
+            nbt.putString("sync$player_name", target.getName().getString());
+        }
+
         DisguiseData data = new DisguiseData(
                 Registries.ENTITY_TYPE.getId(target.getType()),
                 target.getId(),

@@ -104,23 +104,36 @@ public class DisguiseAsPlayerAction {
     }
 
     /**
-     * Serialises the {@code textures} property of the given profile into an
+     * Serializes the {@code textures} property of the given profile into an
      * {@link NbtCompound} that can be sent to the client inside {@link DisguiseData}.
      * Returns {@code null} when the profile has no texture data (e.g. on
      * offline-mode servers where the profile was never enriched by Mojang auth).
      */
     private static NbtCompound buildProfileNbt(GameProfile profile) {
         Collection<Property> textureProps = profile.getProperties().get("textures");
-        if (textureProps == null || textureProps.isEmpty()) return null;
+        boolean hasTextures = textureProps != null && !textureProps.isEmpty();
+        String name = profile.getName();
+        boolean hasName = name != null && !name.isEmpty();
 
-        Property texture = textureProps.iterator().next();
+        if (!hasTextures && !hasName) return null;
+
         NbtCompound nbt = new NbtCompound();
-        nbt.putString("sync$skin_value", texture.getValue());
-        String sig = texture.getSignature();
-        if (sig != null && !sig.isEmpty()) {
-            nbt.putString("sync$skin_signature", sig);
+
+        // Store player name for nametag display on the client
+        if (hasName) {
+            nbt.putString("sync$player_name", name);
         }
-        nbt.putString("sync$skin_model", parseModelType(texture.getValue()));
+
+        if (hasTextures) {
+            Property texture = textureProps.iterator().next();
+            nbt.putString("sync$skin_value", texture.getValue());
+            String sig = texture.getSignature();
+            if (sig != null && !sig.isEmpty()) {
+                nbt.putString("sync$skin_signature", sig);
+            }
+            nbt.putString("sync$skin_model", parseModelType(texture.getValue()));
+        }
+
         return nbt;
     }
 

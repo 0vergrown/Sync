@@ -2,6 +2,8 @@ package dev.overgrown.sync.mixin.disguise;
 
 import dev.overgrown.sync.factory.data.disguise.DisguiseData;
 import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -11,6 +13,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
@@ -44,6 +47,12 @@ public abstract class EntityRendererDisguiseNameMixin<T extends Entity> {
 
         DisguiseData disguise = ClientDisguiseManager.getDisguise(entity.getId());
         if (disguise != null) {
+            // Player disguise: show the target player's name
+            if (disguise.isPlayerDisguise()) {
+                return sync$resolvePlayerName(disguise, originalText);
+            }
+
+            // Non-player disguise: show custom name or entity type name
             NbtCompound nbt = disguise.getTargetNbt();
             if (nbt != null && nbt.contains("CustomName")) {
                 return Text.Serializer.fromJson(nbt.getString("CustomName"));
@@ -52,5 +61,34 @@ public abstract class EntityRendererDisguiseNameMixin<T extends Entity> {
             return Text.translatable(entityType.getTranslationKey());
         }
         return originalText;
+    }
+
+    /**
+     * Resolves the display name for a player disguise. Checks the online tab list
+     * first, then falls back to the name stored in the disguise NBT.
+     */
+    @Unique
+    private Text sync$resolvePlayerName(DisguiseData disguise, Text fallback) {
+        // Try online player list first
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.getNetworkHandler() != null) {
+            PlayerListEntry entry = client.getNetworkHandler()
+                    .getPlayerListEntry(disguise.getTargetPlayerUuid());
+            if (entry != null && entry.getProfile().getName() != null
+                    && !entry.getProfile().getName().isEmpty()) {
+                return Text.literal(entry.getProfile().getName());
+            }
+        }
+
+        // Fallback: name stored in disguise NBT (offline players)
+        NbtCompound nbt = disguise.getTargetNbt();
+        if (nbt != null && nbt.contains("sync$player_name")) {
+            String name = nbt.getString("sync$player_name");
+            if (!name.isEmpty()) {
+                return Text.literal(name);
+            }
+        }
+
+        return fallback;
     }
 }
