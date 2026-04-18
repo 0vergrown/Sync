@@ -19,6 +19,7 @@ import dev.overgrown.sync.factory.action.entity.set_no_gravity.SetNoGravityActio
 import dev.overgrown.sync.factory.action.entity.teleportation.TeleportToSpawnAction;
 import dev.overgrown.sync.factory.action.entity.toggle_transfer_mode.ToggleTransferModeAction;
 import dev.overgrown.sync.factory.action.entity.use_selected_stolen_power.UseSelectedStolenPowerAction;
+import dev.overgrown.sync.factory.action.item.cooldown.CooldownAction;
 import dev.overgrown.sync.factory.action.item.holder.HolderAction;
 import dev.overgrown.sync.factory.action.meta.loop.LoopAction;
 import dev.overgrown.sync.factory.compatibility.aspectslib.power.type.SetEntityAspectsPower;
@@ -30,6 +31,7 @@ import dev.overgrown.sync.factory.action.block.spawn_entity_block.SpawnEntityBlo
 import dev.overgrown.sync.factory.action.entity.action_on_entity_set.ActionOnEntitySetAction;
 import dev.overgrown.sync.factory.action.entity.custom_projectile.CustomProjectileAction;
 import dev.overgrown.sync.factory.action.entity.grant_all_powers.GrantAllPowersAction;
+import dev.overgrown.sync.factory.action.entity.item_cooldown.ItemCooldownAction;
 import dev.overgrown.sync.factory.action.entity.summons.SetSummonMaxLifeAction;
 import dev.overgrown.sync.factory.action.entity.summons.SummonCloneAction;
 import dev.overgrown.sync.factory.action.entity.summons.SummonMinionAction;
@@ -60,6 +62,7 @@ import dev.overgrown.sync.factory.condition.entity.raycast.RaycastCondition;
 import dev.overgrown.sync.factory.condition.entity.velocity.VelocityCondition;
 import dev.overgrown.sync.factory.condition.item.fuel.FuelCondition;
 import dev.overgrown.sync.factory.condition.item.holder.HolderCondition;
+import dev.overgrown.sync.factory.condition.item.on_cooldown.OnCooldownCondition;
 import dev.overgrown.sync.factory.power.type.action_on_death.ActionOnDeathPower;
 import dev.overgrown.sync.factory.power.type.action_on_key_sequence.ActionOnKeySequencePower;
 import dev.overgrown.sync.factory.power.type.action_on_sending_message.ActionOnSendingMessagePower;
@@ -124,6 +127,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerEntityAction(DisguiseAsAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(DisguiseAsPlayerAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(GrantAllPowersAction.getFactory());
+        ApoliRegistryHelper.registerEntityAction(ItemCooldownAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(PrintAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RadialMenuAction.getFactory());
         ApoliRegistryHelper.registerEntityAction(RaycastAction.getFactory());
@@ -177,11 +181,13 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerBientityCondition(InEntitySetCondition.getFactory());
         
         // ========== ITEM ACTION REGISTRATIONS ==========
+        ApoliRegistryHelper.registerItemAction(CooldownAction.getFactory());
         ApoliRegistryHelper.registerItemAction(HolderAction.getFactory());
 
         // ========== ITEM CONDITION REGISTRATIONS ==========
         ApoliRegistryHelper.registerItemCondition(FuelCondition.getFactory());
         ApoliRegistryHelper.registerItemCondition(HolderCondition.getFactory());
+        ApoliRegistryHelper.registerItemCondition(OnCooldownCondition.getFactory());
 
         // ========== META ACTION REGISTRATIONS ==========
         ApoliRegistryHelper.registerEntityAction(LoopAction.getFactory(ApoliDataTypes.ENTITY_ACTION));
