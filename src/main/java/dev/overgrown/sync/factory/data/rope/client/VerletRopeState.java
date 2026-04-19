@@ -14,8 +14,13 @@ import static dev.overgrown.sync.factory.data.rope.common.RopeConstants.*;
 
 public class VerletRopeState {
 
+    public static final int NO_ANCHOR_ENTITY = -1;
+
+    public final UUID ropeId;
     public final UUID owner;
-    public final Vec3d anchor;
+    public Vec3d anchor;
+    public int anchorEntityId = NO_ANCHOR_ENTITY;
+    public boolean leash;
     public double length;
     public double targetLength;
     public float maxLength;
@@ -23,7 +28,8 @@ public class VerletRopeState {
     public double segmentLength;
     public Identifier texture;
 
-    public VerletRopeState(UUID owner, Vec3d anchor, double length, float maxLength, Identifier texture) {
+    public VerletRopeState(UUID ropeId, UUID owner, Vec3d anchor, double length, float maxLength, Identifier texture) {
+        this.ropeId = ropeId;
         this.owner = owner;
         this.anchor = anchor;
         this.length = length;

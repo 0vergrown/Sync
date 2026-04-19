@@ -1,4 +1,4 @@
-package dev.overgrown.sync.factory.action.entity.attach_rope;
+package dev.overgrown.sync.factory.action.entity.attach_rope_entity;
 
 import dev.overgrown.sync.factory.data.rope.common.RopeManager;
 import dev.overgrown.sync.factory.data.rope.common.RopeMode;
@@ -7,18 +7,18 @@ import io.github.apace100.calio.data.SerializableData;
 import io.github.apace100.calio.data.SerializableDataType;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
 
-public class AttachRopeAction {
+public class AttachRopeEntityAction {
 
     public static ActionFactory<Entity> getFactory() {
         return new ActionFactory<>(
-                new Identifier("sync", "attach_rope"),
+                new Identifier("sync", "attach_rope_entity"),
                 new SerializableData()
                         .add("max_length", SerializableDataTypes.FLOAT, 30f)
                         .add("texture", SerializableDataTypes.IDENTIFIER,
@@ -29,8 +29,6 @@ public class AttachRopeAction {
 
                     RopeMode mode = data.get("mode");
 
-                    // Detach-all is target-agnostic; handle it before any
-                    // raycasting so players can clear ropes without aiming.
                     if (mode == RopeMode.DETACH_ALL) {
                         RopeManager.detachAll(player.getUuid());
                         return;
@@ -39,28 +37,35 @@ public class AttachRopeAction {
                     float maxLength = data.getFloat("max_length");
                     Identifier texture = data.getId("texture");
 
-                    // Raycast to find anchor block
+                    // Raycast to find a target entity to anchor onto.
                     Vec3d eyePos = player.getCameraPosVec(1.0f);
                     Vec3d lookVec = player.getRotationVec(1.0f);
                     Vec3d target = eyePos.add(lookVec.multiply(maxLength));
 
-                    BlockHitResult hit = player.getWorld().raycast(new RaycastContext(
-                            eyePos, target,
-                            RaycastContext.ShapeType.OUTLINE,
-                            RaycastContext.FluidHandling.NONE,
-                            player
-                    ));
+                    Box searchBox = player.getBoundingBox()
+                            .stretch(lookVec.multiply(maxLength))
+                            .expand(1.0, 1.0, 1.0);
 
-                    if (hit.getType() == HitResult.Type.MISS) return;
+                    EntityHitResult hit = ProjectileUtil.raycast(
+                            player,
+                            eyePos,
+                            target,
+                            searchBox,
+                            e -> !e.isSpectator() && e.canHit() && e != player,
+                            maxLength * maxLength
+                    );
 
-                    Vec3d anchor = hit.getPos();
+                    if (hit == null) return;
+
+                    Entity hitEntity = hit.getEntity();
+                    int hitId = hitEntity.getId();
 
                     switch (mode) {
-                        case DETACH -> RopeManager.detachByAnchorPos(player.getUuid(), anchor);
-                        case ATTACH -> RopeManager.attach(player, anchor, maxLength, texture);
+                        case DETACH -> RopeManager.detachByAnchorEntity(player.getUuid(), hitId);
+                        case ATTACH -> RopeManager.attachToEntity(player, hitEntity, maxLength, texture);
                         case TOGGLE -> {
-                            if (!RopeManager.detachByAnchorPos(player.getUuid(), anchor)) {
-                                RopeManager.attach(player, anchor, maxLength, texture);
+                            if (!RopeManager.detachByAnchorEntity(player.getUuid(), hitId)) {
+                                RopeManager.attachToEntity(player, hitEntity, maxLength, texture);
                             }
                         }
                         default -> { }
