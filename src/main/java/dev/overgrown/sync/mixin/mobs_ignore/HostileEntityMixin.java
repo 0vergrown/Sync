@@ -1,6 +1,6 @@
 package dev.overgrown.sync.mixin.mobs_ignore;
 
-import dev.overgrown.sync.factory.power.type.mobs_ignore.MobsIgnorePower;
+import dev.overgrown.sync.power.type.mobs_ignore.MobsIgnorePowerType;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,20 +11,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(HostileEntity.class)
 public class HostileEntityMixin {
-    @Inject(
-            method = "isAngryAt",
-            at = @At(
-                    "HEAD"
-            ),
-            cancellable = true
-    )
+
+    @Inject(method = "isAngryAt", at = @At("HEAD"), cancellable = true)
     private void sync$isAngryAt(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
-        HostileEntity hostile = (HostileEntity)(Object)this;
-        PowerHolderComponent.getPowers(player, MobsIgnorePower.class).forEach(power -> {
+        HostileEntity hostile = (HostileEntity) (Object) this;
+        for (MobsIgnorePowerType power : PowerHolderComponent.getPowerTypes(player, MobsIgnorePowerType.class)) {
             if (power.shouldIgnore(hostile)) {
                 cir.setReturnValue(false);
-                cir.cancel();
+                return;
             }
-        });
+        }
     }
 }

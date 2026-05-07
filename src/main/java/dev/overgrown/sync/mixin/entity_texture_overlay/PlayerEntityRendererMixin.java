@@ -1,7 +1,8 @@
 package dev.overgrown.sync.mixin.entity_texture_overlay;
 
-import dev.overgrown.sync.factory.power.type.entity_texture_overlay.client.render.feature.PlayerTextureOverlayFeatureRenderer;
-import dev.overgrown.sync.factory.power.type.entity_texture_overlay.utils.RenderingUtils;
+import dev.overgrown.sync.power.type.entity_texture_overlay.EntityTextureOverlayPowerType;
+import dev.overgrown.sync.power.type.entity_texture_overlay.client.render.feature.PlayerTextureOverlayFeatureRenderer;
+import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.OverlayTexture;
@@ -12,12 +13,17 @@ import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
+import net.minecraft.client.util.SkinTextures;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
 
 @Mixin(PlayerEntityRenderer.class)
 public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> {
@@ -26,65 +32,54 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
         super(ctx, model, shadowRadius);
     }
 
-    @Inject(
-            method = "<init>",
-            at = @At(
-                    "TAIL"
-            )
-    )
-    private void addCustomFeature(EntityRendererFactory.Context ctx, boolean slim, CallbackInfo ci) {
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void sync$addCustomFeature(EntityRendererFactory.Context ctx, boolean slim, CallbackInfo ci) {
         this.addFeature(new PlayerTextureOverlayFeatureRenderer(this));
     }
 
-    @Inject(
-            method = "renderRightArm",
-            at = @At(
-                    "TAIL"
-            )
-    )
-    private void renderRightArmOverlay(net.minecraft.client.util.math.MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, AbstractClientPlayerEntity player, CallbackInfo ci) {
-        renderArmOverlay(matrices, vertexConsumers, light, player, true);
+    @Inject(method = "renderRightArm", at = @At("TAIL"))
+    private void sync$renderRightArmOverlay(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
+                                            int light, AbstractClientPlayerEntity player, CallbackInfo ci) {
+        sync$renderArmOverlay(matrices, vertexConsumers, light, player, true);
     }
 
-    @Inject(
-            method = "renderLeftArm",
-            at = @At(
-                    "TAIL"
-            )
-    )
-    private void renderLeftArmOverlay(net.minecraft.client.util.math.MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, AbstractClientPlayerEntity player, CallbackInfo ci) {
-        renderArmOverlay(matrices, vertexConsumers, light, player, false);
+    @Inject(method = "renderLeftArm", at = @At("TAIL"))
+    private void sync$renderLeftArmOverlay(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
+                                           int light, AbstractClientPlayerEntity player, CallbackInfo ci) {
+        sync$renderArmOverlay(matrices, vertexConsumers, light, player, false);
     }
 
     @Unique
-    private void renderArmOverlay(net.minecraft.client.util.math.MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, AbstractClientPlayerEntity player, boolean isRightArm) {
-        // Check if we're in first person
-        if (MinecraftClient.getInstance().player == player && MinecraftClient.getInstance().options.getPerspective().isFirstPerson()) {
-            var powers = RenderingUtils.getTextureOverlays(player);
-            if (!powers.isEmpty()) {
-                var power = powers.get(0);
+    private void sync$renderArmOverlay(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
+                                       int light, AbstractClientPlayerEntity player, boolean isRightArm) {
+        if (MinecraftClient.getInstance().player == player
+            && MinecraftClient.getInstance().options.getPerspective().isFirstPerson()) {
 
-                // Only render overlay in first person if configured to do so
-                if (power.isActive() && power.shouldRenderAsOverlay() && power.shouldShowFirstPerson()) {
-                    boolean slim = player.getModel().equals("slim");
-                    Identifier texture = slim ? power.getSlimTextureLocation() : power.getWideTextureLocation();
+            List<EntityTextureOverlayPowerType> powers =
+                PowerHolderComponent.getPowerTypes(player, EntityTextureOverlayPowerType.class);
+            if (powers.isEmpty()) return;
 
-                    // Get color from power
-                    float red = power.getRed();
-                    float green = power.getGreen();
-                    float blue = power.getBlue();
-                    float alpha = power.getAlpha();
+            EntityTextureOverlayPowerType power = powers.get(0);
 
-                    // Render overlay on the arm (after the base skin has been rendered)
-                    VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(texture, false));
+            if (power.isActive() && power.shouldRenderAsOverlay() && power.shouldShowFirstPerson()) {
+                boolean slim = player.getSkinTextures().model() == SkinTextures.Model.SLIM;
+                Identifier texture = slim ? power.getSlimTextureLocation() : power.getWideTextureLocation();
 
-                    if (isRightArm) {
-                        this.getModel().rightArm.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, red, green, blue, alpha);
-                        this.getModel().rightSleeve.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, red, green, blue, alpha);
-                    } else {
-                        this.getModel().leftArm.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, red, green, blue, alpha);
-                        this.getModel().leftSleeve.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, red, green, blue, alpha);
-                    }
+                int color = ColorHelper.Argb.getArgb(
+                    (int)(power.getAlpha() * 255),
+                    (int)(power.getRed() * 255),
+                    (int)(power.getGreen() * 255),
+                    (int)(power.getBlue() * 255)
+                );
+
+                VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(texture, false));
+
+                if (isRightArm) {
+                    this.getModel().rightArm.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, color);
+                    this.getModel().rightSleeve.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, color);
+                } else {
+                    this.getModel().leftArm.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, color);
+                    this.getModel().leftSleeve.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, color);
                 }
             }
         }

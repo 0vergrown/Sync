@@ -1,171 +1,60 @@
 package dev.overgrown.sync;
 
-import dev.overgrown.sync.factory.data.keybind.DataDrivenKeybindDefinition;
-import dev.overgrown.sync.factory.data.keybind.client.DynamicKeyBindingManager;
-import dev.overgrown.sync.factory.power.type.action_on_sending_message.utils.TranslationKeyResolver;
-import dev.overgrown.sync.registry.entities.SyncEntityModelLayerRegistry;
-import dev.overgrown.sync.registry.entities.SyncEntiyRendererRegistry;
-import dev.overgrown.sync.factory.action.entity.radial_menu.client.RadialMenuClient;
-import dev.overgrown.sync.factory.data.disguise.DisguiseData;
-import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
-import dev.overgrown.sync.networking.ModPackets;
-import dev.overgrown.sync.factory.data.rope.client.RopeClientInit;
-import io.netty.buffer.Unpooled;
+import dev.overgrown.sync.action.type.entity.radial_menu.client.RadialMenuClient;
+import dev.overgrown.sync.condition.type.entity.key_pressed.client.KeyStateTracker;
+import dev.overgrown.sync.data.disguise.client.DisguiseClientInit;
+import dev.overgrown.sync.data.keybind.client.KeybindClientInit;
+import dev.overgrown.sync.data.rope.client.RopeClientInit;
+import dev.overgrown.sync.power.type.action_on_sending_message.util.TranslationKeyResolver;
+import dev.overgrown.sync.registry.SyncEntityRendererRegistry;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.option.Perspective;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
 
+@Environment(EnvType.CLIENT)
 public class SyncClient implements ClientModInitializer {
-    private static final Map<String, Boolean> LAST_KEY_STATES = new HashMap<>();
-    private static String lastModelType = null;
-    /** Tracks the last-sent perspective name to avoid redundant packets. */
-    private static String lastPerspective = null;
 
     @Override
     public void onInitializeClient() {
-        // Load all language files (every locale, every mod + Minecraft) via the
-        // client ResourceManager so that #{translation.key} placeholders in
-        // message filters resolve to every known language.
-        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES)
-                .registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-                    @Override
-                    public Identifier getFabricId() {
-                        return Sync.identifier("translation_key_resolver");
-                    }
-
-                    @Override
-                    public void reload(ResourceManager manager) {
-                        TranslationKeyResolver.loadFromResourceManager(manager);
-                    }
-                });
-
+        KeyStateTracker.register();
+        DisguiseClientInit.init();
         RopeClientInit.init();
-
+        KeybindClientInit.init();
+        SyncEntityRendererRegistry.register();
         RadialMenuClient.register();
 
-        // Register model layers FIRST
-        SyncEntityModelLayerRegistry.register();
-
-        // Then register entity renderers
-        SyncEntiyRendererRegistry.register();
-
-        // Data-driven keybind sync (Server to Client)
-        ClientPlayNetworking.registerGlobalReceiver(
-                ModPackets.KEYBIND_SYNC,
-                (client, handler, buf, responseSender) -> {
-                    int count = buf.readInt();
-                    List<DataDrivenKeybindDefinition> definitions = new ArrayList<>(count);
-                    for (int i = 0; i < count; i++) {
-                        Identifier id       = buf.readIdentifier();
-                        String key          = buf.readString();
-                        String category     = buf.readString();
-                        String name         = buf.readBoolean() ? buf.readString() : null;
-                        definitions.add(new DataDrivenKeybindDefinition(id, key, category, name));
-                    }
-                    // Apply on the main client thread so we can safely touch GameOptions
-                    client.execute(() -> DynamicKeyBindingManager.applyKeybinds(definitions));
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(
+            new IdentifiableResourceReloadListener() {
+                @Override
+                public Identifier getFabricId() {
+                    return Sync.identifier("translation_key_resolver");
                 }
+
+                @Override
+                public Collection<Identifier> getFabricDependencies() {
+                    return Collections.emptyList();
+                }
+
+                @Override
+                public java.util.concurrent.CompletableFuture<Void> reload(
+                    Synchronizer synchronizer, ResourceManager manager,
+                    net.minecraft.util.profiler.Profiler prepareProfiler,
+                    net.minecraft.util.profiler.Profiler applyProfiler,
+                    java.util.concurrent.Executor prepareExecutor,
+                    java.util.concurrent.Executor applyExecutor) {
+                    return java.util.concurrent.CompletableFuture
+                        .runAsync(() -> TranslationKeyResolver.loadFromResourceManager(manager), prepareExecutor)
+                        .thenCompose(synchronizer::whenPrepared);
+                }
+            }
         );
-
-        // Unregister dynamic keybinds when leaving the server
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            client.execute(DynamicKeyBindingManager::unregisterAll);
-            // Reset perspective tracker so the next join sends the current value fresh.
-            lastPerspective = null;
-        });
-
-        // Disguise packet handler (Server to Client)
-        ClientPlayNetworking.registerGlobalReceiver(
-                ModPackets.DISGUISE_UPDATE,
-                (client, handler, buf, responseSender) -> {
-                    int entityNetId = buf.readInt();
-                    boolean hasDisguise = buf.readBoolean();
-
-                    if (hasDisguise) {
-                        DisguiseData data = DisguiseData.read(buf);
-                        client.execute(() -> ClientDisguiseManager.setDisguise(entityNetId, data));
-                    } else {
-                        client.execute(() -> ClientDisguiseManager.removeDisguise(entityNetId));
-                    }
-                }
-        );
-
-        // Clear disguise cache when local player unloads (world change / disconnect)
-        ClientEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
-            MinecraftClient client = MinecraftClient.getInstance();
-            if (client.player != null && entity == client.player) {
-                ClientDisguiseManager.clear();
-            }
-        });
-
-        ClientTickEvents.START_CLIENT_TICK.register(client -> {
-            if (client.player == null) return;
-
-            // Player Model Type Detection
-            String currentModelType = client.player.getModel();
-
-            // The getModel() method returns "slim" or "default"
-            // Convert "default" to "wide" for consistency
-            if (currentModelType.equals("default")) {
-                currentModelType = "wide";
-            }
-
-            if (lastModelType == null || !lastModelType.equals(currentModelType)) {
-                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-                buf.writeString(currentModelType);
-                ClientPlayNetworking.send(ModPackets.PLAYER_MODEL_TYPE_UPDATE, buf);
-                lastModelType = currentModelType;
-            }
-
-            // Camera Perspective Detection
-            String currentPerspective = perspectiveToString(client.options.getPerspective());
-            if (!currentPerspective.equals(lastPerspective)) {
-                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-                buf.writeString(currentPerspective);
-                ClientPlayNetworking.send(ModPackets.PERSPECTIVE_UPDATE, buf);
-                lastPerspective = currentPerspective;
-            }
-
-            // Key Press Detection
-            for (KeyBinding keyBinding : client.options.allKeys) {
-                String key = keyBinding.getTranslationKey();
-                boolean pressed = keyBinding.isPressed();
-                Boolean lastState = LAST_KEY_STATES.get(key);
-
-                if (lastState == null || lastState != pressed) {
-                    PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-                    buf.writeString(key);
-                    buf.writeBoolean(pressed);
-                    ClientPlayNetworking.send(ModPackets.KEY_PRESS_UPDATE, buf);
-                    LAST_KEY_STATES.put(key, pressed);
-                }
-            }
-        });
-    }
-
-    // Helpers
-    /** Converts a {@link Perspective} enum value to the lower-snake-case string used in JSON. */
-    private static String perspectiveToString(Perspective perspective) {
-        return switch (perspective) {
-            case FIRST_PERSON      -> "first_person";
-            case THIRD_PERSON_BACK -> "third_person_back";
-            case THIRD_PERSON_FRONT -> "third_person_front";
-        };
     }
 }
