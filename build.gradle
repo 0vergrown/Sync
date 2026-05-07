@@ -42,12 +42,6 @@ repositories {
 		}
 	}
 	maven {
-		url "https://maven.jamieswhiteshirt.com/libs-release"
-		content {
-			includeGroup "com.jamieswhiteshirt"
-		}
-	}
-	maven {
 		url "https://masa.dy.fi/maven"
 	}
 	maven {
@@ -58,16 +52,6 @@ repositories {
 	}
 	maven {
 		url "https://maven.terraformersmc.com/"
-	}
-	maven {
-		name = "figuramcReleases"
-		url = uri("https://maven.figuramc.org/releases")
-	}
-}
-
-fabricApi {
-	configureDataGeneration {
-		client = true
 	}
 }
 
@@ -83,40 +67,26 @@ dependencies {
 	modApi "io.github.apace100:apoli:${project.apoli_version}"
 	include "io.github.apace100:apoli:${project.apoli_version}"
 
-	modApi("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${cca_version}") {
+	modApi("org.ladysnake.cardinal-components-api:cardinal-components-base:${cca_version}") {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
-	modApi("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${cca_version}") {
+	modApi("org.ladysnake.cardinal-components-api:cardinal-components-entity:${cca_version}") {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
 
-	include modApi("com.jamieswhiteshirt:reach-entity-attributes:${project.reach_version}")
-
-	// Add AspectsLib as an optional dependency
-	modCompileOnly "maven.modrinth:aspectslib:${project.aspectslib_version}"
-
-	// Add Jade as an optional dependency
-	modCompileOnly "maven.modrinth:jade:${project.jade_version}"
-
-	// Add the API of LambDynamicLights as an optional dependency
-	modCompileOnly("dev.lambdaurora.lambdynamiclights:lambdynamiclights-api:${project.lamb_dynamic_lights_version}")
-	
 }
 
 processResources {
-	inputs.property "version", project.version
+	def version = project.version
+	inputs.property "version", version
 
 	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
-	}
-
-	filesMatching("META-INF/mods.toml") {
-		expand "version": project.version
+		expand "version": version
 	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
+	it.options.release = 21
 }
 
 java {
@@ -125,15 +95,16 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
-	inputs.property "projectName", project.name
+	def projectName = project.name
+	inputs.property "projectName", projectName
 
 	from("LICENSE") {
-		rename { "${it}_${project.name}"}
+		rename { "${it}_$projectName"}
 	}
 }
 

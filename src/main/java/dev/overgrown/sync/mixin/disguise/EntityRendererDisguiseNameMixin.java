@@ -1,7 +1,8 @@
 package dev.overgrown.sync.mixin.disguise;
 
-import dev.overgrown.sync.factory.data.disguise.DisguiseData;
-import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
+import com.mojang.serialization.JsonOps;
+import dev.overgrown.sync.data.disguise.DisguiseData;
+import dev.overgrown.sync.data.disguise.client.ClientDisguiseManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -12,50 +13,47 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-/**
- * Replaces the label text shown above a disguised entity with the disguise
- * target's display name.
- *
- * <p>Applies to every entity (not only players) so that mob-to-mob disguises
- * also show the correct name.
- */
+import com.google.gson.JsonParser;
+
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererDisguiseNameMixin<T extends Entity> {
 
-    /**
-     * Modify the {@code text} parameter of {@code renderLabelIfPresent(T, Text, MatrixStack, VertexConsumerProvider, int)}.
-     */
     @ModifyVariable(
-            method = "renderLabelIfPresent",
-            at = @At(
-                    "HEAD"
-            ),
-            argsOnly = true
+        method = "renderLabelIfPresent",
+        at = @At("HEAD"),
+        argsOnly = true
     )
     private Text sync$modifyDisguiseLabel(
-            Text originalText,
-            T entity,
-            Text text,
-            MatrixStack matrices,
-            VertexConsumerProvider vertexConsumers,
-            int light) {
+        Text originalText,
+        T entity,
+        Text text,
+        MatrixStack matrices,
+        VertexConsumerProvider vertexConsumers,
+        int light,
+        float tickDelta) {
 
         DisguiseData disguise = ClientDisguiseManager.getDisguise(entity.getId());
         if (disguise != null) {
-            // Player disguise: show the target player's name
             if (disguise.isPlayerDisguise()) {
                 return sync$resolvePlayerName(disguise, originalText);
             }
 
-            // Non-player disguise: show custom name or entity type name
             NbtCompound nbt = disguise.getTargetNbt();
             if (nbt != null && nbt.contains("CustomName")) {
-                return Text.Serializer.fromJson(nbt.getString("CustomName"));
+                String json = nbt.getString("CustomName");
+                try {
+                    return TextCodecs.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(json))
+                        .result()
+                        .orElse(originalText);
+                } catch (Exception e) {
+                    return originalText;
+                }
             }
             EntityType<?> entityType = Registries.ENTITY_TYPE.get(disguise.getTargetEntityTypeId());
             return Text.translatable(entityType.getTranslationKey());
@@ -63,24 +61,18 @@ public abstract class EntityRendererDisguiseNameMixin<T extends Entity> {
         return originalText;
     }
 
-    /**
-     * Resolves the display name for a player disguise. Checks the online tab list
-     * first, then falls back to the name stored in the disguise NBT.
-     */
     @Unique
     private Text sync$resolvePlayerName(DisguiseData disguise, Text fallback) {
-        // Try online player list first
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.getNetworkHandler() != null) {
             PlayerListEntry entry = client.getNetworkHandler()
-                    .getPlayerListEntry(disguise.getTargetPlayerUuid());
+                .getPlayerListEntry(disguise.getTargetPlayerUuid());
             if (entry != null && entry.getProfile().getName() != null
-                    && !entry.getProfile().getName().isEmpty()) {
+                && !entry.getProfile().getName().isEmpty()) {
                 return Text.literal(entry.getProfile().getName());
             }
         }
 
-        // Fallback: name stored in disguise NBT (offline players)
         NbtCompound nbt = disguise.getTargetNbt();
         if (nbt != null && nbt.contains("sync$player_name")) {
             String name = nbt.getString("sync$player_name");

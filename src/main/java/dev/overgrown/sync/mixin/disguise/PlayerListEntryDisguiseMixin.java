@@ -1,13 +1,15 @@
 package dev.overgrown.sync.mixin.disguise;
 
 import com.mojang.authlib.GameProfile;
-import dev.overgrown.sync.factory.data.disguise.DisguiseData;
-import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
-import dev.overgrown.sync.factory.data.disguise.client.OfflinePlayerSkinCache;
+import dev.overgrown.sync.data.disguise.DisguiseData;
+import dev.overgrown.sync.data.disguise.client.ClientDisguiseManager;
+import dev.overgrown.sync.data.disguise.client.OfflinePlayerSkinCache;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.util.DefaultSkinHelper;
+import net.minecraft.client.util.SkinTextures;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -20,9 +22,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * When a player is disguised as another player, this mixin redirects
- * {@link PlayerListEntry#getSkinTexture()} and {@link PlayerListEntry#getModel()}
- * so that the disguised player renders with the target player's skin and arm style.
+ * When a player is disguised as another player, redirects
+ * {@link PlayerListEntry#getSkinTextures()} to the target player's textures.
+ * Falls back to {@link OfflinePlayerSkinCache} for offline players.
  */
 @Environment(EnvType.CLIENT)
 @Mixin(PlayerListEntry.class)
@@ -30,85 +32,31 @@ public abstract class PlayerListEntryDisguiseMixin {
 
     @Shadow @Final private GameProfile profile;
 
-    @Shadow
-    public abstract String getModel();
-
-    @Shadow
-    protected abstract void loadTextures();
-
-    /**
-     * Guards against infinite recursion when two (or more) players are disguised
-     * as each other. Without this, {@code A.getModel() -> B.getModel() -> A.getModel() -> …}
-     * causes a {@link StackOverflowError}. When the guard is active, the nested call
-     * returns the target's <em>original</em> skin/model instead of chaining further.
-     */
     @Unique
     private static final ThreadLocal<Boolean> sync$resolving = ThreadLocal.withInitial(() -> false);
 
-    // Skin texture
-    @Inject(
-            method = "getSkinTexture",
-            at = @At(
-                    "HEAD"
-            ),
-            cancellable = true
-    )
-    public void sync$getDisguisedSkinTexture(CallbackInfoReturnable<Identifier> cir) {
+    @Inject(method = "getSkinTextures", at = @At("HEAD"), cancellable = true)
+    public void sync$getDisguisedSkinTextures(CallbackInfoReturnable<SkinTextures> cir) {
         if (sync$resolving.get()) return;
 
         sync$resolving.set(true);
         try {
-            // Fast path: target player is online - delegate to their real PlayerListEntry.
-            PlayerListEntry targetEntry = findTargetEntry();
+            PlayerListEntry targetEntry = sync$findTargetEntry();
             if (targetEntry != null) {
-                cir.setReturnValue(targetEntry.getSkinTexture());
+                cir.setReturnValue(targetEntry.getSkinTextures());
                 return;
             }
 
-            // Fallback: target player is offline - use the async-loaded skin from OfflinePlayerSkinCache.
-            Identifier offlineSkin = findOfflineSkin();
-            if (offlineSkin != null) {
-                cir.setReturnValue(offlineSkin);
-            }
+            SkinTextures offline = sync$buildOfflineSkin();
+            if (offline != null) cir.setReturnValue(offline);
         } finally {
             sync$resolving.set(false);
         }
     }
 
-    // Arm model (slim vs. wide)
-    @Inject(method = "getModel", at = @At("HEAD"), cancellable = true)
-    public void sync$getDisguisedModel(CallbackInfoReturnable<String> cir) {
-        if (sync$resolving.get()) return;
-
-        sync$resolving.set(true);
-        try {
-            PlayerListEntry targetEntry = findTargetEntry();
-            if (targetEntry != null) {
-                cir.setReturnValue(targetEntry.getModel());
-                return;
-            }
-
-            // Offline player: use model type cached from the skin texture metadata.
-            String offlineModel = findOfflineModel();
-            if (offlineModel != null) {
-                cir.setReturnValue(offlineModel);
-            }
-        } finally {
-            sync$resolving.set(false);
-        }
-    }
-
-    // Helpers
-
-    /**
-     * When the disguise target is an offline player (not in the tab list),
-     * returns the skin {@link Identifier} that was pre-loaded by
-     * {@link OfflinePlayerSkinCache}, or {@code null} if it has not been
-     * loaded yet or no offline-player disguise is active.
-     */
     @Unique
     @Nullable
-    private Identifier findOfflineSkin() {
+    private PlayerListEntry sync$findTargetEntry() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null || client.getNetworkHandler() == null) return null;
 
@@ -118,49 +66,30 @@ public abstract class PlayerListEntryDisguiseMixin {
         DisguiseData disguise = ClientDisguiseManager.getDisguise(player.getId());
         if (disguise == null || !disguise.isPlayerDisguise()) return null;
 
-        return OfflinePlayerSkinCache.getSkin(disguise.getTargetPlayerUuid());
-    }
-
-    /**
-     * Returns the model type ({@code "slim"} or {@code "default"}) for an offline
-     * player disguise, or {@code null} if no offline-player disguise is active.
-     */
-    @Unique
-    @Nullable
-    private String findOfflineModel() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.world == null || client.getNetworkHandler() == null) return null;
-
-        PlayerEntity player = client.world.getPlayerByUuid(this.profile.getId());
-        if (player == null) return null;
-
-        DisguiseData disguise = ClientDisguiseManager.getDisguise(player.getId());
-        if (disguise == null || !disguise.isPlayerDisguise()) return null;
-
-        return OfflinePlayerSkinCache.getModel(disguise.getTargetPlayerUuid());
-    }
-
-    /**
-     * Looks up the {@link PlayerListEntry} for the player that the owner of
-     * <em>this</em> entry is currently disguised as, or {@code null} if no
-     * player-disguise is active for them.
-     */
-    @Unique
-    @Nullable
-    private PlayerListEntry findTargetEntry() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.world == null || client.getNetworkHandler() == null) return null;
-
-        // Find the in-world entity whose profile matches this entry.
-        PlayerEntity player = client.world.getPlayerByUuid(this.profile.getId());
-        if (player == null) return null;
-
-        DisguiseData disguise = ClientDisguiseManager.getDisguise(player.getId());
-        if (disguise == null || !disguise.isPlayerDisguise()) return null;
-
-        // Prevent accidental recursion: the target profile must differ.
         if (disguise.getTargetPlayerUuid().equals(this.profile.getId())) return null;
 
         return client.getNetworkHandler().getPlayerListEntry(disguise.getTargetPlayerUuid());
+    }
+
+    @Unique
+    @Nullable
+    private SkinTextures sync$buildOfflineSkin() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world == null || client.getNetworkHandler() == null) return null;
+
+        PlayerEntity player = client.world.getPlayerByUuid(this.profile.getId());
+        if (player == null) return null;
+
+        DisguiseData disguise = ClientDisguiseManager.getDisguise(player.getId());
+        if (disguise == null || !disguise.isPlayerDisguise()) return null;
+
+        Identifier offlineSkin = OfflinePlayerSkinCache.getSkin(disguise.getTargetPlayerUuid());
+        if (offlineSkin == null) return null;
+
+        SkinTextures.Model model = OfflinePlayerSkinCache.getModel(disguise.getTargetPlayerUuid());
+        if (model == null) model = SkinTextures.Model.WIDE;
+
+        SkinTextures fallback = DefaultSkinHelper.getSkinTextures(disguise.getTargetPlayerUuid());
+        return new SkinTextures(offlineSkin, null, fallback.capeTexture(), fallback.elytraTexture(), model, true);
     }
 }

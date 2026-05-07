@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(LivingEntityRenderer.class)
 public interface LivingEntityRendererAccessor<T extends LivingEntity, M extends EntityModel<T>> {
+
     @Invoker("addFeature")
     boolean invokeAddFeature(FeatureRenderer<T, M> feature);
 }

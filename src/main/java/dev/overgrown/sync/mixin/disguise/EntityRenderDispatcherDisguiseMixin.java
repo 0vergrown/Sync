@@ -1,8 +1,8 @@
 package dev.overgrown.sync.mixin.disguise;
 
-import dev.overgrown.sync.factory.action.entity.summons.entities.clone.CloneEntity;
-import dev.overgrown.sync.factory.data.disguise.DisguiseData;
-import dev.overgrown.sync.factory.data.disguise.client.ClientDisguiseManager;
+import dev.overgrown.sync.data.disguise.DisguiseData;
+import dev.overgrown.sync.data.disguise.client.ClientDisguiseManager;
+import dev.overgrown.sync.power.type.summons.entities.clone.CloneEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
@@ -16,15 +16,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = EntityRenderDispatcher.class, priority = 900)
 public abstract class EntityRenderDispatcherDisguiseMixin {
 
-    @Inject(
-            method = "render",
-            at = @At("HEAD"),
-            cancellable = true
-    )
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private <E extends Entity> void sync$renderDisguised(
-            E entity, double x, double y, double z, float yaw, float tickDelta,
-            MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light,
-            CallbackInfo ci) {
+        E entity, double x, double y, double z, float yaw, float tickDelta,
+        MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light,
+        CallbackInfo ci) {
 
         if (entity instanceof CloneEntity) return;
 
