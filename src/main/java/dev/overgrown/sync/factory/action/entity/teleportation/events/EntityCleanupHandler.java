@@ -13,55 +13,44 @@ import net.minecraft.server.world.ServerWorld;
 public class EntityCleanupHandler {
 
     public static void register() {
-        // Clean up locations when entities die
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
-            // Direct cast to ServerWorld since we know it's server-side
             ServerWorld serverWorld = (ServerWorld) entity.getWorld();
 
-            // Don't clean up player data on death (players respawn)
             if (entity instanceof ServerPlayerEntity) {
                 return;
             }
 
-            // Only cleanup entities whose data should be removed
             if (shouldRemoveEntityData(entity)) {
-                EntityLocationsState state = EntityLocationsState.get(serverWorld);
+                EntityLocationsState state = EntityLocationsState.get(serverWorld.getServer());
                 state.removeAllLocationsForEntity(entity.getUuid());
             }
         });
 
-        // Clean up locations when entities are unloaded/removed
         ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
             ServerWorld serverWorld = (ServerWorld) world;
 
-            // Don't clean up player data
             if (entity instanceof ServerPlayerEntity) {
                 return;
             }
 
-            // Only cleanup if entity is dead or shouldn't be persistent
             if (entity instanceof LivingEntity livingEntity && !livingEntity.isAlive()) {
                 if (shouldRemoveEntityData(entity)) {
-                    EntityLocationsState state = EntityLocationsState.get(serverWorld);
+                    EntityLocationsState state = EntityLocationsState.get(serverWorld.getServer());
                     state.removeAllLocationsForEntity(entity.getUuid());
                 }
             }
         });
 
-        // Periodic cleanup for entities that might have been removed without events
+        // State is server-global (anchored on overworld), so we cleanup once per tick.
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            // Run cleanup on all worlds
-            for (ServerWorld world : server.getWorlds()) {
-                EntityLocationsState state = EntityLocationsState.get(world);
-                state.cleanupLocations(server);
-            }
+            EntityLocationsState state = EntityLocationsState.get(server);
+            state.cleanupLocations(server);
         });
     }
 
     private static boolean shouldRemoveEntityData(Entity entity) {
-        // Remove data for entities that are not players, not name-tagged, and not PathAwareEntity
-        return !(entity instanceof ServerPlayerEntity ||
-                entity.hasCustomName() ||
-                entity instanceof PathAwareEntity);
+        return !(entity instanceof ServerPlayerEntity
+                || entity.hasCustomName()
+                || entity instanceof PathAwareEntity);
     }
 }

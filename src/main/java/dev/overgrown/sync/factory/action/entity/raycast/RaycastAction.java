@@ -1,6 +1,8 @@
 package dev.overgrown.sync.factory.action.entity.raycast;
 
 import dev.overgrown.sync.Sync;
+import dev.overgrown.sync.factory.action.entity.teleportation.SaveLocationAction;
+import dev.overgrown.sync.factory.action.entity.teleportation.data.EntityLocationsState;
 import dev.overgrown.sync.factory.data.raycast.RaycastUtil;
 import io.github.apace100.apoli.data.ApoliDataTypes;
 import io.github.apace100.apoli.power.factory.action.ActionFactory;
@@ -139,6 +141,16 @@ public class RaycastAction {
             }
         }
 
+        // Save the hit position (or entity reference) into the actor's saved-location store.
+        // This is the only way to "save_location" from a block hit, since block_actions
+        // have no access to the actor entity that fired the raycast.
+        if (didHit && data.isPresent("save_location_id") && entity.getWorld() instanceof ServerWorld saveWorld) {
+            saveHitLocation(saveWorld, entity, primaryHit,
+                    data.getString("save_location_id"),
+                    data.getBoolean("save_location_overwrite"),
+                    data.getBoolean("save_location_track_entity"));
+        }
+
         // Hit Branch
         if (didHit) {
             // command_at_hit
@@ -189,6 +201,49 @@ public class RaycastAction {
             // Miss Branch
         } else {
             data.<Consumer<Entity>>ifPresent("miss_action", a -> a.accept(entity));
+        }
+    }
+
+    /**
+     * Persists either the hit block position or the hit entity's position/UUID into the
+     * actor's saved-location store. For block hits, the saved point sits flush against
+     * the hit face so the actor lands outside the block when teleporting back.
+     * Cross-dimensional and dimension-agnostic — the store is anchored on the overworld.
+     */
+    private static void saveHitLocation(ServerWorld serverWorld, Entity actor, HitResult primaryHit,
+                                        String id, boolean overwrite, boolean trackEntity) {
+        EntityLocationsState state = EntityLocationsState.get(serverWorld.getServer());
+        boolean isPersistent = SaveLocationAction.isEntityPersistent(actor);
+
+        if (primaryHit instanceof EntityHitResult ehr) {
+            Entity target = ehr.getEntity();
+            if (trackEntity) {
+                state.saveTrackedLocation(actor.getUuid(), id, target.getUuid(),
+                        target.getPos(), target.getWorld().getRegistryKey(),
+                        target.getYaw(), target.getPitch(),
+                        overwrite, isPersistent);
+            } else {
+                state.saveStaticLocation(actor.getUuid(), id,
+                        target.getPos(), target.getWorld().getRegistryKey(),
+                        target.getYaw(), target.getPitch(),
+                        overwrite, isPersistent);
+            }
+        } else if (primaryHit instanceof BlockHitResult bhr) {
+            BlockPos blockPos = bhr.getBlockPos();
+            Direction side = bhr.getSide();
+            Vec3d pos;
+            if (side == Direction.UP) {
+                pos = new Vec3d(blockPos.getX() + 0.5, blockPos.getY() + 1.0, blockPos.getZ() + 0.5);
+            } else if (side == Direction.DOWN) {
+                pos = new Vec3d(blockPos.getX() + 0.5, blockPos.getY() - actor.getHeight(), blockPos.getZ() + 0.5);
+            } else {
+                BlockPos adjacent = blockPos.offset(side);
+                pos = new Vec3d(adjacent.getX() + 0.5, blockPos.getY(), adjacent.getZ() + 0.5);
+            }
+            state.saveStaticLocation(actor.getUuid(), id,
+                    pos, serverWorld.getRegistryKey(),
+                    actor.getYaw(), actor.getPitch(),
+                    overwrite, isPersistent);
         }
     }
 
@@ -297,7 +352,13 @@ public class RaycastAction {
                         .add("command_hit_offset", SerializableDataTypes.FLOAT, null)
                         .add("command_along_ray", SerializableDataTypes.STRING, null)
                         .add("command_step", SerializableDataTypes.FLOAT, 1.0f)
-                        .add("command_along_ray_only_on_hit", SerializableDataTypes.BOOLEAN, false),
+                        .add("command_along_ray_only_on_hit", SerializableDataTypes.BOOLEAN, false)
+                        // save_location: store hit point/entity reference for the raycaster
+                        // (block hits have no actor context in apoli's block_action, so we
+                        // expose this directly on the raycast for the block-hit case)
+                        .add("save_location_id", SerializableDataTypes.STRING, null)
+                        .add("save_location_overwrite", SerializableDataTypes.BOOLEAN, true)
+                        .add("save_location_track_entity", SerializableDataTypes.BOOLEAN, false),
                 RaycastAction::action
         );
     }
