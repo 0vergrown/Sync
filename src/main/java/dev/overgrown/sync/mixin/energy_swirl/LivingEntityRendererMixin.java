@@ -1,7 +1,7 @@
 package dev.overgrown.sync.mixin.energy_swirl;
 
+import dev.overgrown.sync.factory.power.type.energy_swirl.client.render.feature.EnergySwirlFeatureRenderer;
 import dev.overgrown.sync.mixin.energy_swirl.accessor.LivingEntityRendererAccessor;
-import dev.overgrown.sync.power.type.energy_swirl.client.render.feature.EnergySwirlFeatureRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.model.EntityModel;
@@ -15,11 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extends EntityModel<T>> {
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void sync$addEnergySwirlFeature(EntityRendererFactory.Context ctx, M model, float shadowRadius, CallbackInfo ci) {
-        @SuppressWarnings("unchecked")
+    private void addEnergySwirlFeature(EntityRendererFactory.Context ctx, M model, float shadowRadius, CallbackInfo ci) {
         LivingEntityRendererAccessor<T, M> accessor = (LivingEntityRendererAccessor<T, M>) this;
-        @SuppressWarnings("unchecked")
-        LivingEntityRenderer<T, M> self = (LivingEntityRenderer<T, M>) (Object) this;
-        accessor.invokeAddFeature(new EnergySwirlFeatureRenderer<>(self));
+        accessor.invokeAddFeature(new EnergySwirlFeatureRenderer<>((LivingEntityRenderer<T, M>) (Object) this));
     }
 }

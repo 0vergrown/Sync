@@ -1,8 +1,8 @@
 package dev.overgrown.sync.mixin.rope;
 
-import dev.overgrown.sync.data.rope.common.RopeConstants;
-import dev.overgrown.sync.data.rope.common.RopeManager;
-import dev.overgrown.sync.data.rope.common.RopeState;
+import dev.overgrown.sync.factory.data.rope.common.RopeManager;
+import dev.overgrown.sync.factory.data.rope.common.RopeConstants;
+import dev.overgrown.sync.factory.data.rope.common.RopeState;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,11 +12,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
 
-    @Inject(method = "checkFallFlying", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            method = "checkFallFlying",
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void sync$blockElytraIfRopeTimedOut(CallbackInfoReturnable<Boolean> cir) {
         PlayerEntity self = (PlayerEntity) (Object) this;
         if (!self.getWorld().isClient()) {
             RopeState rope = RopeManager.get(self.getUuid());
+            // Only block new elytra activation if already at the flight time limit
             if (rope != null && rope.playerFlightTicks >= RopeConstants.ELYTRA_TIME_LIMIT) {
                 cir.setReturnValue(false);
             }

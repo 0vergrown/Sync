@@ -1,11 +1,11 @@
 package dev.overgrown.sync.mixin.modify_model_parts;
 
-import dev.overgrown.sync.power.type.modify_model_parts.ModifyModelPartsPowerType;
-import dev.overgrown.sync.power.type.modify_model_parts.util.ModelPartTransformation;
+import dev.overgrown.sync.factory.power.type.modify_model_parts.ModifyModelPartsPower;
+import dev.overgrown.sync.factory.power.type.modify_model_parts.utils.ModelPartTransformation;
+import net.minecraft.client.render.entity.model.BipedEntityModel;
 import io.github.apace100.apoli.component.PowerHolderComponent;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.entity.model.AnimalModel;
-import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.ModelWithArms;
 import net.minecraft.client.render.entity.model.ModelWithHead;
 import net.minecraft.entity.LivingEntity;
@@ -17,18 +17,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Mixin(BipedEntityModel.class)
 public abstract class BipedEntityModelMixin<T extends LivingEntity>
-    extends AnimalModel<T>
-    implements ModelWithArms, ModelWithHead {
-
+        extends AnimalModel<T>
+        implements ModelWithArms,
+        ModelWithHead {
     @Shadow @Final public ModelPart head;
     @Shadow @Final public ModelPart hat;
     @Shadow @Final public ModelPart body;
@@ -37,25 +32,38 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
     @Shadow @Final public ModelPart leftLeg;
     @Shadow @Final public ModelPart rightLeg;
 
-    @Unique private final Map<String, Float> SYNC$ORIGINAL_VALUES = new HashMap<>();
-    @Unique private final Map<String, Float> SYNC$LOCKED_VALUES = new HashMap<>();
-    @Unique private final Set<String> SYNC$OVERRIDE_ANIMATION_PARTS = new HashSet<>();
-    @Unique private boolean SYNC$HAS_POWER = false;
+    @Unique
+    private final Map<String, Float> SYNC$ORIGINAL_VALUES = new HashMap<>();
+    @Unique
+    private final Map<String, Float> SYNC$LOCKED_VALUES = new HashMap<>();
+    @Unique
+    private final Set<String> SYNC$OVERRIDE_ANIMATION_PARTS = new HashSet<>();
+    @Unique
+    private boolean SYNC$HAS_POWER = false;
 
-    @Inject(method = "setAngles(Lnet/minecraft/entity/LivingEntity;FFFFF)V", at = @At("HEAD"))
+    @Inject(
+            method = "setAngles(Lnet/minecraft/entity/LivingEntity;FFFFF)V",
+            at = @At(
+                    value = "HEAD"
+            )
+    )
     public void setAnglesHead(T livingEntity, float f, float g, float h, float i, float j, CallbackInfo ci) {
-        boolean hasPower = !PowerHolderComponent.getPowerTypes(livingEntity, ModifyModelPartsPowerType.class).isEmpty();
+        boolean hasPower = PowerHolderComponent.hasPower(livingEntity, ModifyModelPartsPower.class);
 
         if (hasPower) {
+            // Store original values when first gaining power
             if (SYNC$ORIGINAL_VALUES.isEmpty()) {
                 storeOriginalValues();
             }
 
+            // Always reset to original values before applying transformations
             restoreOriginalValues();
 
+            // Clear override sets for this frame
             SYNC$LOCKED_VALUES.clear();
             SYNC$OVERRIDE_ANIMATION_PARTS.clear();
         } else if (SYNC$HAS_POWER) {
+            // If just lost the power then reset to original values
             restoreOriginalValues();
             SYNC$ORIGINAL_VALUES.clear();
             SYNC$LOCKED_VALUES.clear();
@@ -65,23 +73,33 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
         SYNC$HAS_POWER = hasPower;
     }
 
-    @Inject(method = "setAngles(Lnet/minecraft/entity/LivingEntity;FFFFF)V", at = @At("TAIL"))
+    @Inject(
+            method = "setAngles(Lnet/minecraft/entity/LivingEntity;FFFFF)V",
+            at = @At(
+                    value = "TAIL"
+            )
+    )
     public void setAnglesTail(T livingEntity, float f, float g, float h, float i, float j, CallbackInfo ci) {
-        List<ModifyModelPartsPowerType> powers =
-            PowerHolderComponent.getPowerTypes(livingEntity, ModifyModelPartsPowerType.class);
-        if (powers.isEmpty()) return;
+        if (!PowerHolderComponent.hasPower(livingEntity, ModifyModelPartsPower.class)) {
+            return;
+        }
 
+        // Apply transformations after all normal animations
         List<ModelPartTransformation> transformations = new ArrayList<>();
-        powers.forEach(p -> transformations.addAll(p.getTransformations()));
+        PowerHolderComponent.getPowers(livingEntity, ModifyModelPartsPower.class).forEach(power -> {
+            transformations.addAll(power.getTransformations());
+        });
 
+        // First pass: collect all locked values and mark override parts
         for (ModelPartTransformation t : transformations) {
-            if (t.getOverrideAnimation()) {
+            if (t.getOverrideAnimation() != null && t.getOverrideAnimation()) {
                 String partName = t.getModelPart().toLowerCase();
                 String type = t.getType().toLowerCase();
                 SYNC$OVERRIDE_ANIMATION_PARTS.add(partName + "_" + type);
             }
         }
 
+        // Second pass: apply transformations
         for (ModelPartTransformation t : transformations) {
             applyTransformation(t);
         }
@@ -89,6 +107,7 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
 
     @Unique
     private void storeOriginalValues() {
+        // Store current values for each part
         storePartValues(head, "head");
         storePartValues(hat, "hat");
         storePartValues(body, "body");
@@ -138,6 +157,7 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
         part.pivotY = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pivotY", part.pivotY);
         part.pivotZ = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "pivotZ", part.pivotZ);
 
+        // Only restore pitch/yaw/roll if they're not locked by override_animation
         String pitchKey = partName + "_pitch";
         String yawKey = partName + "_yaw";
         String rollKey = partName + "_roll";
@@ -157,23 +177,27 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
         part.zScale = SYNC$ORIGINAL_VALUES.getOrDefault(prefix + "zScale", 1.0f);
 
         Float visible = SYNC$ORIGINAL_VALUES.get(prefix + "visible");
-        if (visible != null) part.visible = visible != 0;
+        if (visible != null) {
+            part.visible = visible != 0;
+        }
         Float hidden = SYNC$ORIGINAL_VALUES.get(prefix + "hidden");
-        if (hidden != null) part.hidden = hidden != 0;
+        if (hidden != null) {
+            part.hidden = hidden != 0;
+        }
     }
 
     @Unique
     private ModelPart getModelPart(String partName) {
-        return switch (partName.toLowerCase()) {
-            case "head" -> head;
-            case "hat" -> hat;
-            case "body" -> body;
-            case "rightarm" -> rightArm;
-            case "leftarm" -> leftArm;
-            case "rightleg" -> rightLeg;
-            case "leftleg" -> leftLeg;
-            default -> null;
-        };
+        switch (partName.toLowerCase()) {
+            case "head": return head;
+            case "hat": return hat;
+            case "body": return body;
+            case "rightarm": return rightArm;
+            case "leftarm": return leftArm;
+            case "rightleg": return rightLeg;
+            case "leftleg": return leftLeg;
+            default: return null;
+        }
     }
 
     @Unique
@@ -184,50 +208,64 @@ public abstract class BipedEntityModelMixin<T extends LivingEntity>
         String partName = t.getModelPart().toLowerCase();
         String type = t.getType().toLowerCase();
         float value = t.getValue();
-        boolean overrideAnimation = t.getOverrideAnimation();
+        boolean overrideAnimation = t.getOverrideAnimation() != null && t.getOverrideAnimation();
 
         switch (type) {
-            case "pitch" -> {
+            case "pitch":
                 if (overrideAnimation) {
+                    // Lock the pitch to the exact value
                     targetPart.pitch = value;
                     SYNC$LOCKED_VALUES.put(partName + "_pitch", value);
                 } else {
                     targetPart.pitch += value;
                 }
-            }
-            case "yaw" -> {
+                break;
+            case "yaw":
                 if (overrideAnimation) {
+                    // Lock the yaw to the exact value
                     targetPart.yaw = value;
                     SYNC$LOCKED_VALUES.put(partName + "_yaw", value);
                 } else {
                     targetPart.yaw += value;
                 }
-            }
-            case "roll" -> {
+                break;
+            case "roll":
                 if (overrideAnimation) {
+                    // Lock the roll to the exact value
                     targetPart.roll = value;
                     SYNC$LOCKED_VALUES.put(partName + "_roll", value);
                 } else {
                     targetPart.roll += value;
                 }
-            }
-            case "visible" -> targetPart.visible = value != 0;
-            case "hidden" -> targetPart.hidden = value != 0;
-            case "xscale" -> {
+                break;
+            case "visible":
+                targetPart.visible = value != 0;
+                break;
+            case "hidden":
+                targetPart.hidden = value != 0;
+                break;
+            case "xscale":
+                // Get original value from storage
                 float originalX = SYNC$ORIGINAL_VALUES.getOrDefault(partName + "_xScale", 1.0f);
                 targetPart.xScale = originalX + value;
-            }
-            case "yscale" -> {
+                break;
+            case "yscale":
                 float originalY = SYNC$ORIGINAL_VALUES.getOrDefault(partName + "_yScale", 1.0f);
                 targetPart.yScale = originalY + value;
-            }
-            case "zscale" -> {
+                break;
+            case "zscale":
                 float originalZ = SYNC$ORIGINAL_VALUES.getOrDefault(partName + "_zScale", 1.0f);
                 targetPart.zScale = originalZ + value;
-            }
-            case "pivotx" -> targetPart.pivotX += value;
-            case "pivoty" -> targetPart.pivotY += value;
-            case "pivotz" -> targetPart.pivotZ += value;
+                break;
+            case "pivotx":
+                targetPart.pivotX += value;
+                break;
+            case "pivoty":
+                targetPart.pivotY += value;
+                break;
+            case "pivotz":
+                targetPart.pivotZ += value;
+                break;
         }
     }
 }

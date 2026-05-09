@@ -1,6 +1,6 @@
 package dev.overgrown.sync.mixin.body_part_damage_modifier;
 
-import dev.overgrown.sync.power.type.body_part_damage_modifier.util.HitLocationTracker;
+import dev.overgrown.sync.factory.power.type.body_part_damage_modifier.utils.HitLocationTracker;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
@@ -15,7 +15,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(PersistentProjectileEntity.class)
 public class ProjectileBodyHitMixin {
 
-    @Inject(method = "onEntityHit", at = @At("HEAD"))
+    @Inject(
+            method = "onEntityHit",
+            at = @At(
+                    "HEAD"
+            )
+    )
     private void sync$recordHit(EntityHitResult result, CallbackInfo ci) {
         if (result == null) return;
         Entity hit = result.getEntity();
@@ -29,21 +34,29 @@ public class ProjectileBodyHitMixin {
         double height = Math.max(box.maxY - box.minY, 1e-3);
         double halfWidth = Math.max(living.getWidth() * 0.5, 1e-3);
 
+        // Use the projectile's actual world position since it IS physically at the impact point when onEntityHit fires.
         Vec3d impact = self.getPos();
 
         double py = Math.max(box.minY, Math.min(box.maxY, impact.y));
+
+        // Eye-height-aware yNorm so the headband aligns correctly regardless of pose (standing, swimming, crouching).
         double yRaw = Math.max(0.0, Math.min(1.0, (py - box.minY) / height));
         double headStart = Math.max(0.0, Math.min(0.99,
-            (living.getEyeY() - box.minY) / height));
+                (living.getEyeY() - box.minY) / height));
         final double HEAD_BAND_START = 0.88;
         double yNorm;
         if (yRaw <= headStart) {
-            yNorm = (headStart > 1e-6) ? (yRaw / headStart) * HEAD_BAND_START : 0.0;
+            yNorm = (headStart > 1e-6)
+                    ? (yRaw / headStart) * HEAD_BAND_START
+                    : 0.0;
         } else {
-            yNorm = HEAD_BAND_START + ((yRaw - headStart) / (1.0 - headStart)) * (1.0 - HEAD_BAND_START);
+            yNorm = HEAD_BAND_START
+                    + ((yRaw - headStart) / (1.0 - headStart))
+                    * (1.0 - HEAD_BAND_START);
         }
         yNorm = Math.max(0.0, Math.min(1.0, yNorm));
 
+        // Local-space axes relative to the entity's body yaw
         double yawRad = Math.toRadians(living.getBodyYaw());
         Vec3d forward = new Vec3d(-Math.sin(yawRad), 0, Math.cos(yawRad));
         Vec3d right   = new Vec3d(forward.z, 0, -forward.x);
