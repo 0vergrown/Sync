@@ -28,6 +28,7 @@ import dev.overgrown.sync.factory.compatibility.aspectslib.power.type.SetEntityA
 import dev.overgrown.sync.factory.compatibility.aspectslib.condition.entity.HasAspectCondition;
 import dev.overgrown.sync.factory.action.bientity.add_to_entity_set.AddToEntitySetAction;
 import dev.overgrown.sync.factory.action.bientity.remove_from_entity_set.RemoveFromEntitySetAction;
+import dev.overgrown.sync.factory.action.bientity.save_location.SaveLocationBientityAction;
 import dev.overgrown.sync.factory.action.block.ghost_block.GhostBlockAction;
 import dev.overgrown.sync.factory.action.block.spawn_entity_block.SpawnEntityBlockAction;
 import dev.overgrown.sync.factory.action.entity.action_on_entity_set.ActionOnEntitySetAction;
@@ -178,6 +179,7 @@ public class SyncTypeRegistry {
         ApoliRegistryHelper.registerBientityAction(LiberatePowerAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(RemoveFromEntitySetAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(RopeLeashAction.getFactory());
+        ApoliRegistryHelper.registerBientityAction(SaveLocationBientityAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(SuppressPowerAction.getFactory());
         ApoliRegistryHelper.registerBientityAction(TransferAction.getFactory());
 

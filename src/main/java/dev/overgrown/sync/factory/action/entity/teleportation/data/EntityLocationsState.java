@@ -18,16 +18,25 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Server-global persistent storage for entity-saved teleport locations.
+ *
+ * <p>Anchored on the overworld's {@code PersistentStateManager} (same convention vanilla
+ * uses for {@code MapState}) so that locations saved in one dimension are visible from
+ * any other dimension. This is critical because {@code save_location} and
+ * {@code teleport_to_location} can run in different worlds.</p>
+ *
+ * <p>Locations may be either {@link Static} (frozen position) or {@link Tracked}
+ * (follows an entity by UUID; resolves to that entity's current position at teleport
+ * time). Tracked locations carry a position snapshot used as a fallback if the entity
+ * has been unloaded or removed.</p>
+ */
 public class EntityLocationsState extends PersistentState {
     private static final String STATE_NAME = "sync_entity_locations";
 
-    // Use ConcurrentHashMap for thread safety
     private final Map<UUID, EntityLocationData> entityLocations = new ConcurrentHashMap<>();
-
-    // Track when locations were last accessed for cleanup
     private final Map<UUID, Long> lastAccessTime = new ConcurrentHashMap<>();
 
-    // Configurable cleanup settings (in ticks, 20 ticks = 1 second)
     private static final long CLEANUP_INTERVAL = 20 * 60 * 10; // 10 minutes
     private static final long MAX_INACTIVE_TIME = 20 * 60 * 30; // 30 minutes for non-persistent entities
     private long lastCleanupTime = 0;
@@ -36,24 +45,51 @@ public class EntityLocationsState extends PersistentState {
         super();
     }
 
+    /**
+     * Returns the server-global state, anchored to the overworld.
+     * Preferred over {@link #get(ServerWorld)} for cross-dimension consistency.
+     */
+    public static EntityLocationsState get(MinecraftServer server) {
+        return get(server.getOverworld());
+    }
+
+    /**
+     * Returns the server-global state. Despite the {@code ServerWorld} parameter,
+     * the state is always loaded from the overworld so saves are visible across dimensions.
+     */
     public static EntityLocationsState get(ServerWorld world) {
-        return world.getPersistentStateManager().getOrCreate(
+        ServerWorld anchor = world.getServer().getOverworld();
+        return anchor.getPersistentStateManager().getOrCreate(
                 EntityLocationsState::fromNbt,
                 EntityLocationsState::new,
                 STATE_NAME
         );
     }
 
-    public void saveLocation(UUID entityId, String id, Vec3d position, RegistryKey<World> dimension,
-                             float yaw, float pitch, boolean overwrite, boolean isPersistent) {
+    public void saveStaticLocation(UUID entityId, String id, Vec3d position, RegistryKey<World> dimension,
+                                   float yaw, float pitch, boolean overwrite, boolean isPersistent) {
+        putLocation(entityId, id, new Static(position, dimension, yaw, pitch), overwrite, isPersistent);
+    }
+
+    public void saveTrackedLocation(UUID entityId, String id, UUID targetUuid, Vec3d snapshotPos,
+                                    RegistryKey<World> snapshotDim, float snapshotYaw, float snapshotPitch,
+                                    boolean overwrite, boolean isPersistent) {
+        putLocation(entityId, id, new Tracked(targetUuid, snapshotPos, snapshotDim, snapshotYaw, snapshotPitch),
+                overwrite, isPersistent);
+    }
+
+    private void putLocation(UUID entityId, String id, SavedLocation location, boolean overwrite, boolean isPersistent) {
         EntityLocationData entityData = entityLocations.computeIfAbsent(entityId,
                 k -> new EntityLocationData(isPersistent));
 
         if (!overwrite && entityData.locations.containsKey(id)) {
-            return; // Don't overwrite if overwrite is false
+            return;
         }
 
-        entityData.locations.put(id, new SavedLocation(position, dimension, yaw, pitch));
+        entityData.locations.put(id, location);
+        if (isPersistent) {
+            entityData.isPersistent = true;
+        }
         lastAccessTime.put(entityId, System.currentTimeMillis());
         markDirty();
     }
@@ -64,10 +100,44 @@ public class EntityLocationsState extends PersistentState {
         if (entityData == null) {
             return null;
         }
-
-        // Update last access time
         lastAccessTime.put(entityId, System.currentTimeMillis());
         return entityData.locations.get(id);
+    }
+
+    /**
+     * Resolves a saved location into a concrete world position. For {@link Tracked}
+     * locations, this scans the server's worlds for the target entity and returns its
+     * live position; if the entity is gone, falls back to the last-known snapshot.
+     */
+    @Nullable
+    public ResolvedLocation resolve(MinecraftServer server, UUID entityId, String id) {
+        SavedLocation saved = getLocation(entityId, id);
+        if (saved == null) {
+            return null;
+        }
+        return resolveSaved(server, saved);
+    }
+
+    public static ResolvedLocation resolveSaved(MinecraftServer server, SavedLocation saved) {
+        if (saved instanceof Static s) {
+            return new ResolvedLocation(s.position(), s.dimension(), s.yaw(), s.pitch());
+        }
+        if (saved instanceof Tracked t) {
+            for (ServerWorld world : server.getWorlds()) {
+                Entity entity = world.getEntity(t.targetUuid());
+                if (entity != null && entity.isAlive()) {
+                    return new ResolvedLocation(
+                            entity.getPos(),
+                            entity.getWorld().getRegistryKey(),
+                            entity.getYaw(),
+                            entity.getPitch()
+                    );
+                }
+            }
+            // Fallback to snapshot when the tracked entity is unavailable.
+            return new ResolvedLocation(t.snapshotPosition(), t.snapshotDimension(), t.snapshotYaw(), t.snapshotPitch());
+        }
+        return null;
     }
 
     public boolean removeLocation(UUID entityId, String id) {
@@ -75,7 +145,6 @@ public class EntityLocationsState extends PersistentState {
         if (entityData == null) {
             return false;
         }
-
         boolean removed = entityData.locations.remove(id) != null;
         if (removed) {
             markDirty();
@@ -90,14 +159,9 @@ public class EntityLocationsState extends PersistentState {
         }
     }
 
-    /**
-     * Periodic cleanup to remove locations for entities that no longer exist
-     */
     public void cleanupLocations(MinecraftServer server) {
         long currentTime = System.currentTimeMillis();
-
-        // Only run cleanup every CLEANUP_INTERVAL
-        if (currentTime - lastCleanupTime < CLEANUP_INTERVAL * 50) { // Convert ticks to ms
+        if (currentTime - lastCleanupTime < CLEANUP_INTERVAL * 50) {
             return;
         }
 
@@ -110,23 +174,17 @@ public class EntityLocationsState extends PersistentState {
             UUID entityId = entry.getKey();
             EntityLocationData data = entry.getValue();
 
-            // Always keep player data (players are persistent)
             if (isPlayer(entityId, server)) {
                 continue;
             }
 
-            // For non-persistent entities, check if they're still alive
             if (!data.isPersistent) {
                 boolean entityExists = false;
 
-                // Check all worlds for this entity
                 for (ServerWorld world : server.getWorlds()) {
                     Entity entity = world.getEntity(entityId);
                     if (entity != null && entity.isAlive()) {
                         entityExists = true;
-
-                        // Check if this entity should be considered persistent now
-                        // (e.g., if it was name-tagged after saving location)
                         if (entity.hasCustomName() || entity instanceof PathAwareEntity) {
                             data.isPersistent = true;
                         }
@@ -134,11 +192,10 @@ public class EntityLocationsState extends PersistentState {
                     }
                 }
 
-                // If entity doesn't exist and hasn't been accessed recently, remove it
                 if (!entityExists) {
                     Long lastAccess = lastAccessTime.get(entityId);
-                    if (lastAccess == null ||
-                            currentTime - lastAccess > MAX_INACTIVE_TIME * 50) {
+                    if (lastAccess == null
+                            || currentTime - lastAccess > MAX_INACTIVE_TIME * 50) {
                         iterator.remove();
                         lastAccessTime.remove(entityId);
                         changed = true;
@@ -153,7 +210,6 @@ public class EntityLocationsState extends PersistentState {
     }
 
     private boolean isPlayer(UUID uuid, MinecraftServer server) {
-        // Check if this UUID belongs to a player
         return server.getPlayerManager().getPlayer(uuid) != null;
     }
 
@@ -179,12 +235,20 @@ public class EntityLocationsState extends PersistentState {
                 );
                 RegistryKey<World> dimension = World.OVERWORLD;
                 if (locationCompound.contains("dimension")) {
-                    dimension = RegistryKey.of(RegistryKeys.WORLD, new Identifier(locationCompound.getString("dimension")));
+                    dimension = RegistryKey.of(RegistryKeys.WORLD,
+                            new Identifier(locationCompound.getString("dimension")));
                 }
                 float yaw = locationCompound.getFloat("yaw");
                 float pitch = locationCompound.getFloat("pitch");
 
-                locations.put(id, new SavedLocation(position, dimension, yaw, pitch));
+                SavedLocation saved;
+                if (locationCompound.containsUuid("target_uuid")) {
+                    UUID target = locationCompound.getUuid("target_uuid");
+                    saved = new Tracked(target, position, dimension, yaw, pitch);
+                } else {
+                    saved = new Static(position, dimension, yaw, pitch);
+                }
+                locations.put(id, saved);
             }
 
             state.entityLocations.put(entityId, new EntityLocationData(locations, isPersistent));
@@ -206,12 +270,20 @@ public class EntityLocationsState extends PersistentState {
             for (Map.Entry<String, SavedLocation> locationEntry : entityEntry.getValue().locations.entrySet()) {
                 NbtCompound locationCompound = new NbtCompound();
                 locationCompound.putString("id", locationEntry.getKey());
-                locationCompound.putDouble("x", locationEntry.getValue().position().x);
-                locationCompound.putDouble("y", locationEntry.getValue().position().y);
-                locationCompound.putDouble("z", locationEntry.getValue().position().z);
-                locationCompound.putString("dimension", locationEntry.getValue().dimension().getValue().toString());
-                locationCompound.putFloat("yaw", locationEntry.getValue().yaw());
-                locationCompound.putFloat("pitch", locationEntry.getValue().pitch());
+
+                SavedLocation loc = locationEntry.getValue();
+                Vec3d pos = loc.position();
+                RegistryKey<World> dim = loc.dimension();
+                locationCompound.putDouble("x", pos.x);
+                locationCompound.putDouble("y", pos.y);
+                locationCompound.putDouble("z", pos.z);
+                locationCompound.putString("dimension", dim.getValue().toString());
+                locationCompound.putFloat("yaw", loc.yaw());
+                locationCompound.putFloat("pitch", loc.pitch());
+
+                if (loc instanceof Tracked t) {
+                    locationCompound.putUuid("target_uuid", t.targetUuid());
+                }
 
                 locationsList.add(locationCompound);
             }
@@ -224,21 +296,54 @@ public class EntityLocationsState extends PersistentState {
         return nbt;
     }
 
-    // Inner class to store location data with persistence flag
     private static class EntityLocationData {
         private final Map<String, SavedLocation> locations;
         private boolean isPersistent;
 
-        public EntityLocationData(boolean isPersistent) {
+        EntityLocationData(boolean isPersistent) {
             this.locations = new HashMap<>();
             this.isPersistent = isPersistent;
         }
 
-        public EntityLocationData(Map<String, SavedLocation> locations, boolean isPersistent) {
+        EntityLocationData(Map<String, SavedLocation> locations, boolean isPersistent) {
             this.locations = locations;
             this.isPersistent = isPersistent;
         }
     }
 
-    public record SavedLocation(Vec3d position, RegistryKey<World> dimension, float yaw, float pitch) {}
+    public sealed interface SavedLocation permits Static, Tracked {
+        Vec3d position();
+        RegistryKey<World> dimension();
+        float yaw();
+        float pitch();
+    }
+
+    public record Static(Vec3d position, RegistryKey<World> dimension, float yaw, float pitch)
+            implements SavedLocation {}
+
+    public record Tracked(UUID targetUuid,
+                          Vec3d snapshotPosition, RegistryKey<World> snapshotDimension,
+                          float snapshotYaw, float snapshotPitch) implements SavedLocation {
+        @Override
+        public Vec3d position() {
+            return snapshotPosition;
+        }
+
+        @Override
+        public RegistryKey<World> dimension() {
+            return snapshotDimension;
+        }
+
+        @Override
+        public float yaw() {
+            return snapshotYaw;
+        }
+
+        @Override
+        public float pitch() {
+            return snapshotPitch;
+        }
+    }
+
+    public record ResolvedLocation(Vec3d position, RegistryKey<World> dimension, float yaw, float pitch) {}
 }

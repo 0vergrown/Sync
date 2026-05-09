@@ -18,60 +18,49 @@ public class TeleportToLocationAction {
         }
 
         String id = data.getString("id");
+        MinecraftServer server = serverWorld.getServer();
 
-        EntityLocationsState state = EntityLocationsState.get(serverWorld);
-        EntityLocationsState.SavedLocation savedLocation = state.getLocation(entity.getUuid(), id);
+        EntityLocationsState state = EntityLocationsState.get(server);
+        EntityLocationsState.ResolvedLocation resolved = state.resolve(server, entity.getUuid(), id);
 
-        if (savedLocation == null) {
+        if (resolved == null) {
             return;
         }
 
-        MinecraftServer server = serverWorld.getServer();
-        ServerWorld targetWorld = server.getWorld(savedLocation.dimension());
-
+        ServerWorld targetWorld = server.getWorld(resolved.dimension());
         if (targetWorld == null) {
             return;
         }
 
-        // Handle teleportation differently for players vs other entities
         if (entity instanceof ServerPlayerEntity player) {
-            // Player teleportation with rotation
             player.teleport(
                     targetWorld,
-                    savedLocation.position().x,
-                    savedLocation.position().y,
-                    savedLocation.position().z,
-                    savedLocation.yaw(),
-                    savedLocation.pitch()
+                    resolved.position().x,
+                    resolved.position().y,
+                    resolved.position().z,
+                    resolved.yaw(),
+                    resolved.pitch()
             );
         } else {
-            // Non-player entity teleportation
             Entity teleportedEntity = entity;
 
-            // If changing dimensions, use moveToWorld
-            if (!entity.getWorld().getRegistryKey().equals(savedLocation.dimension())) {
+            if (!entity.getWorld().getRegistryKey().equals(resolved.dimension())) {
                 teleportedEntity = entity.moveToWorld(targetWorld);
                 if (teleportedEntity == null) {
-                    return; // Failed to move between dimensions
+                    return;
                 }
             }
 
-            // Set position and rotation
             teleportedEntity.refreshPositionAndAngles(
-                    savedLocation.position().x,
-                    savedLocation.position().y,
-                    savedLocation.position().z,
-                    savedLocation.yaw(),
-                    savedLocation.pitch()
+                    resolved.position().x,
+                    resolved.position().y,
+                    resolved.position().z,
+                    resolved.yaw(),
+                    resolved.pitch()
             );
-
-            // For non-player entities, also set head yaw
-            teleportedEntity.setHeadYaw(savedLocation.yaw());
-
-            // Stop riding if entity is riding something
+            teleportedEntity.setHeadYaw(resolved.yaw());
             teleportedEntity.stopRiding();
 
-            // For mobs, stop their navigation
             if (teleportedEntity instanceof net.minecraft.entity.mob.PathAwareEntity pathAwareEntity) {
                 pathAwareEntity.getNavigation().stop();
             }

@@ -23,8 +23,8 @@ public class SaveLocationAction {
         // Determine if this entity should be considered persistent
         boolean isPersistent = isEntityPersistent(entity);
 
-        EntityLocationsState state = EntityLocationsState.get(serverWorld);
-        state.saveLocation(
+        EntityLocationsState state = EntityLocationsState.get(serverWorld.getServer());
+        state.saveStaticLocation(
                 entity.getUuid(),
                 id,
                 entity.getPos(),
@@ -36,7 +36,7 @@ public class SaveLocationAction {
         );
     }
 
-    private static boolean isEntityPersistent(Entity entity) {
+    public static boolean isEntityPersistent(Entity entity) {
         // Players are always persistent
         if (entity instanceof ServerPlayerEntity) {
             return true;
